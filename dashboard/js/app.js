@@ -114,6 +114,15 @@ function renderOSList(data) {
         const tma = os.tempo_atendimento_min ? os.tempo_atendimento_min + 'min' : '-';
         const status = os.status_os ? os.status_os.toLowerCase() : 'aberta';
 
+        // Extração de data/hora (compatibilidade de campos)
+        const inDate = os.data_entrada || os.data_inicio || '';
+        const inTime = os.hora_entrada ? ' ' + os.hora_entrada : '';
+        const outDate = os.data_saida || os.data_fim || '';
+        const outTime = os.hora_saida ? ' ' + os.hora_saida : '';
+        
+        const entradaText = (inDate + inTime).trim() || '-';
+        const saidaText = (outDate + outTime).trim() || '-';
+
         row.innerHTML = `
             <div class="os-col">
                 <span class="os-col-title">Número OS</span>
@@ -130,6 +139,7 @@ function renderOSList(data) {
             <div class="os-col">
                 <span class="os-col-title">Técnico Operante</span>
                 <span class="os-col-value">${tecnico_nome}</span>
+                <span style="font-size:0.7rem; color:var(--text-muted); margin-top:3px;"><i class="ri-login-circle-line"></i> In: ${entradaText} <br> <i class="ri-logout-circle-line"></i> Out: ${saidaText}</span>
             </div>
             <div class="os-col">
                 <span class="os-col-title">TMA</span>
@@ -139,12 +149,12 @@ function renderOSList(data) {
                 <span class="tag tag-${status.replace(' ', '-')}">${status.toUpperCase()}</span>
             </div>
         `;
-        row.addEventListener('click', () => openModal(os));
+        row.addEventListener('click', () => openModal(os, entradaText, saidaText));
         container.appendChild(row);
     });
 }
 
-function openModal(os) {
+function openModal(os, entradaText, saidaText) {
     const modal = document.getElementById('osModal');
     
     document.getElementById('m-num').textContent = os.os_codigo || 'OS-###';
@@ -175,6 +185,8 @@ function openModal(os) {
                     <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Equipamento</span><strong style="color:#fff;">${marcaModelo.trim() ? marcaModelo : '-'}</strong></div>
                     <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Especialista</span><strong style="color:#fff;">${os.tecnico_nome || '-'}</strong></div>
                     <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Garantia</span><strong style="color:${numGarantia};">${garantiaStr}</strong></div>
+                    <div style="border-top:1px dashed #333; padding-top:10px;"><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Check-in (Entrada)</span><strong style="color:#fff;">${entradaText}</strong></div>
+                    <div style="border-top:1px dashed #333; padding-top:10px;"><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Check-out (Saída)</span><strong style="color:#fff;">${saidaText}</strong></div>
                 </div>
             </div>
 
