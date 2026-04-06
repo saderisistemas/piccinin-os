@@ -534,14 +534,15 @@ h1, h2, h3, .heading-font {
     display: block;
 }
 
-@media(max-width: 1024px) {
+@media (max-width: 1024px) {
     .os-row { grid-template-columns: 1fr 1fr; gap: 15px; }
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .matrix-grid { grid-template-columns: repeat(2, 1fr); }
     .hero-dashboard { padding-top: 2rem; }
     .modal-content { width: 100%; }
 }
 
-@media(max-width: 768px) {
+@media (max-width: 768px) {
     /* Navbar Adjustment */
     .navbar {
         flex-direction: column;
@@ -565,12 +566,12 @@ h1, h2, h3, .heading-font {
         font-size: 2rem;
     }
     .kpi-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
     
     /* Vanda Matrix Mobile */
     .matrix-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
     .matrix-header {
         flex-direction: column;
