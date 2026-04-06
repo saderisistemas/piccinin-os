@@ -10,6 +10,15 @@ let dbData = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard();
+
+    // Registra o Service Worker (PWA)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker Registrado: Piccinin OS Offline', reg))
+                .catch(err => console.error('Erro no Service Worker', err));
+        });
+    }
 });
 
 async function initDashboard() {

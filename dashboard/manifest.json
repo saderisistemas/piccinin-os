@@ -1,0 +1,21 @@
+{
+  "name": "Piccinin Security OS",
+  "short_name": "Piccinin OS",
+  "description": "Painel de Auditoria Operacional (Vanda AI) da Piccinin Security.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#009c5d",
+  "icons": [
+    {
+      "src": "./img/piccinin-semfundo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./img/piccinin-semfundo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
