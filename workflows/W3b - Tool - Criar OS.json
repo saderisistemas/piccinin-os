@@ -1,0 +1,181 @@
+{
+  "name": "W3b - Tool - Criar OS Bom Saldo",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "cliente_id" },
+            { "name": "tecnico_id" },
+            { "name": "tecnico_nome" },
+            { "name": "tecnico_whatsapp" },
+            { "name": "situacao_id" },
+            { "name": "observacoes" },
+            { "name": "cliente_nome" },
+            { "name": "conversa_id" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-800, 400],
+      "id": "e7ca29c0-bdc2-4f96-b408-7d8ef9875e69",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nlet nome = (input.cliente_nome || '').trim();\nnome = nome.replace(/\\s*\\(.*?\\)\\s*$/g, '').trim();\nconst palavras = nome.split(/\\s+/);\nconst nomeBusca = palavras.length > 5 ? palavras.slice(0, 3).join(' ') : nome;\nreturn [{ json: { ...input, cliente_nome_busca: nomeBusca, cliente_nome_original: input.cliente_nome } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-560, 400],
+      "id": "c0680ca7-858a-4425-b1f8-4e5588445eef",
+      "name": "Limpar Nome"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($json.cliente_nome_busca) }}&ativo=1&limit=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "access-token", "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8" },
+            { "name": "secret-access-token", "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-320, 400],
+      "id": "3806b85c-e3f1-4323-ac51-04fb07c81094",
+      "name": "Resolver Cliente",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const triggerParams = $('Limpar Nome').first().json;\nconst apiResp = $input.first().json;\nconst clientes = (apiResp.data || []);\n\nlet clienteIdReal = null;\nlet clienteNomeReal = null;\n\nif (clientes.length > 0) {\n  const nomeOriginal = (triggerParams.cliente_nome_original || '').toLowerCase().trim();\n  const nomeBusca = (triggerParams.cliente_nome_busca || '').toLowerCase().trim();\n  \n  let match = clientes.find(c =>\n    (c.nome || '').toLowerCase().trim() === nomeBusca ||\n    (c.razao_social || '').toLowerCase().trim() === nomeBusca\n  );\n  \n  if (!match) {\n    match = clientes.find(c =>\n      (c.nome || '').toLowerCase().includes(nomeBusca) ||\n      nomeBusca.includes((c.nome || '').toLowerCase())\n    );\n  }\n  \n  if (!match) {\n    match = clientes.find(c =>\n      nomeOriginal.includes((c.nome || '').toLowerCase()) ||\n      (c.nome || '').toLowerCase().includes(nomeOriginal.replace(/\\s*\\(.*?\\)\\s*$/g, ''))\n    );\n  }\n  \n  if (!match) match = clientes[0];\n  \n  clienteIdReal = String(match.id);\n  clienteNomeReal = match.nome;\n}\n\nif (!clienteIdReal && triggerParams.cliente_id && /^[0-9]{5,}$/.test(String(triggerParams.cliente_id).trim())) {\n  clienteIdReal = String(triggerParams.cliente_id).trim();\n}\n\nif (!clienteIdReal) {\n  return [{ json: { \n    error: \"Nao encontrei o cliente '\" + (triggerParams.cliente_nome_original || '???') + \"' no Bom Saldo. Pergunte o nome correto ao tecnico.\",\n    sucesso: false \n  } }];\n}\n\nreturn [{ json: {\n  cliente_id: clienteIdReal,\n  cliente_nome_validado: clienteNomeReal || triggerParams.cliente_nome_original,\n  tecnico_id: triggerParams.tecnico_id,\n  tecnico_nome: triggerParams.tecnico_nome,\n  tecnico_whatsapp: triggerParams.tecnico_whatsapp,\n  situacao_id: triggerParams.situacao_id,\n  observacoes: triggerParams.observacoes,\n  conversa_id: triggerParams.conversa_id\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-60, 400],
+      "id": "89cb770b-30c7-40f2-9a41-31f23cee193d",
+      "name": "Validar Parametros"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bomsaldo.com/api/ordens_servicos/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "access-token", "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8" },
+            { "name": "secret-access-token", "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ cliente_id: parseInt($json.cliente_id), situacao_id: parseInt($json.situacao_id) || 6237497, data: $now.format('yyyy-MM-dd'), observacoes: $json.observacoes || 'OS aberta via Assistente Vanda - Piccinin Security', vendedor_id: 906858 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [180, 400],
+      "id": "0a3aa2a4-93ee-4f93-9f37-51481c23f239",
+      "name": "POST Criar OS",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payloadJson = $('Validar Parametros').first().json;\nif (payloadJson.error) {\n  return [{ json: { resultado: payloadJson.error, os_id: null, sucesso: false } }];\n}\n\nconst resp = $input.first().json;\n\nif (resp.status === 'error' || resp.error || resp.message || (resp.statusCode && resp.statusCode >= 400)) {\n  const detalheErro = resp.message || resp.error || JSON.stringify(resp);\n  return [{ json: {\n    resultado: 'Erro ao criar a OS: ' + detalheErro + '. Verifique se o cliente esta cadastrado corretamente.',\n    os_id: null,\n    sucesso: false\n  } }];\n}\n\nif (resp.code === 200 && resp.data) {\n  const os = resp.data;\n  return [{ json: {\n    resultado: 'OS #' + os.codigo + ' aberta com sucesso. ID interno: ' + os.id + '.',\n    os_id:         String(os.id),\n    os_codigo:     String(os.codigo),\n    cliente_id:    String(payloadJson.cliente_id),\n    cliente_nome:  payloadJson.cliente_nome_validado,\n    tecnico_id:    payloadJson.tecnico_id || null,\n    tecnico_nome:  payloadJson.tecnico_nome || null,\n    tecnico_whatsapp: payloadJson.tecnico_whatsapp || null,\n    conversa_id:   payloadJson.conversa_id || null,\n    sucesso: true\n  } }];\n} else {\n  return [{ json: {\n    resultado: 'Erro desconhecido ao abrir OS: ' + JSON.stringify(resp),\n    os_id: null,\n    sucesso: false\n  } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 400],
+      "id": "bd2865b1-6b38-4e63-a6ad-a0d551ecaecf",
+      "name": "Formatar Resposta"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "c-ok",
+              "leftValue": "={{ $json.sucesso }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [660, 400],
+      "id": "37be1cb6-5a32-45a6-b713-9f77e4b96c31",
+      "name": "OS Criada OK?"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "ordens_servico",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "os_codigo", "fieldValue": "={{ $json.os_codigo }}" },
+            { "fieldId": "os_id_bomsaldo", "fieldValue": "={{ $json.os_id }}" },
+            { "fieldId": "conversa_id", "fieldValue": "={{ $json.conversa_id || null }}" },
+            { "fieldId": "tecnico_id", "fieldValue": "={{ $json.tecnico_id || null }}" },
+            { "fieldId": "tecnico_nome", "fieldValue": "={{ $json.tecnico_nome || null }}" },
+            { "fieldId": "tecnico_whatsapp", "fieldValue": "={{ $json.tecnico_whatsapp || null }}" },
+            { "fieldId": "cliente_nome", "fieldValue": "={{ $json.cliente_nome || null }}" },
+            { "fieldId": "cliente_codigo", "fieldValue": "={{ $json.cliente_id || null }}" },
+            { "fieldId": "status_os", "fieldValue": "aberta" },
+            { "fieldId": "fase_ia", "fieldValue": "coleta_tecnica" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "id": "93b55195-148e-4a4f-9017-c3825df53187",
+      "name": "Salvar OS Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = $('Formatar Resposta').first().json;\nreturn [{ json: {\n  resultado:    resp.resultado,\n  os_id:        resp.os_id,\n  os_codigo:    resp.os_codigo,\n  cliente_nome: resp.cliente_nome,\n  sucesso:      resp.sucesso\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1140, 400],
+      "id": "b4014249-ea4e-436e-a3cf-3a0e57c8594f",
+      "name": "Retornar Resultado"
+    }
+  ],
+  "connections": {
+    "Trigger": { "main": [[{ "node": "Limpar Nome", "type": "main", "index": 0 }]] },
+    "Limpar Nome": { "main": [[{ "node": "Resolver Cliente", "type": "main", "index": 0 }]] },
+    "Resolver Cliente": { "main": [[{ "node": "Validar Parametros", "type": "main", "index": 0 }]] },
+    "Validar Parametros": { "main": [[{ "node": "POST Criar OS", "type": "main", "index": 0 }]] },
+    "POST Criar OS": { "main": [[{ "node": "Formatar Resposta", "type": "main", "index": 0 }]] },
+    "Formatar Resposta": { "main": [[{ "node": "OS Criada OK?", "type": "main", "index": 0 }]] },
+    "OS Criada OK?": {
+      "main": [
+        [{ "node": "Salvar OS Supabase", "type": "main", "index": 0 }],
+        [{ "node": "Retornar Resultado", "type": "main", "index": 0 }]
+      ]
+    },
+    "Salvar OS Supabase": { "main": [[{ "node": "Retornar Resultado", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "pinData": {}
+}

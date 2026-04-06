@@ -1,0 +1,170 @@
+{
+  "name": "W2 - Tool - Buscar Cliente Bom Saldo",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -500,
+        400
+      ],
+      "id": "w2-001",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ??? NORMALIZA��O ????????????????????????????????????????????????????????????\nfunction normalize(str) {\n  if (!str) return '';\n  return str\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '') // remove acentos\n    .replace(/[^a-z0-9 ]/g, ' ')     // remove caracteres especiais\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// Palavras muito gen�ricas para remover antes de comparar\nconst STOP_WORDS = ['ltda', 'eireli', 'epp', 'me', 'sa', 'ss', 'sociedade', 'empresa',\n  'comercio', 'comercial', 'industria', 'industrial', 'servico', 'servicos',\n  'solucao', 'solucoes', 'grupo', 'brasil', 'do', 'da', 'de', 'dos', 'das', 'e'];\n\nfunction tokenize(str) {\n  return normalize(str)\n    .split(' ')\n    .filter(t => t.length > 2 && !STOP_WORDS.includes(t));\n}\n\nconst rawNome = $input.first().json.nome || '';\nconst nomeNorm = normalize(rawNome);\nconst tokens = tokenize(rawNome);\n\nreturn [{ json: { \n  nome_original: rawNome,\n  nome_normalizado: nomeNorm,\n  tokens,\n  token_principal: tokens[0] || nomeNorm.split(' ')[0] || rawNome\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        400
+      ],
+      "id": "w2-norm",
+      "name": "Normalizar Nome"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent(.nome_original) }}&ativo=1&limit=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        280
+      ],
+      "id": "w2-busca1",
+      "name": "Busca Direta"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent(.item.json.token_principal) }}&ativo=1&limit=15",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        520
+      ],
+      "id": "w2-busca2",
+      "name": "Busca por Token"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ??? MERGE e DEDUP das duas buscas ??????????????????????????????????????????\nconst normalize = (str) => !str ? '' : str\n  .toLowerCase()\n  .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\n\nconst tokenize = (str) => {\n  const STOP = ['ltda','eireli','epp','me','sa','ss','comercio','comercial',\n    'industria','servico','servicos','grupo','brasil','do','da','de','dos','das','e'];\n  return normalize(str).split(' ').filter(t => t.length > 2 && !STOP.includes(t));\n};\n\nconst normInput = $('Normalizar Nome').item.json;\nconst nomeNorm = normInput.nome_normalizado;\nconst tokensInput = normInput.tokens;\n\n// Coletar resultados das duas buscas\nconst allItems = $input.all();\nconst todosClientes = [];\nconst idsVistos = new Set();\n\nallItems.forEach(item => {\n  const clientes = item.json.data || [];\n  clientes.forEach(c => {\n    if (!idsVistos.has(c.id)) {\n      idsVistos.add(c.id);\n      todosClientes.push(c);\n    }\n  });\n});\n\n// ??? SCORING: qu�o parecido � o nome do cliente com o que o t�cnico disse ????\nfunction score(cliente) {\n  const nomeC = normalize(cliente.nome || '');\n  const razaoC = normalize(cliente.razao_social || '');\n  const nomeFantasiaC = normalize(cliente.nome_fantasia || '');\n  const target = nomeNorm;\n  let s = 0;\n  \n  // Correspond�ncia exata\n  if (nomeC === target || razaoC === target || nomeFantasiaC === target) return 100;\n  \n  // O nome do cliente cont�m o que o t�cnico disse (ou vice-versa)\n  if (nomeC.includes(target) || target.includes(nomeC)) s += 60;\n  if (razaoC.includes(target) || target.includes(razaoC)) s += 55;\n  if (nomeFantasiaC.includes(target) || target.includes(nomeFantasiaC)) s += 55;\n  \n  // Tokens em comum\n  const tokensC = tokenize(cliente.nome || '');\n  const tokensR = tokenize(cliente.razao_social || '');\n  const tokensF = tokenize(cliente.nome_fantasia || '');\n  const todosTokensC = [...new Set([...tokensC, ...tokensR, ...tokensF])];\n  \n  tokensInput.forEach(t => {\n    if (todosTokensC.some(tc => tc.includes(t) || t.includes(tc))) s += 20;\n    if (todosTokensC.includes(t)) s += 10; // bonus exato\n  });\n  \n  // Token principal coincide\n  if (tokensInput[0] && todosTokensC.some(tc => tc.includes(tokensInput[0]))) s += 15;\n  \n  return s;\n}\n\n// Aplicar score e ordenar\nconst rankados = todosClientes\n  .map(c => ({ ...c, _score: score(c) }))\n  .filter(c => c._score > 0)\n  .sort((a, b) => b._score - a._score);\n\nconst top = rankados.slice(0, 5);\n\nif (top.length === 0) {\n  return [{ json: {\n    resultado: `Nenhum cliente encontrado para \"${normInput.nome_original}\". Pode confirmar:\n1. Nome completo ou raz�o social\n2. Cidade ou endere�o\n3. N�mero de OS anterior`,\n    clientes: [],\n    total_encontrado: 0,\n    status: 'not_found'\n  } }];\n}\n\n// Formatar lista para a Vanda apresentar ao t�cnico\nconst formatar = (c, i) => {\n  const complemento = c.razao_social && normalize(c.razao_social) !== normalize(c.nome)\n    ? ` (${c.razao_social})` : '';\n  const tel = c.telefone || c.celular || '';\n  const end = c.enderecos?.[0]?.endereco;\n  const cidade = end ? `${end.nome_cidade}/${end.estado}` : '';\n  return `${i+1}. ${c.nome}${complemento}${cidade ? ' - ' + cidade : ''}${tel ? ' | ' + tel : ''}`;\n};\n\n// Se h� apenas 1 resultado com score alto, retorna direto sem pedir confirma��o\nif (top.length === 1 && top[0]._score >= 60) {\n  const c = top[0];\n  const end = c.enderecos?.[0]?.endereco;\n  const endereco = end\n    ? `${end.logradouro}, ${end.numero} - ${end.bairro} - ${end.nome_cidade}/${end.estado}`\n    : '';\n  return [{ json: {\n    resultado: `Achei: *${c.nome}*${c.razao_social ? ' (' + c.razao_social + ')' : ''}${endereco ? ' - ' + endereco : ''}. Confirma?`,\n    cliente_id: String(c.id),\n    cliente_nome: c.nome,\n    clientes: [{ id: c.id, nome: c.nome, razao_social: c.razao_social || '', telefone: c.telefone || c.celular || '', endereco }],\n    total_encontrado: 1,\n    status: 'single_match'\n  } }];\n}\n\n// M�ltiplos resultados - listar para confirma��o\nconst lista = top.map(formatar).join('\\n');\n// Build option_map so LLM can look up ID by option number\nconst option_map = {};\ntop.forEach((c, i) => { option_map[String(i+1)] = { id: String(c.id), nome: c.nome }; });\nreturn [{ json: {\n  resultado: `Encontrei ${top.length} clientes parecidos:\\n${lista}\\n\\nQual � o correto? Responde o n�mero.`,\n  option_map,\n  clientes: top.map(c => ({\n    id: c.id,\n    nome: c.nome,\n    razao_social: c.razao_social || '',\n    telefone: c.telefone || c.celular || '',\n    endereco: (() => {\n      const e = c.enderecos?.[0]?.endereco;\n      return e ? `${e.logradouro}, ${e.numero} - ${e.bairro} - ${e.nome_cidade}/${e.estado}` : '';\n    })()\n  })),\n  total_encontrado: top.length,\n  status: 'multiple_matches'\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        400
+      ],
+      "id": "w2-merge",
+      "name": "Merge e Ranking"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Nome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Nome": {
+      "main": [
+        [
+          {
+            "node": "Busca Direta",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Busca por Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Direta": {
+      "main": [
+        [
+          {
+            "node": "Merge e Ranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca por Token": {
+      "main": [
+        [
+          {
+            "node": "Merge e Ranking",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo"
+  }
+}

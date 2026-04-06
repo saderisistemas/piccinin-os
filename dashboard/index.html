@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccinin Security | Auditoria Operacional</title>
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Premium Navbar -->
+    <nav class="navbar">
+        <div class="logo-placeholder">
+            <img src="img/piccinin-semfundo.png" alt="Piccinin Security Logo" style="height: 120px; filter: drop-shadow(0px 4px 6px rgba(0,255,100,0.2));">
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Auditoria Vanda</a>
+            <a href="#" class="nav-link">Relatórios</a>
+            <a href="#" class="nav-link">Sair</a>
+        </div>
+    </nav>
+
+    <!-- Cinematic Hero Section -->
+    <section class="hero-dashboard">
+        <div class="hero-content">
+            <h2 class="dashboard-title heading-font">Proteção Operacional</h2>
+            <p class="dashboard-subtitle">Monitoramento em tempo real das Ordens de Serviço validadas pela agente Vanda AI para controle total de rastreabilidade.</p>
+            
+            <div class="kpi-grid">
+                <div class="kpi-box">
+                    <span class="kpi-label">Volume Processado</span>
+                    <span class="kpi-value" id="kpi-total">0</span>
+                    <span class="kpi-trend"><i class="ri-arrow-up-circle-line"></i> Total de Registros</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">Taxa de Conclusão</span>
+                    <span class="kpi-value" id="kpi-fechadas">0</span>
+                    <span class="kpi-trend"><i class="ri-check-double-line"></i> OS Finalizadas</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">Tempo Médio (TMA)</span>
+                    <span class="kpi-value" id="kpi-tma">0</span>
+                    <span class="kpi-trend" style="color:var(--text-muted)"><i class="ri-time-line"></i> Minutos por Chamado</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">Evidências Coletadas</span>
+                    <span class="kpi-value" id="kpi-evidencias">0</span>
+                    <span class="kpi-trend" style="color:var(--piccinin-green)"><i class="ri-image-2-line"></i> Anexos Drive</span>
+                </div>
+            </div>
+
+            <!-- Vanda ROI Matrix -->
+            <div class="vanda-matrix fade-in">
+                <div class="matrix-header">
+                    <h3 class="heading-font"><i class="ri-robot-2-line"></i> Produtividade Vanda AI</h3>
+                    <span class="matrix-badge">Monitoramento C-Level</span>
+                </div>
+                <div class="matrix-grid">
+                    <div class="matrix-card" data-tooltip="Cálculo base: 15min por auditoria">
+                        <div class="matrix-icon"><i class="ri-time-zone-line"></i></div>
+                        <div class="matrix-info">
+                            <span class="matrix-title">Tempo Poupado</span>
+                            <span class="matrix-number" id="vanda-hours">0h</span>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-card highlight-card" data-tooltip="Auditorias sem toque ou refação humana">
+                        <div class="matrix-icon"><i class="ri-magic-line"></i></div>
+                        <div class="matrix-info">
+                            <span class="matrix-title">Precisão Zero-Touch</span>
+                            <span class="matrix-number" id="vanda-accuracy">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-card" data-tooltip="Somatório Faturado em Ordens Válidas">
+                        <div class="matrix-icon"><i class="ri-money-dollar-circle-line"></i></div>
+                        <div class="matrix-info">
+                            <span class="matrix-title">Capital Auditado</span>
+                            <span class="matrix-number" id="vanda-capital">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="search-pill">
+            <i class="ri-search-line"></i>
+            <input type="text" id="searchInput" placeholder="Pesquisar por N° OS, Vanda Payload ID...">
+        </div>
+        <button class="btn-solid"><i class="ri-download-cloud-2-line"></i> Exportar Dados</button>
+    </div>
+
+    <!-- Main List Section -->
+    <main class="main-content">
+        <div class="table-header">
+            <h2 class="heading-font">Histórico de Atendimentos</h2>
+        </div>
+        
+        <div class="os-list" id="osContainer">
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" style="text-align: center; padding: 3rem; color: var(--piccinin-green);">
+                <i class="ri-loader-4-line ri-spin" style="font-size: 2rem;"></i>
+                <p style="margin-top: 10px; font-family: 'Poppins', sans-serif;">Sincronizando com Base de Dados Vanda AI...</p>
+            </div>
+            <!-- Data Rows injected via JS -->
+        </div>
+    </main>
+
+
+
+    <!-- Side Panel Modal -->
+    <div class="modal-overlay" id="osModal">
+        <div class="modal-content">
+            <div class="modal-head">
+                <div>
+                    <h2 id="m-num">OS-0000</h2>
+                    <span style="color:var(--text-muted); font-family:monospace; font-size:0.85rem;" id="m-id">ID BS: 0000</span>
+                </div>
+                <button class="close-btn" id="closeModal"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <div id="modalBody">
+                <!-- Content via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Commercial / Developer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <span class="developer-text">Desenvolvido por</span>
+            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link">
+                <img src="img/saderi12.png" alt="Saderi Sistemas" class="saderi-logo" title="Falar com a Saderi Sistemas">
+            </a>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

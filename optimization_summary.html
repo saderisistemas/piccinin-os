@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optimization Summary - Protek OS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      background: radial-gradient(circle at top right, #1a1b26 0%, #0d0f1a 100%);
+      font-family: 'Inter', sans-serif;
+      color: #e0e6ed;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(25, 29, 43, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 60px;
+      box-shadow: 0 30px 60px rgba(0,0,0, 0.4), inset 0 1px 0 rgba(255,255,255, 0.1);
+      text-align: center;
+      animation: fadeUp 1s ease-out forwards;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+      letter-spacing: -1.5px;
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      color: #94a3b8;
+      margin-bottom: 60px;
+      font-weight: 400;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 20px;
+      padding: 50px 30px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, transparent, #4facfe, transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0, 0.3);
+      border-color: rgba(79, 172, 254, 0.3);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card-value {
+      font-size: 4.5rem;
+      font-weight: 900;
+      color: #f8fafc;
+      margin-bottom: 10px;
+      letter-spacing: -2px;
+    }
+
+    .card-label {
+      font-size: 1.25rem;
+      color: #cbd5e1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .metrics-summary {
+      background: rgba(0, 242, 254, 0.05);
+      border: 1px solid rgba(0, 242, 254, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .metric-val {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #4facfe;
+    }
+    
+    .metric-lbl {
+      font-size: 1rem;
+      color: #64748b;
+      margin-top: 5px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Protek OS - Refactoring</h1>
+    <p class="subtitle">Análise e Planejamento de Otimização de Tokens</p>
+    
+    <div class="grid">
+      <div class="card" style="animation-delay: 0.2s;">
+        <div class="card-icon">📉</div>
+        <div class="card-value">-70%</div>
+        <div class="card-label">Context Size</div>
+      </div>
+      
+      <div class="card" style="animation-delay: 0.4s;">
+        <div class="card-icon">⚡</div>
+        <div class="card-value">3.5x</div>
+        <div class="card-label">Faster AI Ref</div>
+      </div>
+      
+      <div class="card" style="animation-delay: 0.6s;">
+        <div class="card-icon">💰</div>
+        <div class="card-label">Significant</div>
+        <div class="card-value">Cost Drop</div>
+      </div>
+    </div>
+
+    <div class="metrics-summary">
+      <div class="metric">
+        <span class="metric-val">1.28K Lines</span>
+        <span class="metric-lbl">Total identificadas p/ Refatoração</span>
+      </div>
+      <div class="metric">
+        <span class="metric-val">5</span>
+        <span class="metric-lbl">Arquivos Problemáticos</span>
+      </div>
+      <div class="metric">
+        <span class="metric-val">~80 Lines</span>
+        <span class="metric-lbl">Nova Média por Arquivo</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

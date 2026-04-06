@@ -1,0 +1,440 @@
+{
+  "name": "W11 - Buffer OS",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "identificadorLead"
+            },
+            {
+              "name": "numberLead"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        208
+      ],
+      "id": "56b6589c-115d-4e33-b311-564a03b8d623",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a05b647f-a556-41d1-a97f-06a39a30ed7d",
+              "name": "identificadorLead",
+              "value": "={{ $json.identificadorLead }}",
+              "type": "string"
+            },
+            {
+              "id": "cd7b138e-2a18-474c-b072-8ec155b10715",
+              "name": "numberLead",
+              "value": "={{ $('When Executed by Another Workflow').first().json.numberLead.replace('+', '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        208
+      ],
+      "id": "89c53a6e-5235-4de0-b585-f319248db23b",
+      "name": "setarInfo1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        144
+      ],
+      "id": "469452c8-d294-4873-909c-62fac455b1e0",
+      "name": "Chat Memory Manager1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('setarInfo1').item.json.identificadorLead }}",
+        "contextWindowLength": 40
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        352
+      ],
+      "id": "25e8da80-5500-45ac-8fd3-30c3cc4b7128",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "8xOQGRYTIFa3Q8RF",
+          "name": "Postgres Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Puxar Histórico da conversa",
+        "height": 500,
+        "width": 460,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1184,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "5f2d1421-5da5-40d9-ab87-39fd5c26765b",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "os_buffer",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Identificador do usuario",
+              "condition": "eq",
+              "keyValue": "={{ $json.identificadorLead }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Follow UP 1",
+              "fieldValue": "null"
+            },
+            {
+              "fieldId": "Follow UP 2",
+              "fieldValue": "null"
+            },
+            {
+              "fieldId": "Follow UP 3",
+              "fieldValue": "null"
+            },
+            {
+              "fieldId": "Timestamp ultima msg",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        896,
+        208
+      ],
+      "id": "92383d1b-c469-4489-b5f5-e091ca3ea8fa",
+      "name": "atualizaFollowUP",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Deixa \"null\" em todos os campos do Follow Up e atualizar o Timestamp",
+        "height": 500,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "ea34ff41-5920-4b58-8903-42998d0a25e7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Gatilho que vem da Secretaria",
+        "height": 500,
+        "width": 344,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "9a5afa14-cb42-4c32-a03c-a585b67409f7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Setar ID e Whatsapp do lead",
+        "height": 500,
+        "width": 300,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "3537df01-34ac-475c-a0cc-822a97243736",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Resumo da Conversa",
+        "height": 500,
+        "width": 708,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "f86631c5-6195-4750-a956-20899d564599",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1744,
+        384
+      ],
+      "id": "92fe0750-cea3-46dd-b6e3-604c3e3627f3",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "TMMdy9XgNtm5j7mS",
+          "name": "OpenAi | danilopatrimonium"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Nome\": \"Carlos Alberto\",\n  \"Whatsapp\": \"44988276547\",\n  \"Fila\": \"Técnico\",\n  \"Objetivo_do_usuario\": \"não consegue desarmar o alarme\",\n  \"Endereco_com_numero\": \"Rua Maracaíbo, 727\",\n  \"Resumo_da_conversa\": \"Carlos Alberto entrou em contato relatando que não consegue desarmar o alarme e que o sistema permanece apitando. Informou o endereço Rua Maracaíbo, 727 e disse que não há risco imediato no local, apenas dificuldade para desarmar o alarme.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        368
+      ],
+      "id": "c49eb71f-4259-4375-bf07-a7d929bd9abe",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "CRM_9952Alarmes",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Identificador do usuario",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInfo1').item.json.identificadorLead }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Nome",
+              "fieldValue": "={{ $json.output.Nome }}"
+            },
+            {
+              "fieldId": "Resumo da conversa",
+              "fieldValue": "={{ $json.output.Resumo_da_conversa }}"
+            },
+            {
+              "fieldId": "Endereco com numero",
+              "fieldValue": "={{ $json.output.Endereco_com_numero }}"
+            },
+            {
+              "fieldId": "Objetivo_do_usuario",
+              "fieldValue": "={{ $json.output.Objetivo_do_usuario }}"
+            },
+            {
+              "fieldId": "Whatsapp",
+              "fieldValue": "={{ $('setarInfo1').item.json.numberLead }}"
+            },
+            {
+              "fieldId": "Fila",
+              "fieldValue": "={{ $json.output.Fila }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        144
+      ],
+      "id": "6f782115-0876-4a1b-a01e-8610bdf9f3b8",
+      "name": "atualizarCRM",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages.map(m => `Usuário: ${m.human}\\nIA: ${m.ai}`).join('\\n\\n') }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Dia e hora atual: **{{ $now }}**\n\n## IDENTIDADE\nVocê é um **agente interno de CRM** do **Grupo Patrimonium**, voltado para os atendimentos da **Patrimonium Monitoramento** (alarmes, portaria remota, CFTV, controle de acesso e ocorrências operacionais).\n\nSua função é **ler toda a conversa** entre a **Pati** e o **cliente**, interpretar **somente o que o cliente disse** (mensagens do cliente) e registrar as informações no CRM de forma **clara, objetiva e fiel** ao conteúdo.\n\nVocê **nunca inventa informações**, não faz suposições e não completa dados por conta própria.\n\n---\n\n## FUNÇÃO\n- Registrar os dados do atendimento no CRM (**CRM_9952Alarmes**).\n- Antes de preencher qualquer campo, **leia toda a conversa** com atenção.\n- **Ignore o conteúdo informativo da Pati** (perguntas, confirmações, orientações).  \n  Use a Pati apenas como contexto para entender **o que o cliente respondeu**, mas **registre somente o que o cliente disse**.\n\n---\n\n## REGRAS CRÍTICAS\n- **Não inventar** nome, endereço, objetivo, fila, nem qualquer detalhe.\n- **Não deduzir** empresa, serviço, risco, urgência, contrato, valores, prazos, etc.\n- Se algo não foi dito pelo cliente, **deixe vazio** (`\"\"`).\n- Se o cliente enviar **informação sensível** (senha, código de alarme, código de acesso, dados bancários), **não registre**.  \n  No resumo, substitua por: **“[informação sensível omitida]”**.\n- A saída deve ser **exclusivamente um JSON válido**, sem comentários, sem texto extra, sem markdown.\n\n---\n\n## CAMPOS OBRIGATÓRIOS (Structured Output Parser)\nVocê deve retornar **sempre** os campos abaixo, mesmo que vazios.\n\n### 1) `Nome`\n- Registrar **exatamente** o nome informado pelo cliente.\n- Se informar apenas primeiro nome, registrar apenas ele.\n- Se não informar nome, deixar `\"\"`.\n\n### 2) `Whatsapp`\n- Registrar o WhatsApp **somente se estiver disponível no input/contexto**.\n- Se não estiver presente, deixar `\"\"`.\n- **Não inventar** número.\n\n### 3) `Fila`\nClassifique a demanda do cliente em **apenas uma** das opções abaixo:\n\n- `Central/Monitoramento`  \n  (ocorrência operacional, disparo, alarme tocando, evento, suspeita, ocorrência, solicitação ligada ao monitoramento)\n- `Técnico`  \n  (falha de equipamento, manutenção, sistema não arma/desarma, sensores, sirene, bateria, comunicação, suporte técnico)\n- `Financeiro`  \n  (boleto, pagamento, cobrança, 2ª via, negociação)\n- `SAC`  \n  (reclamações, cancelamentos, dúvidas sobre contrato)\n- `Institucional`  \n  (endereço, horário, redes sociais, “quem é a empresa”, certificações/diferenciais)\n- `Indefinido`  \n  (não há informação suficiente para classificar)\n\n**Regra:** classifique **pelo conteúdo do cliente**, não pela fala da Pati.\n\n### 4) `Objetivo_do_usuario`\n- Uma frase curta descrevendo **o que o cliente quer** (o motivo principal do contato).\n- Use as palavras do cliente sempre que possível.\n- Se não estiver claro, deixar `\"\"`.\n\nExemplos (apenas referência):\n- “não consigo desarmar o alarme”\n- “quero 2ª via do boleto”\n- “quero cancelar o contrato”\n- “disparo de alarme e preciso de orientação”\n- “quero saber o endereço/horário”\n\n### 5) `Endereco_com_numero`\n- Registrar **somente se o cliente informar** um endereço **com número**.\n- Se vier incompleto (sem número) ou não for informado, deixar `\"\"`.\n- **Não completar** endereço por inferência.\n\n### 6) `Resumo_da_conversa`\n- Resumo **em texto corrido**, natural, sem listas e sem quebras de linha.\n- Incluir **somente o que o cliente disse ou perguntou**.\n- Não mencionar “Pati”, “secretária”, “IA”, “transferência”, “Chatwoot”, “tool” ou fluxos internos.\n- Quando possível, incluir: **Nome (se informado)** + **objetivo** + **contexto** (quando ocorreu, se há risco, detalhes relevantes) + **endereço (se informado)**.\n- Se o cliente mencionar urgência/risco (ex.: invasão, ameaça, perigo), registrar isso **apenas se dito pelo cliente**.\n\n---\n\n## FORMATO DE SAÍDA (OBRIGATÓRIO)\nRetorne **somente** este JSON, com estas chaves **exatamente**:\n\n```json\n{\n  \"Nome\": \"\",\n  \"Whatsapp\": \"\",\n  \"Fila\": \"\",\n  \"Objetivo_do_usuario\": \"\",\n  \"Endereco_com_numero\": \"\",\n  \"Resumo_da_conversa\": \"\"\n}\n\n```\n\n----------\n\n## EXEMPLOS (REFERÊNCIA)\n\n### Exemplo 1 — Técnico\n\nCliente: “Não consigo desarmar o alarme, só fica apitando.”\n\n```json\n{\n  \"Nome\": \"Patrick\",\n  \"Whatsapp\": \"4499XXXXYYYY\",\n  \"Fila\": \"Técnico\",\n  \"Objetivo_do_usuario\": \"não consegue desarmar o alarme\",\n  \"Endereco_com_numero\": \"Rua Maracaíbo, 727\",\n  \"Resumo_da_conversa\": \"Patrick entrou em contato relatando que não consegue desarmar o alarme e que o sistema fica apitando. Informou o endereço Rua Maracaíbo, 727 e disse que não há risco imediato, apenas dificuldade para desarmar o alarme.\"\n}\n\n```\n\n### Exemplo 2 — Financeiro\n\nCliente: “Preciso da segunda via do boleto.”\n\n```json\n{\n  \"Nome\": \"\",\n  \"Whatsapp\": \"\",\n  \"Fila\": \"Financeiro\",\n  \"Objetivo_do_usuario\": \"solicitar segunda via do boleto\",\n  \"Endereco_com_numero\": \"\",\n  \"Resumo_da_conversa\": \"O cliente solicitou a segunda via do boleto e pediu orientações para pagamento.\"\n}\n\n```\n\n### Exemplo 3 — SAC (cancelamento/contrato)\n\nCliente: “Quero cancelar o contrato, não vou usar mais.”\n\n```json\n{\n  \"Nome\": \"\",\n  \"Whatsapp\": \"\",\n  \"Fila\": \"SAC\",\n  \"Objetivo_do_usuario\": \"solicitar cancelamento do contrato\",\n  \"Endereco_com_numero\": \"\",\n  \"Resumo_da_conversa\": \"O cliente informou que deseja cancelar o contrato e disse que não irá mais utilizar o serviço.\"\n}\n\n```"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1808,
+        144
+      ],
+      "id": "9a20d9ff-c696-4a81-ac30-8f9793942518",
+      "name": "CRM"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "setarInfo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setarInfo1": {
+      "main": [
+        [
+          {
+            "node": "atualizaFollowUP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory Manager1": {
+      "main": [
+        [
+          {
+            "node": "CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Memory Manager1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualizaFollowUP": {
+      "main": [
+        [
+          {
+            "node": "Chat Memory Manager1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CRM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "CRM",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM": {
+      "main": [
+        [
+          {
+            "node": "atualizarCRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 600
+  },
+  "versionId": "9c991bda-2da3-4fa0-ad62-7759ec170a65",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52423c8eed14a700113dd7744ad17756f0722f80a0afb8f160f2fa37d099cb8c"
+  },
+  "id": "kWjI5bVdGdATsuiH",
+  "tags": []
+}

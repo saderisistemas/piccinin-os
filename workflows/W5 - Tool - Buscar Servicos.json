@@ -1,0 +1,205 @@
+{
+  "name": "W5 - Tool - Buscar Servicos Bom Saldo",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "nome"
+            },
+            {
+              "name": "servicos"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -500,
+        400
+      ],
+      "id": "9f6f30df-8b8a-4876-a005-ee1d0c58e1b6",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalize = (str) => {\n  if (!str) return '';\n  return str.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();\n};\n\nconst tParam = $input.first().json;\nconst termoBruto = String(tParam.nome || tParam.servicos || '').trim();\nconst termoNorm = normalize(termoBruto);\n\nconst stopwords = ['de','da','do','para','com','em','um','uma','o','a','os','as','e','ou'];\nconst tokens = termoNorm.split(/\\s+/).filter(t => t.length > 2 && !stopwords.includes(t));\n\n// Token principal: maior palavra com mais de 3 chars\nconst tokenOrdenado = [...tokens].sort((a,b) => b.length - a.length);\nconst tokenPrincipal = tokenOrdenado[0] || termoNorm.split(/\\s+/)[0] || termoNorm;\n\nreturn [{ json: {\n  termo_original: termoBruto,\n  termo_normalizado: termoNorm,\n  token_principal: tokenPrincipal,\n  tokens: tokens\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        400
+      ],
+      "id": "b81bd58e-72c1-41ae-bc54-92fe05481d9f",
+      "name": "Normalizar Termo"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/servicos/?nome={{ encodeURIComponent($json.termo_normalizado) }}&ativo=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        260
+      ],
+      "id": "4b3e91e6-e3a1-432c-8ce5-60724840f1ef",
+      "name": "GET Servicos Exato"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/servicos/?nome={{ encodeURIComponent($json.token_principal) }}&ativo=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        540
+      ],
+      "id": "aa597235-2069-491d-869c-432559eefca5",
+      "name": "GET Servicos Broad"
+    },
+    {
+      "parameters": {
+        "mode": "combineAll"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        220,
+        400
+      ],
+      "id": "fdf01182-17c5-44d0-803e-18a4f374f54b",
+      "name": "Merge Resultados"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Helpers ──────────────────────────────────────────────────────────\nconst normalize = (str) => {\n  if (!str) return '';\n  return str.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();\n};\n\nconst levenshtein = (a, b) => {\n  if (!a) return (b||'').length;\n  if (!b) return a.length;\n  const m = Array.from({length: b.length + 1}, (_, i) => [i]);\n  for (let j = 0; j <= a.length; j++) m[0][j] = j;\n  for (let i = 1; i <= b.length; i++) {\n    for (let j = 1; j <= a.length; j++) {\n      m[i][j] = b[i-1] === a[j-1]\n        ? m[i-1][j-1]\n        : 1 + Math.min(m[i-1][j-1], m[i][j-1], m[i-1][j]);\n    }\n  }\n  return m[b.length][a.length];\n};\n\n// Aliases comuns para serviços de segurança eletrônica\nconst ALIASES = {\n  'manut': 'manutencao', 'mnt': 'manutencao', 'revisao': 'manutencao',\n  'inst': 'instalacao', 'instalac': 'instalacao', 'instalar': 'instalacao',\n  'vis': 'visita', 'vt': 'visita tecnica', 'chamado': 'visita tecnica',\n  'prog': 'programacao', 'config': 'configuracao', 'cfg': 'configuracao',\n  'desins': 'desinstalacao', 'remov': 'remocao',\n  'reparar': 'reparo', 'consertar': 'reparo',\n  'monit': 'monitoramento', 'ativ': 'ativacao',\n  'cam': 'camera', 'cftv': 'camera', 'alarme': 'alarme', 'central': 'central',\n  'acesso': 'controle acesso', 'biom': 'biometrico'\n};\n\nconst expandirAlias = (p) => ALIASES[p] || p;\n\n// ── Recuperar contexto ──────────────────────────────────────────────\nconst normNode = $('Normalizar Termo').first().json;\nconst termoOriginal = normNode.termo_original || '';\nconst termo = normalize(termoOriginal);\nconst stopwords = ['de','da','do','para','com','em','um','uma','o','a'];\nconst palavrasBusca = termo.split(/\\s+/)\n  .filter(p => p.length > 1 && !stopwords.includes(p))\n  .map(expandirAlias);\n\n// ── Coletar e deduplicar ────────────────────────────────────────────\nconst allItems = $input.all();\nconst todos = allItems.flatMap(item => item.json.data || []);\nconst vistos = new Set();\nconst unicos = todos.filter(s => {\n  if (vistos.has(s.id)) return false;\n  vistos.add(s.id);\n  return true;\n});\n\n// Se sem termo, retornar lista genérica sem filtro\nif (!termo) {\n  const lista = unicos.slice(0, 8).map((s, i) => ({\n    index: i + 1, id: String(s.id), nome: s.nome, valor_venda: s.valor_venda\n  }));\n  const option_map = {};\n  lista.forEach(s => { option_map[String(s.index)] = { id: s.id, nome: s.nome, valor_venda: s.valor_venda }; });\n  return [{ json: {\n    resultado: `Serviços disponíveis:\\n${lista.map(s => `${s.index}. ${s.nome} | R$${s.valor_venda}`).join('\\n')}\\n\\nInforme o número desejado.`,\n    option_map,\n    servicos: lista\n  }}];\n}\n\nif (unicos.length === 0) {\n  return [{ json: {\n    resultado: `Nenhum serviço encontrado para \"${termoOriginal}\". Tente: manutenção, instalação, visita técnica, configuração, monitoramento.`,\n    option_map: {},\n    servicos: []\n  }}];\n}\n\n// ── Fuzzy scoring com Levenshtein ───────────────────────────────────\nconst pontuados = unicos.map(s => {\n  const alvo = normalize(s.nome);\n  const palavrasAlvo = alvo.split(/\\s+/);\n  let score = 0;\n\n  if (alvo === termo) score += 100;\n  if (alvo.includes(termo)) score += 60;\n\n  palavrasBusca.forEach(busca => {\n    if (busca.length < 2) return;\n\n    if (alvo.includes(busca)) {\n      score += 25;\n      if (alvo.startsWith(busca)) score += 10;\n      if (alvo.split(/\\s+/).includes(busca)) score += 10;\n    }\n\n    palavrasAlvo.forEach(pa => {\n      if (pa.length >= 3 && busca.length >= 3) {\n        const dist = levenshtein(busca, pa);\n        const maxLen = Math.max(busca.length, pa.length);\n        if (dist === 0) score += 30;\n        else if (dist === 1) score += 18;\n        else if (dist === 2 && maxLen >= 6) score += 8;\n      }\n    });\n  });\n\n  if (palavrasBusca.length > 1 && palavrasBusca.every(b => alvo.includes(b))) {\n    score += 35;\n  }\n\n  return { s, score };\n}).filter(x => x.score > 0 || unicos.length <= 3);\n\npontuados.sort((a, b) => b.score - a.score);\n\nconst lista = pontuados.slice(0, 6).map((x, i) => ({\n  index: i + 1,\n  id: String(x.s.id),\n  nome: x.s.nome,\n  valor_venda: x.s.valor_venda\n}));\n\nif (lista.length === 0) {\n  return [{ json: {\n    resultado: `Nenhum serviço compatível com \"${termoOriginal}\". Tente: Manutenção Preventiva, Instalação de Câmera, Visita Técnica, Configuração de Central.`,\n    option_map: {},\n    servicos: []\n  }}];\n}\n\nconst textoLista = lista.map(s => `${s.index}. ${s.nome} | R$${s.valor_venda}`).join('\\n');\nconst option_map = {};\nlista.forEach(s => { option_map[String(s.index)] = { id: s.id, nome: s.nome, valor_venda: s.valor_venda }; });\n\nreturn [{ json: {\n  resultado: `Serviços para \"${termoOriginal}\":\\n${textoLista}\\n\\nApresente ao técnico e aguarde o número. Use o option_map para obter o servico_id oficial.`,\n  option_map,\n  servicos: lista\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        400
+      ],
+      "id": "49ddd6de-ccbe-45cb-89e5-9057df9f608e",
+      "name": "Formatar Servicos"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Termo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Termo": {
+      "main": [
+        [
+          {
+            "node": "GET Servicos Exato",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Servicos Broad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Servicos Exato": {
+      "main": [
+        [
+          {
+            "node": "Merge Resultados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Servicos Broad": {
+      "main": [
+        [
+          {
+            "node": "Merge Resultados",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Resultados": {
+      "main": [
+        [
+          {
+            "node": "Formatar Servicos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

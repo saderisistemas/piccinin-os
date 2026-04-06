@@ -1,0 +1,294 @@
+{
+  "name": "W8 - Tool - Salvar Contexto OS",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "os_codigo" },
+            { "name": "os_id_bomsaldo" },
+            { "name": "conversa_id" },
+            { "name": "tecnico_id" },
+            { "name": "tecnico_nome" },
+            { "name": "tecnico_whatsapp" },
+            { "name": "cliente_nome" },
+            { "name": "cliente_codigo" },
+            { "name": "cliente_endereco" },
+            { "name": "equipamento" },
+            { "name": "equipamento_codigo" },
+            { "name": "marca" },
+            { "name": "modelo" },
+            { "name": "defeito" },
+            { "name": "causa" },
+            { "name": "solucao" },
+            { "name": "relatorio_tecnico" },
+            { "name": "tipo_servico" },
+            { "name": "servico_nome" },
+            { "name": "servico_codigo" },
+            { "name": "observacoes_orientacao" },
+            { "name": "em_garantia" },
+            { "name": "tipo_pagamento" },
+            { "name": "forma_pagamento_id" },
+            { "name": "valor_total" },
+            { "name": "hora_entrada" },
+            { "name": "hora_saida" },
+            { "name": "link_pasta_drive" },
+            { "name": "status_os" },
+            { "name": "fase_ia" },
+            { "name": "motivo_cancelamento" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-600, 300],
+      "id": "t-w8-trigger",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida e filtra apenas campos com valor\nconst p = $input.first().json;\n\nif (!p.os_codigo) {\n  throw new Error('os_codigo é OBRIGATÓRIO para salvar contexto.');\n}\n\nconst out = { os_codigo: String(p.os_codigo) };\n\nconst campos = [\n  'os_id_bomsaldo', 'conversa_id',\n  'tecnico_id', 'tecnico_nome', 'tecnico_whatsapp',\n  'cliente_nome', 'cliente_codigo', 'cliente_endereco',\n  'equipamento', 'equipamento_codigo', 'marca', 'modelo',\n  'defeito', 'causa', 'solucao', 'relatorio_tecnico',\n  'tipo_servico', 'servico_nome', 'servico_codigo', 'observacoes_orientacao',\n  'tipo_pagamento', 'forma_pagamento_id',\n  'hora_entrada', 'hora_saida',\n  'link_pasta_drive',\n  'status_os', 'fase_ia', 'motivo_cancelamento'\n];\n\nfor (const campo of campos) {\n  if (p[campo] !== undefined && p[campo] !== null && p[campo] !== '') {\n    out[campo] = String(p[campo]);\n  }\n}\n\n// Campos numéricos\nif (p.valor_total !== undefined && p.valor_total !== null && p.valor_total !== '') {\n  out.valor_total = Number(p.valor_total) || 0;\n}\n\n// Campo boolean\nif (p.em_garantia !== undefined && p.em_garantia !== null && p.em_garantia !== '') {\n  out.em_garantia = (p.em_garantia === 'true' || p.em_garantia === true);\n}\n\nreturn [{ json: out }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-380, 300],
+      "id": "t-w8-validar",
+      "name": "Validar Params"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $json.os_codigo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [-160, 300],
+      "id": "t-w8-get",
+      "name": "GET OS por Codigo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "c-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "exists", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [60, 300],
+      "id": "t-w8-exists",
+      "name": "OS Existe?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge: manter existente, sobrescrever com novos valores não-nulos\nconst novos = $('Validar Params').first().json;\nconst existente = $input.first().json;\nconst merged = { ...existente };\n\nfor (const key in novos) {\n  if (novos[key] !== null && novos[key] !== undefined && novos[key] !== '') {\n    merged[key] = novos[key];\n  }\n}\n\nmerged.atualizado_em = new Date().toISOString();\ndelete merged.id;\ndelete merged.criado_em;\n\nreturn [{ json: merged }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [300, 200],
+      "id": "t-w8-merge",
+      "name": "Merge para Update"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preparar INSERT de nova OS\nconst novos = $('Validar Params').first().json;\nconst out = { ...novos };\nout.fase_ia = out.fase_ia || 'identificacao';\nout.status_os = out.status_os || 'aberta';\nreturn [{ json: out }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [300, 420],
+      "id": "t-w8-prep",
+      "name": "Prep para Insert"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $json.os_codigo }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "os_id_bomsaldo", "fieldValue": "={{ $json.os_id_bomsaldo || null }}" },
+            { "fieldId": "conversa_id", "fieldValue": "={{ $json.conversa_id || null }}" },
+            { "fieldId": "tecnico_id", "fieldValue": "={{ $json.tecnico_id || null }}" },
+            { "fieldId": "tecnico_nome", "fieldValue": "={{ $json.tecnico_nome || null }}" },
+            { "fieldId": "tecnico_whatsapp", "fieldValue": "={{ $json.tecnico_whatsapp || null }}" },
+            { "fieldId": "cliente_nome", "fieldValue": "={{ $json.cliente_nome || null }}" },
+            { "fieldId": "cliente_codigo", "fieldValue": "={{ $json.cliente_codigo || null }}" },
+            { "fieldId": "cliente_endereco", "fieldValue": "={{ $json.cliente_endereco || null }}" },
+            { "fieldId": "equipamento", "fieldValue": "={{ $json.equipamento || null }}" },
+            { "fieldId": "equipamento_codigo", "fieldValue": "={{ $json.equipamento_codigo || null }}" },
+            { "fieldId": "marca", "fieldValue": "={{ $json.marca || null }}" },
+            { "fieldId": "modelo", "fieldValue": "={{ $json.modelo || null }}" },
+            { "fieldId": "defeito", "fieldValue": "={{ $json.defeito || null }}" },
+            { "fieldId": "causa", "fieldValue": "={{ $json.causa || null }}" },
+            { "fieldId": "solucao", "fieldValue": "={{ $json.solucao || null }}" },
+            { "fieldId": "relatorio_tecnico", "fieldValue": "={{ $json.relatorio_tecnico || null }}" },
+            { "fieldId": "tipo_servico", "fieldValue": "={{ $json.tipo_servico || null }}" },
+            { "fieldId": "servico_nome", "fieldValue": "={{ $json.servico_nome || null }}" },
+            { "fieldId": "servico_codigo", "fieldValue": "={{ $json.servico_codigo || null }}" },
+            { "fieldId": "observacoes_orientacao", "fieldValue": "={{ $json.observacoes_orientacao || null }}" },
+            { "fieldId": "em_garantia", "fieldValue": "={{ $json.em_garantia !== undefined ? $json.em_garantia : false }}" },
+            { "fieldId": "tipo_pagamento", "fieldValue": "={{ $json.tipo_pagamento || null }}" },
+            { "fieldId": "forma_pagamento_id", "fieldValue": "={{ $json.forma_pagamento_id || null }}" },
+            { "fieldId": "valor_total", "fieldValue": "={{ $json.valor_total || 0 }}" },
+            { "fieldId": "hora_entrada", "fieldValue": "={{ $json.hora_entrada || null }}" },
+            { "fieldId": "hora_saida", "fieldValue": "={{ $json.hora_saida || null }}" },
+            { "fieldId": "link_pasta_drive", "fieldValue": "={{ $json.link_pasta_drive || null }}" },
+            { "fieldId": "status_os", "fieldValue": "={{ $json.status_os || null }}" },
+            { "fieldId": "fase_ia", "fieldValue": "={{ $json.fase_ia || null }}" },
+            { "fieldId": "motivo_cancelamento", "fieldValue": "={{ $json.motivo_cancelamento || null }}" },
+            { "fieldId": "atualizado_em", "fieldValue": "={{ $json.atualizado_em }}" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [560, 200],
+      "id": "t-w8-update",
+      "name": "UPDATE OS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "ordens_servico",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "os_codigo", "fieldValue": "={{ $json.os_codigo }}" },
+            { "fieldId": "os_id_bomsaldo", "fieldValue": "={{ $json.os_id_bomsaldo || null }}" },
+            { "fieldId": "conversa_id", "fieldValue": "={{ $json.conversa_id || null }}" },
+            { "fieldId": "tecnico_id", "fieldValue": "={{ $json.tecnico_id || null }}" },
+            { "fieldId": "tecnico_nome", "fieldValue": "={{ $json.tecnico_nome || null }}" },
+            { "fieldId": "tecnico_whatsapp", "fieldValue": "={{ $json.tecnico_whatsapp || null }}" },
+            { "fieldId": "cliente_nome", "fieldValue": "={{ $json.cliente_nome || null }}" },
+            { "fieldId": "cliente_codigo", "fieldValue": "={{ $json.cliente_codigo || null }}" },
+            { "fieldId": "cliente_endereco", "fieldValue": "={{ $json.cliente_endereco || null }}" },
+            { "fieldId": "equipamento", "fieldValue": "={{ $json.equipamento || null }}" },
+            { "fieldId": "equipamento_codigo", "fieldValue": "={{ $json.equipamento_codigo || null }}" },
+            { "fieldId": "marca", "fieldValue": "={{ $json.marca || null }}" },
+            { "fieldId": "modelo", "fieldValue": "={{ $json.modelo || null }}" },
+            { "fieldId": "defeito", "fieldValue": "={{ $json.defeito || null }}" },
+            { "fieldId": "causa", "fieldValue": "={{ $json.causa || null }}" },
+            { "fieldId": "solucao", "fieldValue": "={{ $json.solucao || null }}" },
+            { "fieldId": "relatorio_tecnico", "fieldValue": "={{ $json.relatorio_tecnico || null }}" },
+            { "fieldId": "tipo_servico", "fieldValue": "={{ $json.tipo_servico || null }}" },
+            { "fieldId": "servico_nome", "fieldValue": "={{ $json.servico_nome || null }}" },
+            { "fieldId": "servico_codigo", "fieldValue": "={{ $json.servico_codigo || null }}" },
+            { "fieldId": "observacoes_orientacao", "fieldValue": "={{ $json.observacoes_orientacao || null }}" },
+            { "fieldId": "em_garantia", "fieldValue": "={{ $json.em_garantia !== undefined ? $json.em_garantia : false }}" },
+            { "fieldId": "tipo_pagamento", "fieldValue": "={{ $json.tipo_pagamento || null }}" },
+            { "fieldId": "forma_pagamento_id", "fieldValue": "={{ $json.forma_pagamento_id || null }}" },
+            { "fieldId": "valor_total", "fieldValue": "={{ $json.valor_total || 0 }}" },
+            { "fieldId": "hora_entrada", "fieldValue": "={{ $json.hora_entrada || null }}" },
+            { "fieldId": "hora_saida", "fieldValue": "={{ $json.hora_saida || null }}" },
+            { "fieldId": "link_pasta_drive", "fieldValue": "={{ $json.link_pasta_drive || null }}" },
+            { "fieldId": "status_os", "fieldValue": "={{ $json.status_os || 'aberta' }}" },
+            { "fieldId": "fase_ia", "fieldValue": "={{ $json.fase_ia || 'identificacao' }}" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [560, 420],
+      "id": "t-w8-insert",
+      "name": "INSERT OS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [780, 300],
+      "id": "t-w8-join",
+      "name": "Join Flows"
+    },
+    {
+      "parameters": {
+        "jsCode": "let r = {};\nif ($input.first()) { r = $input.first().json || {}; }\nconst p = $('Validar Params').first().json;\n\nreturn [{ json: {\n  sucesso: true,\n  os_codigo: r.os_codigo || p.os_codigo,\n  os_id_bomsaldo: r.os_id_bomsaldo || p.os_id_bomsaldo || null,\n  fase_ia: r.fase_ia || p.fase_ia || 'identificacao',\n  status_os: r.status_os || p.status_os || 'aberta',\n  tecnico_id: r.tecnico_id || p.tecnico_id || null,\n  cliente_codigo: r.cliente_codigo || p.cliente_codigo || null,\n  mensagem: 'Contexto OS #' + (r.os_codigo || p.os_codigo) + ' salvo com sucesso.'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 300],
+      "id": "t-w8-resp",
+      "name": "Formatar Resposta"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [[{ "node": "Validar Params", "type": "main", "index": 0 }]]
+    },
+    "Validar Params": {
+      "main": [[{ "node": "GET OS por Codigo", "type": "main", "index": 0 }]]
+    },
+    "GET OS por Codigo": {
+      "main": [[{ "node": "OS Existe?", "type": "main", "index": 0 }]]
+    },
+    "OS Existe?": {
+      "main": [
+        [{ "node": "Merge para Update", "type": "main", "index": 0 }],
+        [{ "node": "Prep para Insert", "type": "main", "index": 0 }]
+      ]
+    },
+    "Merge para Update": {
+      "main": [[{ "node": "UPDATE OS", "type": "main", "index": 0 }]]
+    },
+    "Prep para Insert": {
+      "main": [[{ "node": "INSERT OS", "type": "main", "index": 0 }]]
+    },
+    "UPDATE OS": {
+      "main": [[{ "node": "Join Flows", "type": "main", "index": 0 }]]
+    },
+    "INSERT OS": {
+      "main": [[{ "node": "Join Flows", "type": "main", "index": 1 }]]
+    },
+    "Join Flows": {
+      "main": [[{ "node": "Formatar Resposta", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "pinData": {}
+}

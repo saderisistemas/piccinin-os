@@ -1,0 +1,1145 @@
+{
+  "name": "W11 - Gerenciador Contexto OS",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "tecnico_id"
+            },
+            {
+              "name": "tecnico_nome"
+            },
+            {
+              "name": "acao"
+            },
+            {
+              "name": "os_id"
+            },
+            {
+              "name": "os_codigo"
+            },
+            {
+              "name": "cliente_id"
+            },
+            {
+              "name": "cliente_nome"
+            },
+            {
+              "name": "fase"
+            },
+            {
+              "name": "os_id_novo"
+            },
+            {
+              "name": "os_codigo_novo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -700,
+        400
+      ],
+      "id": "a05e3f7f-8787-468d-b97e-562cb8c4d518",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "tecnico_id",
+              "value": "={{ $json.tecnico_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "tecnico_nome",
+              "value": "={{ $json.tecnico_nome || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "acao",
+              "value": "={{ $json.acao || 'get_context' }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "os_id",
+              "value": "={{ $json.os_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "os_codigo",
+              "value": "={{ $json.os_codigo || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "cliente_id",
+              "value": "={{ $json.cliente_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "cliente_nome",
+              "value": "={{ $json.cliente_nome || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "8",
+              "name": "fase",
+              "value": "={{ $json.fase || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "9",
+              "name": "os_id_novo",
+              "value": "={{ $json.os_id_novo || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "10",
+              "name": "os_codigo_novo",
+              "value": "={{ $json.os_codigo_novo || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -460,
+        400
+      ],
+      "id": "5f2e786f-9472-40d0-befb-c5bb4e4dc8e2",
+      "name": "setarInputs"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.acao }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "get_context"
+            },
+            {
+              "value2": "set_os"
+            },
+            {
+              "value2": "checkin"
+            },
+            {
+              "value2": "checkout"
+            },
+            {
+              "value2": "switch_os"
+            },
+            {
+              "value2": "archive"
+            }
+          ]
+        },
+        "fallbackOutput": 6
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        400
+      ],
+      "id": "5ddf15cb-3452-485d-ad34-349a04f95d5f",
+      "name": "Switch Acao"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "tecnico_contexto_ativo",
+        "returnAll": false,
+        "limit": 1,
+        "filterByFormula": "Identificador do usuario",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        100
+      ],
+      "id": "251559e5-0b51-4fcd-849a-ed3c71d41a6e",
+      "name": "GET Contexto Ativo",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "os_buffer",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            },
+            {
+              "keyName": "os_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.os_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        240
+      ],
+      "id": "84b89dfa-40c1-403c-bb7b-7660841834bb",
+      "name": "GET Buffer OS",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Montar contexto estruturado para injetar no W1\nconst ctx = $('GET Contexto Ativo').first()?.json || {};\nconst buf = $('GET Buffer OS').first()?.json || {};\n\nconst temOS = !!(ctx.os_id || buf.os_id);\n\n// Campos obrigatórios ainda não preenchidos\nconst CAMPOS_OBRIGATORIOS = ['equipamento','defeito','causa','solucao','relatorio_tecnico','tipo_servico'];\nconst faltando = CAMPOS_OBRIGATORIOS.filter(c => !buf[c] || String(buf[c]).trim() === '');\nconst prontoParaFechar = temOS && faltando.length === 0;\n\nreturn [{ json: {\n  sucesso: true,\n  tem_os_ativa: temOS,\n  contexto: {\n    tecnico_id:    ctx.tecnico_id   || '',\n    tecnico_nome:  ctx.tecnico_nome || '',\n    os_id:         ctx.os_id        || buf.os_id    || '',\n    os_codigo:     ctx.os_codigo    || buf.os_codigo || '',\n    cliente_id:    ctx.cliente_id   || buf.cliente_id || '',\n    cliente_nome:  ctx.cliente_nome || buf.cliente_nome || '',\n    fase:          ctx.fase         || buf.fase || 'identificacao',\n    checkin_at:    ctx.checkin_at   || null,\n    checkout_at:   ctx.checkout_at  || null,\n    aguardando_switch: ctx.aguardando_switch || null\n  },\n  buffer: {\n    equipamento:   buf.equipamento   || '',\n    marca:         buf.marca         || '',\n    modelo:        buf.modelo        || '',\n    defeito:       buf.defeito       || '',\n    causa:         buf.causa         || '',\n    solucao:       buf.solucao       || '',\n    relatorio_tecnico: buf.relatorio_tecnico || '',\n    tipo_servico:  buf.tipo_servico  || '',\n    em_garantia:   buf.em_garantia   || false,\n    tipo_pagamento: buf.tipo_pagamento || '',\n    observacoes_orientacao: buf.observacoes_orientacao || ''\n  },\n  pronto_para_fechar: prontoParaFechar,\n  campos_faltando: faltando\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        170
+      ],
+      "id": "e10b41bc-4648-4f37-a672-390c38a5c961",
+      "name": "Montar Contexto"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputs = $('setarInputs').first().json;\nreturn [{ json: {\n  sucesso: true,\n  acao: 'set_os',\n  os_id: inputs.os_id,\n  os_codigo: inputs.os_codigo,\n  mensagem: `OS ${inputs.os_codigo} definida como ativa para o técnico.`\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        380
+      ],
+      "id": "740fedba-28d4-4275-8b76-3f6fee611a3f",
+      "name": "Resp set_os"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tecnico_contexto_ativo",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "checkin_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "checkin_enviado",
+              "fieldValue": "false"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        560
+      ],
+      "id": "2e6898e9-600e-4acd-b9a4-1b16e0065a0c",
+      "name": "UPDATE Checkin Contexto",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "tecnico_contexto_ativo",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        360,
+        560
+      ],
+      "id": "64f93fff-7103-4ba1-8618-ab15c3a69540",
+      "name": "GET Ctx para Checkin",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/ordens_servicos/{{ $json.os_id }}/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        560
+      ],
+      "id": "8db26193-6be3-416c-a00c-c1548afebc71",
+      "name": "GET OS para Checkin"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preparar PATCH com chegada registrada no observacoes_interna\nconst ctx = $('GET Ctx para Checkin').first().json;\nconst osAtual = $('GET OS para Checkin').first().json;\nconst dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });\n\n// Manter texto existente e adicionar marcação de chegada\nconst obsExistente = osAtual.observacoes_interna || '';\nconst marcadorChegada = `[CHEGADA: ${dataHora}]`;\n// Evitar duplicar se já existe\nconst novaObs = obsExistente.includes('[CHEGADA:') ? obsExistente : `${obsExistente}\\n${marcadorChegada}`.trim();\n\nreturn [{ json: {\n  os_id: ctx.os_id,\n  observacoes_interna: novaObs,\n  checkin_timestamp: dataHora\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        560
+      ],
+      "id": "a8a9fd95-cbd8-49d5-be27-aac88f458a00",
+      "name": "Preparar Checkin Payload"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://bomsaldo.com/api/ordens_servicos/{{ $('Preparar Checkin Payload').first().json.os_id }}/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ observacoes_interna: $('Preparar Checkin Payload').first().json.observacoes_interna }) }}",
+        "options": {
+          "ignoreResponseCode": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1140,
+        560
+      ],
+      "id": "ad4f61e3-42f8-4742-a5c4-948b3c172626",
+      "name": "PATCH Bom Saldo Checkin"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ts = $('Preparar Checkin Payload').first().json.checkin_timestamp;\nreturn [{ json: {\n  sucesso: true,\n  acao: 'checkin',\n  checkin_at: ts,\n  mensagem: `✅ Chegada registrada: ${ts}. Pode iniciar o atendimento!`\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        560
+      ],
+      "id": "fb818b5d-5332-4b18-a7b2-47844912fc23",
+      "name": "Resp checkin"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tecnico_contexto_ativo",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "checkout_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        740
+      ],
+      "id": "239552af-a634-4e45-9d7d-9a38115dc688",
+      "name": "UPDATE Checkout",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });\nreturn [{ json: {\n  sucesso: true,\n  acao: 'checkout',\n  checkout_at: dataHora,\n  mensagem: `Saída registrada: ${dataHora}. Prossiga com o encerramento.`\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        740
+      ],
+      "id": "bfc75761-9c02-4304-aafe-8d5fccee6404",
+      "name": "Resp checkout"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "tecnico_contexto_ativo",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        920
+      ],
+      "id": "c84c8c2f-edc1-42b6-b299-d2f4efaaeda5",
+      "name": "GET Atual para Switch",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "os_transicoes",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tecnico_id",
+              "fieldValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            },
+            {
+              "fieldId": "tecnico_nome",
+              "fieldValue": "={{ $('setarInputs').first().json.tecnico_nome }}"
+            },
+            {
+              "fieldId": "os_id_anterior",
+              "fieldValue": "={{ $('GET Atual para Switch').first().json.os_id || '' }}"
+            },
+            {
+              "fieldId": "os_codigo_anterior",
+              "fieldValue": "={{ $('GET Atual para Switch').first().json.os_codigo || '' }}"
+            },
+            {
+              "fieldId": "os_id_novo",
+              "fieldValue": "={{ $('setarInputs').first().json.os_id_novo }}"
+            },
+            {
+              "fieldId": "os_codigo_novo",
+              "fieldValue": "={{ $('setarInputs').first().json.os_codigo_novo }}"
+            },
+            {
+              "fieldId": "motivo",
+              "fieldValue": "switch_manual"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        360,
+        920
+      ],
+      "id": "f1299e58-fad6-4656-a9c6-3c28240a3ced",
+      "name": "INSERT Transicao",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tecnico_contexto_ativo",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "os_id",
+              "fieldValue": "={{ $('setarInputs').first().json.os_id_novo }}"
+            },
+            {
+              "fieldId": "os_codigo",
+              "fieldValue": "={{ $('setarInputs').first().json.os_codigo_novo }}"
+            },
+            {
+              "fieldId": "fase",
+              "fieldValue": "identificacao"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "checkin_at",
+              "fieldValue": "={{ '' }}"
+            },
+            {
+              "fieldId": "checkout_at",
+              "fieldValue": "={{ '' }}"
+            },
+            {
+              "fieldId": "aguardando_switch",
+              "fieldValue": "={{ '' }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        620,
+        920
+      ],
+      "id": "5eb9933a-9db7-4ff5-97f5-f55f775699fd",
+      "name": "UPDATE Switch OS",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputs = $('setarInputs').first().json;\nreturn [{ json: {\n  sucesso: true,\n  acao: 'switch_os',\n  os_id_novo: inputs.os_id_novo,\n  os_codigo_novo: inputs.os_codigo_novo,\n  mensagem: `Contexto alterado para OS ${inputs.os_codigo_novo}. Contexto anterior arquivado.`\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        920
+      ],
+      "id": "a0db56a7-422e-4410-ab6e-a2cba39f2484",
+      "name": "Resp switch_os"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tecnico_contexto_ativo",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "fase",
+              "fieldValue": "={{ $('setarInputs').first().json.fase || 'fechado' }}"
+            },
+            {
+              "fieldId": "checkout_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        1100
+      ],
+      "id": "6ecc8ef2-671d-44fc-b2e9-142e3772f11a",
+      "name": "UPDATE Archive",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputs = $('setarInputs').first().json;\nconst fase = inputs.fase || 'fechado';\nreturn [{ json: {\n  sucesso: true,\n  acao: 'archive',\n  fase: fase,\n  mensagem: `OS ${inputs.os_codigo || inputs.os_id} marcada como ${fase}. Contexto encerrado.`\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        1100
+      ],
+      "id": "b1ce6a0b-e35c-4f0f-af96-78f4f56e3a2e",
+      "name": "Resp archive"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tecnico_contexto_ativo",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tecnico_id",
+              "fieldValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            },
+            {
+              "fieldId": "tecnico_nome",
+              "fieldValue": "={{ $('setarInputs').first().json.tecnico_nome }}"
+            },
+            {
+              "fieldId": "os_id",
+              "fieldValue": "={{ $('setarInputs').first().json.os_id }}"
+            },
+            {
+              "fieldId": "os_codigo",
+              "fieldValue": "={{ $('setarInputs').first().json.os_codigo }}"
+            },
+            {
+              "fieldId": "cliente_id",
+              "fieldValue": "={{ $('setarInputs').first().json.cliente_id }}"
+            },
+            {
+              "fieldId": "cliente_nome",
+              "fieldValue": "={{ $('setarInputs').first().json.cliente_nome }}"
+            },
+            {
+              "fieldId": "fase",
+              "fieldValue": "={{ $('setarInputs').first().json.fase || 'abertura_os' }}"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        100,
+        380
+      ],
+      "id": "20108c11-79c1-4430-920f-e9d530e6990b",
+      "name": "UPDATE Set OS",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Se o UPDATE não atualizou nenhuma linha (array vazio), faz INSERT\nconst updated = $input.all();\nconst inputs = $('setarInputs').first().json;\n\n// Supabase update retorna array com os rows atualizados\n// Se vazio, não havia linha -> precisa INSERT\nif (!updated || updated.length === 0 || !updated[0].json || !updated[0].json.tecnico_id) {\n  // Retorna sinal para INSERT\n  return [{ json: { _precisa_insert: true, ...inputs } }];\n}\n// UPDATE OK\nreturn [{ json: { _precisa_insert: false, ...updated[0].json } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        380
+      ],
+      "id": "87964779-8f8e-4d54-8205-b3d3f7508e2b",
+      "name": "Checar e Inserir Set OS"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json._precisa_insert }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        580,
+        380
+      ],
+      "id": "6ed405d7-cebc-494c-a1f6-149cbc4fa77c",
+      "name": "Precisa INSERT?"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "tecnico_contexto_ativo",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tecnico_id",
+              "fieldValue": "={{ $('setarInputs').first().json.tecnico_id }}"
+            },
+            {
+              "fieldId": "tecnico_nome",
+              "fieldValue": "={{ $('setarInputs').first().json.tecnico_nome }}"
+            },
+            {
+              "fieldId": "os_id",
+              "fieldValue": "={{ $('setarInputs').first().json.os_id }}"
+            },
+            {
+              "fieldId": "os_codigo",
+              "fieldValue": "={{ $('setarInputs').first().json.os_codigo }}"
+            },
+            {
+              "fieldId": "cliente_id",
+              "fieldValue": "={{ $('setarInputs').first().json.cliente_id }}"
+            },
+            {
+              "fieldId": "cliente_nome",
+              "fieldValue": "={{ $('setarInputs').first().json.cliente_nome }}"
+            },
+            {
+              "fieldId": "fase",
+              "fieldValue": "={{ $('setarInputs').first().json.fase || 'abertura_os' }}"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ],
+      "id": "55a7708a-c200-463f-8336-093fca91a541",
+      "name": "INSERT Set OS",
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        380
+      ],
+      "id": "44499d28-58ee-4dd9-8ee2-fb266d63a4d6",
+      "name": "Merge Set OS"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "setarInputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setarInputs": {
+      "main": [
+        [
+          {
+            "node": "Switch Acao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Acao": {
+      "main": [
+        [
+          {
+            "node": "GET Contexto Ativo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Buffer OS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE Set OS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE Checkin Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE Checkout",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET Atual para Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Contexto Ativo": {
+      "main": [
+        [
+          {
+            "node": "Montar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Buffer OS": {
+      "main": [
+        [
+          {
+            "node": "Montar Contexto",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "UPDATE Set OS": {
+      "main": [
+        [
+          {
+            "node": "Checar e Inserir Set OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Checar e Inserir Set OS": {
+      "main": [
+        [
+          {
+            "node": "Precisa INSERT?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Precisa INSERT?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Set OS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge Set OS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "INSERT Set OS": {
+      "main": [
+        [
+          {
+            "node": "Merge Set OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Set OS": {
+      "main": [
+        [
+          {
+            "node": "Resp set_os",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE Checkin Contexto": {
+      "main": [
+        [
+          {
+            "node": "GET Ctx para Checkin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Ctx para Checkin": {
+      "main": [
+        [
+          {
+            "node": "GET OS para Checkin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET OS para Checkin": {
+      "main": [
+        [
+          {
+            "node": "Preparar Checkin Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Checkin Payload": {
+      "main": [
+        [
+          {
+            "node": "PATCH Bom Saldo Checkin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH Bom Saldo Checkin": {
+      "main": [
+        [
+          {
+            "node": "Resp checkin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE Checkout": {
+      "main": [
+        [
+          {
+            "node": "Resp checkout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Atual para Switch": {
+      "main": [
+        [
+          {
+            "node": "INSERT Transicao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Transicao": {
+      "main": [
+        [
+          {
+            "node": "UPDATE Switch OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE Switch OS": {
+      "main": [
+        [
+          {
+            "node": "Resp switch_os",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE Archive": {
+      "main": [
+        [
+          {
+            "node": "Resp archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 60
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

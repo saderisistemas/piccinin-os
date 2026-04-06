@@ -1,0 +1,10 @@
+{
+  "clientes_inativados": 0,
+  "clientes_ruins": 0,
+  "clientes_exatos_mantidos": 0,
+  "produtos_inativados": 0,
+  "produtos_testes": 0,
+  "servicos_redundantes_inativados": 0,
+  "servicos_mantidos": 26,
+  "errors": 43
+}

@@ -1,0 +1,151 @@
+{
+  "name": "W9 - Tool - Buscar Contexto OS",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "os_codigo" },
+            { "name": "tecnico_id" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-600, 300],
+      "id": "t-w9-trigger",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\n\nif (!p.os_codigo && !p.tecnico_id) {\n  throw new Error('os_codigo OU tecnico_id é obrigatório para buscar contexto.');\n}\n\nreturn [{ json: {\n  os_codigo: p.os_codigo ? String(p.os_codigo) : null,\n  tecnico_id: p.tecnico_id ? String(p.tecnico_id) : null,\n  busca_por: p.os_codigo ? 'os_codigo' : 'tecnico_id'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-380, 300],
+      "id": "t-w9-validar",
+      "name": "Validar Params"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.busca_por }}",
+        "rules": {
+          "rules": [
+            { "value2": "os_codigo", "output": 0 },
+            { "value2": "tecnico_id", "output": 1 }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [-160, 300],
+      "id": "t-w9-switch",
+      "name": "Tipo de Busca"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $('Validar Params').first().json.os_codigo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [80, 200],
+      "id": "t-w9-get-codigo",
+      "name": "GET por OS Codigo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "ordens_servico",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tecnico_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Validar Params').first().json.tecnico_id }}"
+            },
+            {
+              "keyName": "status_os",
+              "condition": "in",
+              "keyValue": "aberta,em_andamento"
+            }
+          ]
+        },
+        "options": {
+          "order": {
+            "fields": [
+              { "fieldName": "atualizado_em", "direction": "desc" }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [80, 420],
+      "id": "t-w9-get-tecnico",
+      "name": "GET por Tecnico Ativo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [320, 300],
+      "id": "t-w9-merge",
+      "name": "Unir Resultados"
+    },
+    {
+      "parameters": {
+        "jsCode": "const os = $input.first().json;\nconst p = $('Validar Params').first().json;\n\n// Se não encontrou (item vazio do alwaysOutputData)\nif (!os || !os.os_codigo) {\n  return [{ json: {\n    encontrado: false,\n    os_codigo: p.os_codigo || null,\n    tecnico_id: p.tecnico_id || null,\n    mensagem: p.os_codigo\n      ? `Nenhuma OS encontrada com código ${p.os_codigo}.`\n      : `Nenhuma OS ativa encontrada para o técnico.`,\n    contexto: null,\n    produtos: [],\n    servicos: []\n  }}];\n}\n\n// Parsear produtos e serviços do JSONB\nlet produtos = [];\nlet servicos = [];\ntry { produtos = typeof os.produtos_json === 'string' ? JSON.parse(os.produtos_json) : (os.produtos_json || []); } catch(e) {}\ntry { servicos = typeof os.servicos_json === 'string' ? JSON.parse(os.servicos_json) : (os.servicos_json || []); } catch(e) {}\n\n// Verificar se está pronto para fechar\nconst problemas = [];\nif (!os.cliente_codigo) problemas.push('Cliente sem código oficial');\nif (!os.defeito) problemas.push('Defeito não informado');\nif (!os.solucao) problemas.push('Solução não informada');\nif (!os.tipo_pagamento && !os.em_garantia) problemas.push('Forma de pagamento não definida');\n\nconst resumo = [\n  `OS #${os.os_codigo}`,\n  `Cliente: ${os.cliente_nome || 'não identificado'} (cód: ${os.cliente_codigo || 'pendente'})`,\n  `Técnico: ${os.tecnico_nome || 'não identificado'}`,\n  `Status: ${os.status_os} | Fase: ${os.fase_ia}`,\n  `Defeito: ${os.defeito || 'não informado'}`,\n  `Causa: ${os.causa || 'não informada'}`,\n  `Solução: ${os.solucao || 'não informada'}`,\n  `Garantia: ${os.em_garantia ? 'SIM' : 'NÃO'}`,\n  `Pagamento: ${os.tipo_pagamento || 'não definido'}`,\n  `Entrada: ${os.hora_entrada || 'não registrada'}`,\n  `Saída: ${os.hora_saida || 'não registrada'}`,\n  `Evidências: ${os.qtd_evidencias || 0}`,\n  `Produtos: ${produtos.length}`,\n  `Serviços: ${servicos.length}`\n].join('\\n');\n\nreturn [{ json: {\n  encontrado: true,\n  os_codigo: os.os_codigo,\n  os_id_bomsaldo: os.os_id_bomsaldo,\n  status_os: os.status_os,\n  fase_ia: os.fase_ia,\n  pronto_para_fechar: problemas.length === 0,\n  problemas_encontrados: problemas,\n  contexto: os,\n  produtos,\n  servicos,\n  resumo\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [560, 300],
+      "id": "t-w9-resp",
+      "name": "Montar Resposta"
+    }
+  ],
+  "connections": {
+    "Trigger": { "main": [[{ "node": "Validar Params", "type": "main", "index": 0 }]] },
+    "Validar Params": { "main": [[{ "node": "Tipo de Busca", "type": "main", "index": 0 }]] },
+    "Tipo de Busca": {
+      "main": [
+        [{ "node": "GET por OS Codigo", "type": "main", "index": 0 }],
+        [{ "node": "GET por Tecnico Ativo", "type": "main", "index": 0 }]
+      ]
+    },
+    "GET por OS Codigo": { "main": [[{ "node": "Unir Resultados", "type": "main", "index": 0 }]] },
+    "GET por Tecnico Ativo": { "main": [[{ "node": "Unir Resultados", "type": "main", "index": 1 }]] },
+    "Unir Resultados": { "main": [[{ "node": "Montar Resposta", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "pinData": {}
+}

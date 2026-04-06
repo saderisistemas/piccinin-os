@@ -1,0 +1,119 @@
+{
+  "name": "W3 - Tool - Buscar OS Bom Saldo",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        400
+      ],
+      "id": "7b00dfc0-f691-4f10-bf79-0d579a353d17",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\nif (!p.cliente_id && !p.codigo) {\n  throw new Error('Parâmetro obrigatório ausente: informe cliente_id ou codigo da OS para buscar.');\n}\n// Normalizar cliente_id para número inteiro\nif (p.cliente_id && !/^[0-9]+$/.test(String(p.cliente_id))) {\n  throw new Error(`cliente_id inválido: \"${p.cliente_id}\". Deve ser um número inteiro.`);\n}\nreturn [{ json: {\n  cliente_id: p.cliente_id ? String(p.cliente_id) : null,\n  codigo: p.codigo ? String(p.codigo) : null\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        400
+      ],
+      "id": "73e6e8e2-cc15-4c52-9c35-98cae4320aa6",
+      "name": "Validar Params"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://bomsaldo.com/api/ordens_servicos/?{{ $json.cliente_id ? 'cliente_id='+$json.cliente_id : '' }}{{ $json.codigo ? '&codigo='+$json.codigo : '' }}&limit=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -120,
+        400
+      ],
+      "id": "b37b8853-0ada-41c0-accb-511385a3c1aa",
+      "name": "GET Ordens Servico"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst oss = data.data || [];\nif (oss.length === 0) {\n  return [{ json: { resultado: 'Nenhuma OS encontrada para este cliente. Deseja abrir uma nova OS?', ordens: [] } }];\n}\nconst lista = oss.slice(0, 5).map(os => ({\n  id: os.id,\n  os_id: os.id,\n  codigo: os.codigo,\n  situacao: os.nome_situacao,\n  situacao_id: os.situacao_id,\n  data_entrada: os.data_entrada || os.data,\n  valor_total: os.valor_total,\n  observacoes: os.observacoes ? os.observacoes.substring(0, 100) : ''\n}));\nconst textoLista = lista.map((os, i) => `${i+1}. OS #${os.codigo} | ID interno: ${os.id} | Status: ${os.situacao} | Data: ${os.data_entrada} | Valor: R$${os.valor_total}${os.observacoes ? ' | '+os.observacoes+'...' : ''}`).join('\\n');\nconst option_map = {};\nlista.forEach((os, i) => { option_map[String(i+1)] = { os_id: os.id, os_codigo: os.codigo, situacao: os.situacao }; });\nreturn [{ json: { resultado: `OS encontradas:\\n${textoLista}\\n\\nQual deseja trabalhar? Informe o número.`, ordens: lista, option_map } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        400
+      ],
+      "id": "9ce8e0bb-4246-45ea-94b6-5fcfe0a02319",
+      "name": "Formatar OS"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validar Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Params": {
+      "main": [
+        [
+          {
+            "node": "GET Ordens Servico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Ordens Servico": {
+      "main": [
+        [
+          {
+            "node": "Formatar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

@@ -1,0 +1,342 @@
+{
+  "name": "W7 - Tool - Salvar Evidencias Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "urlImagem" },
+            { "name": "os_codigo" },
+            { "name": "cliente_nome" },
+            { "name": "descricao" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [416, 528],
+      "id": "37ef57fd-81c3-48da-a2aa-9e58a7c3c5eb",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.urlImagem }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [624, 528],
+      "id": "cc94b1f4-0d89-447d-9ae6-e43cdf4816c8",
+      "name": "Baixar Imagem"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ 'OS_' + $('Trigger').first().json.os_codigo + ' - ' + ($('Trigger').first().json.cliente_nome || 'Sem Cliente').substring(0, 50) }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1HSEThyp43AnPNqAdDwp6RB5zLxz0bdpv",
+          "mode": "list",
+          "cachedResultName": "Bom Saldo API",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1HSEThyp43AnPNqAdDwp6RB5zLxz0bdpv"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [816, 736],
+      "id": "210ce443-b789-4e6b-b735-4a455189b0f1",
+      "name": "Buscar Pasta OS",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QaXSl2BX3HaJCp86",
+          "name": "Google Drive Piccinin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "if-pasta",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [992, 736],
+      "id": "bb34be5e-effc-452c-8c08-7afc94ca4e0e",
+      "name": "Pasta existe?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "folder-existe", "name": "folderId", "value": "={{ $json.id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1408, 688],
+      "id": "9c1c95d9-a303-4c21-99d5-3acfee7d6554",
+      "name": "Set FolderId Existente"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ 'OS_' + $('Trigger').first().json.os_codigo + ' - ' + ($('Trigger').first().json.cliente_nome || 'Sem Cliente').substring(0, 50) }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1HSEThyp43AnPNqAdDwp6RB5zLxz0bdpv"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1168, 848],
+      "id": "61e5ac63-9699-4ffb-8d4a-3171c025fd3b",
+      "name": "Criar Pasta OS",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QaXSl2BX3HaJCp86",
+          "name": "Google Drive Piccinin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "folder-criada", "name": "folderId", "value": "={{ $json.id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1408, 848],
+      "id": "45375481-9bec-4bd3-9e62-a84e5c37eaa7",
+      "name": "Set FolderId Criada"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1680, 544],
+      "id": "3e789504-7772-433e-aea7-72375b0730ff",
+      "name": "Merge Upload"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Trigger').first().json.os_codigo + '_' + ($('Trigger').first().json.descricao || 'evidencia').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40) + '_' + $now.format('yyyyMMdd_HHmmss') + '.jpg' }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.folderId }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1920, 544],
+      "id": "a553c34b-ab68-4dfb-a3c2-baf5e9a64423",
+      "name": "Upload Imagem Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QaXSl2BX3HaJCp86",
+          "name": "Google Drive Piccinin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const arquivo = $input.first().json;\nconst osCodigo = $('Trigger').first().json.os_codigo;\nconst clienteNome = $('Trigger').first().json.cliente_nome || '';\nconst pastaId = arquivo.parents ? arquivo.parents[0] : '';\nconst linkPasta = `https://drive.google.com/drive/folders/${pastaId}`;\nreturn [{ json: { resultado: `📁 Evidência salva no Drive!\\nOS: #${osCodigo}${clienteNome ? ' - ' + clienteNome : ''}\\nArquivo: ${arquivo.name}\\nLink da pasta: ${linkPasta}`, link_drive: linkPasta, arquivo_id: arquivo.id, os_codigo: osCodigo } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2144, 544],
+      "id": "fbd0f58d-74a3-4be5-bab3-c1f75611a3e5",
+      "name": "Retornar Link"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $json.os_codigo }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "link_pasta_drive", "fieldValue": "={{ $json.link_drive }}" },
+            { "fieldId": "qtd_evidencias", "fieldValue": "={{ ($('Buscar OS Supabase').first().json.qtd_evidencias || 0) + 1 }}" },
+            { "fieldId": "atualizado_em", "fieldValue": "={{ new Date().toISOString() }}" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2400, 400],
+      "id": "upd-w7-supabase",
+      "name": "Atualizar Evidencia Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $('Trigger').first().json.os_codigo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [624, 736],
+      "id": "get-w7-supabase",
+      "name": "Buscar OS Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "uuid-1", "name": "urlEvolution", "value": "https://piccininsecurity-evolution.cloudfy.live/", "type": "string" },
+            { "id": "uuid-2", "name": "grupoWhats", "value": "120363405860866364@g.us", "type": "string" },
+            { "id": "uuid-3", "name": "instancia", "value": "Vanda-Lead", "type": "string" },
+            { "id": "uuid-4", "name": "apikey", "value": "4F10103C3ADD-4E71-BD01-ACFD9B07D899", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2600, 544],
+      "id": "ac4fd205-5595-48cc-876e-d16496282324",
+      "name": "setarInfo_evo"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('setarInfo_evo').item.json.urlEvolution }}message/sendMedia/{{ $('setarInfo_evo').item.json.instancia }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $('setarInfo_evo').item.json.apikey }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('setarInfo_evo').item.json.grupoWhats }}\",\n  \"mediatype\": \"image\",\n  \"media\": \"{{ $('Trigger').first().json.urlImagem }}\",\n  \"caption\": \"📸 *Nova Evidência*\\n\\n🔧 *OS:* #{{ $('Trigger').first().json.os_codigo }}{{ $('Trigger').first().json.cliente_nome ? ' - ' + $('Trigger').first().json.cliente_nome : '' }}\\n📝 *Descrição:* {{ $('Trigger').first().json.descricao || 'Sem descrição' }}\\n\\n📁 *Drive:* {{ $('Retornar Link').first().json.link_drive }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [2800, 544],
+      "id": "150bafe5-62ca-4385-8dcd-d4f125119e85",
+      "name": "msg_grupo_evolution"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Retornar Link').first().json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3000, 544],
+      "id": "a912f502-5e47-4ca7-81c8-a9aba5978a59",
+      "name": "Restaurar Saida"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          { "node": "Baixar Imagem", "type": "main", "index": 0 },
+          { "node": "Buscar OS Supabase", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Baixar Imagem": { "main": [[{ "node": "Buscar Pasta OS", "type": "main", "index": 0 }]] },
+    "Buscar Pasta OS": { "main": [[{ "node": "Pasta existe?", "type": "main", "index": 0 }]] },
+    "Pasta existe?": {
+      "main": [
+        [{ "node": "Set FolderId Existente", "type": "main", "index": 0 }],
+        [{ "node": "Criar Pasta OS", "type": "main", "index": 0 }]
+      ]
+    },
+    "Set FolderId Existente": { "main": [[{ "node": "Merge Upload", "type": "main", "index": 0 }]] },
+    "Criar Pasta OS": { "main": [[{ "node": "Set FolderId Criada", "type": "main", "index": 0 }]] },
+    "Set FolderId Criada": { "main": [[{ "node": "Merge Upload", "type": "main", "index": 0 }]] },
+    "Merge Upload": { "main": [[{ "node": "Upload Imagem Drive", "type": "main", "index": 0 }]] },
+    "Upload Imagem Drive": { "main": [[{ "node": "Retornar Link", "type": "main", "index": 0 }]] },
+    "Retornar Link": {
+      "main": [
+        [
+          { "node": "Atualizar Evidencia Supabase", "type": "main", "index": 0 },
+          { "node": "setarInfo_evo", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Atualizar Evidencia Supabase": { "main": [] },
+    "setarInfo_evo": { "main": [[{ "node": "msg_grupo_evolution", "type": "main", "index": 0 }]] },
+    "msg_grupo_evolution": { "main": [[{ "node": "Restaurar Saida", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Sao_Paulo"
+  },
+  "meta": { "templateCredsSetupCompleted": true },
+  "pinData": {}
+}

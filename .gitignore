@@ -1,0 +1,21 @@
+# Protek OS - Escudo Git
+# Ignora arquivos de ambiente com senhas reais
+.env
+
+# Configurações do Agente AI / Inteligencia
+.agent/
+.kilo/
+.*.json
+
+# Ignora Dumps de Banco de Dados massivos ou locais
+clientes.json
+produtos.json
+servicos.json
+workflows_dump.json
+
+# Permite os workflows finais
+!workflow_*.json
+
+# Logs do Node JS
+node_modules/
+npm-debug.log
