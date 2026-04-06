@@ -568,6 +568,16 @@ h1, h2, h3, .heading-font {
         grid-template-columns: 1fr;
     }
     
+    /* Vanda Matrix Mobile */
+    .matrix-grid {
+        grid-template-columns: 1fr;
+    }
+    .matrix-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
     /* Action Bar */
     .action-bar {
         flex-direction: column;
