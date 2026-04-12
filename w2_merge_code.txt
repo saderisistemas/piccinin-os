@@ -1,0 +1,132 @@
+// ─── MERGE e DEDUP das duas buscas ──────────────────────────────────────────
+const normalize = (str) => !str ? '' : str
+  .toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+
+const tokenize = (str) => {
+  const STOP = ['ltda','eireli','epp','me','sa','ss','comercio','comercial',
+    'industria','servico','servicos','grupo','brasil','do','da','de','dos','das','e'];
+  return normalize(str).split(' ').filter(t => t.length > 2 && !STOP.includes(t));
+};
+
+const normInput = $('Normalizar Nome').item.json;
+const nomeNorm = normInput.nome_normalizado;
+const tokensInput = normInput.tokens;
+
+// Coletar resultados das duas buscas
+const allItems = $input.all();
+const todosClientes = [];
+const idsVistos = new Set();
+
+allItems.forEach(item => {
+  const clientes = item.json.data || [];
+  clientes.forEach(c => {
+    if (!idsVistos.has(c.id)) {
+      idsVistos.add(c.id);
+      todosClientes.push(c);
+    }
+  });
+});
+
+// ─── SCORING: quão parecido é o nome do cliente com o que o técnico disse ────
+function score(cliente) {
+  const nomeC = normalize(cliente.nome || '');
+  const razaoC = normalize(cliente.razao_social || '');
+  const nomeFantasiaC = normalize(cliente.nome_fantasia || '');
+  const target = nomeNorm;
+  let s = 0;
+  
+  // Correspondência exata
+  if (nomeC === target || razaoC === target || nomeFantasiaC === target) return 100;
+  
+  // O nome do cliente contém o que o técnico disse (ou vice-versa)
+  if (nomeC.includes(target) || target.includes(nomeC)) s += 60;
+  if (razaoC.includes(target) || target.includes(razaoC)) s += 55;
+  if (nomeFantasiaC.includes(target) || target.includes(nomeFantasiaC)) s += 55;
+  
+  // Tokens em comum
+  const tokensC = tokenize(cliente.nome || '');
+  const tokensR = tokenize(cliente.razao_social || '');
+  const tokensF = tokenize(cliente.nome_fantasia || '');
+  const todosTokensC = [...new Set([...tokensC, ...tokensR, ...tokensF])];
+  
+  tokensInput.forEach(t => {
+    if (todosTokensC.some(tc => tc.includes(t) || t.includes(tc))) s += 20;
+    if (todosTokensC.includes(t)) s += 10; // bonus exato
+  });
+  
+  // Token principal coincide
+  if (tokensInput[0] && todosTokensC.some(tc => tc.includes(tokensInput[0]))) s += 15;
+  
+  return s;
+}
+
+// Aplicar score e ordenar
+const rankados = todosClientes
+  .map(c => ({ ...c, _score: score(c) }))
+  .filter(c => c._score > 0)
+  .sort((a, b) => b._score - a._score);
+
+const top = rankados.slice(0, 5);
+
+if (top.length === 0) {
+  return [{ json: {
+    resultado: `Nenhum cliente encontrado para "${normInput.nome_original}". Pode confirmar:
+1. Nome completo ou razão social
+2. Cidade ou endereço
+3. Número de OS anterior`,
+    clientes: [],
+    total_encontrado: 0,
+    status: 'not_found'
+  } }];
+}
+
+// Formatar lista para a Vanda apresentar ao técnico
+const formatar = (c, i) => {
+  const complemento = c.razao_social && normalize(c.razao_social) !== normalize(c.nome)
+    ? ` (${c.razao_social})` : '';
+  const tel = c.telefone || c.celular || '';
+  const end = c.enderecos?.[0]?.endereco;
+  const cidade = end ? `${end.nome_cidade}/${end.estado}` : '';
+  return `${i+1}. ${c.nome}${complemento}${cidade ? ' — ' + cidade : ''}${tel ? ' | ' + tel : ''}`;
+};
+
+// Se há apenas 1 resultado com score alto, retorna direto sem pedir confirmação
+if (top.length === 1 && top[0]._score >= 60) {
+  const c = top[0];
+  const end = c.enderecos?.[0]?.endereco;
+  const endereco = end
+    ? `${end.logradouro}, ${end.numero} - ${end.bairro} - ${end.nome_cidade}/${end.estado}`
+    : '';
+  return [{ json: {
+    resultado: `Achei: *${c.nome}*${c.razao_social ? ' (' + c.razao_social + ')' : ''}${endereco ? ' — ' + endereco : ''}. Confirma?`,
+    cliente_id: String(c.id),
+    cliente_nome: c.nome,
+    clientes: [{ id: c.id, nome: c.nome, razao_social: c.razao_social || '', telefone: c.telefone || c.celular || '', endereco }],
+    total_encontrado: 1,
+    status: 'single_match'
+  } }];
+}
+
+// Múltiplos resultados — listar para confirmação
+const lista = top.map(formatar).join('\n');
+// Build option_map so LLM can look up ID by option number
+const option_map = {};
+top.forEach((c, i) => { option_map[String(i+1)] = { id: String(c.id), nome: c.nome }; });
+return [{ json: {
+  resultado: `Encontrei ${top.length} clientes parecidos:\n${lista}\n\nQual é o correto? Responde o número.`,
+  option_map,
+  clientes: top.map(c => ({
+    id: c.id,
+    nome: c.nome,
+    razao_social: c.razao_social || '',
+    telefone: c.telefone || c.celular || '',
+    endereco: (() => {
+      const e = c.enderecos?.[0]?.endereco;
+      return e ? `${e.logradouro}, ${e.numero} - ${e.bairro} - ${e.nome_cidade}/${e.estado}` : '';
+    })()
+  })),
+  total_encontrado: top.length,
+  status: 'multiple_matches'
+} }];

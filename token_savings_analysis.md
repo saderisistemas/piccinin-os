@@ -1,16 +1,17 @@
 # Token Savings Analysis
 
-## Documentation (PRDs)
+## Payload Assembly (W6)
 | Metric | Before | After | Savings |
 | :--- | :--- | :--- | :--- |
-| File Size | ~510 lines | ~45 lines (+ 3 small modules) | ~90% context reduction |
-| Token Cost| ~10.0K tokens | ~1.5K tokens | ~85% |
+| File Size | ~426 lines | ~150 lines (orchestrator) | 65% reduction per task |
+| Context Tokens | ~4500 tokens | ~1500 tokens | 66% |
+| Focused Context (ex: payment logic) | 426 lines | ~60 lines | 85% |
 
-## Scripts JS Monolíticos
+## Fix Injection (W3b)
 | Metric | Before | After | Savings |
 | :--- | :--- | :--- | :--- |
-| File Size | ~820 lines | ~160 lines (+ lib files) | ~80% context reduction |
-| Token Cost| ~15K tokens | ~3.0K tokens | ~75% |
+| File Size | ~327 lines | ~150 lines (injector) | 54% reduction per task |
+| Context Tokens | ~3400 tokens | ~1500 tokens | 55% |
+| Focused Context (ex: node array) | 327 lines | ~120 lines | 63% |
 
-## Global Impact no Escopo
-A IA parou de ler mais de **1.500 linhas redundantes** a cada requisição na raiz do workspace, transferindo o código denso e regras pesadas para os diretórios `/docs` e `/lib`, alcançando até ~80% de economia direta na carga do painel de contexto do Antigravity. Os scripts agora são focados em orquestração, delegando lógica de API e transformação para módulos específicos.
+**Conclusion:** Splitting these monolithic operations into modular logic significantly reduces the necessary context AI assistants require to troubleshoot and write logic in the future, dramatically reducing token usage.

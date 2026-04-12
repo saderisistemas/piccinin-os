@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "protek-os",
+        "path": "pici-vanda",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -185,32 +185,9 @@
       "parameters": {
         "operation": "getAll",
         "tableId": "ordens_servico",
-        "returnAll": false,
         "limit": 1,
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "tecnico_id",
-              "condition": "eq",
-              "keyValue": "={{ $json.msg.identicacaoLead }}"
-            },
-            {
-              "keyName": "status_os",
-              "condition": "in",
-              "keyValue": "aberta,em_andamento"
-            }
-          ]
-        },
-        "options": {
-          "order": {
-            "fields": [
-              {
-                "fieldName": "atualizado_em",
-                "direction": "desc"
-              }
-            ]
-          }
-        }
+        "filterType": "string",
+        "filterString": "tecnico_id=eq.{{ $json.msg.identicacaoLead }}&status_os=in.(aberta,em_andamento)"
       },
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -280,7 +257,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "NÃ£o existe"
+              "outputKey": "N�o existe"
             }
           ]
         },
@@ -482,99 +459,7 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "eu1",
-              "name": "URL",
-              "value": "={{ $('setarInfo4').item.json.msg.urlMedia }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -2752,
-        912
-      ],
-      "id": "a1b2c3d4-0013-0013-0013-000000000013",
-      "name": "setarUrlImagem"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Analise essa imagem de campo tÃ©cnico: {{ $json.URL }}\n\nSempre chame a tool \"analisarImagem\"",
-        "options": {
-          "systemMessage": "VocÃª Ã© um especialista em analisar imagens de campo de seguranÃ§a eletrÃ´nica. Descreva com clareza o que aparece na imagem: equipamentos (cÃ¢meras, centrais, sensores, cabos), condiÃ§Ãµes (instalaÃ§Ã£o, danos, defeitos visÃ­veis), ambiente (externo/interno, estrutura). Resposta sempre comeÃ§a: 'O tÃ©cnico enviou uma imagem do tipo [TIPO]: [DESCRIÃ‡ÃƒO DETALHADA].' Nunca invente informaÃ§Ãµes."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        -2544,
-        912
-      ],
-      "id": "a1b2c3d4-0014-0014-0014-000000000014",
-      "name": "analisadorImagem"
-    },
-    {
-      "parameters": {
-        "resource": "image",
-        "operation": "analyze",
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-2.5-flash",
-          "mode": "list"
-        },
-        "text": "={{ $fromAI('Text_Input', '', 'string') }}",
-        "imageUrls": "={{ $('setarUrlImagem').item.json.URL }}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.googleGeminiTool",
-      "typeVersion": 1,
-      "position": [
-        -2352,
-        1120
-      ],
-      "id": "a1b2c3d4-0015-0015-0015-000000000015",
-      "name": "analisarImagem",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "4NL5vsvVhjhBLw1V",
-          "name": "Google Gemini saderisistemas Piccinin"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "si1",
-              "name": "msg",
-              "value": "={{ $json.output }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -2240,
-        912
-      ],
-      "id": "a1b2c3d4-0016-0016-0016-000000000016",
-      "name": "setarImagem"
-    },
-    {
-      "parameters": {
-        "mode": "chooseBranch",
-        "output": "input1"
+        "numberInputs": 3
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
@@ -717,29 +602,6 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "cm1",
-              "name": "message",
-              "value": "={{ $('Get Redis').item.json.message.join('\\n') }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -912,
-        720
-      ],
-      "id": "a1b2c3d4-0023-0023-0023-000000000023",
-      "name": "ConcatenaMsg"
-    },
-    {
-      "parameters": {
         "operation": "delete",
         "key": "={{ $('setarInfo4').item.json.msg.identicacaoLead }}"
       },
@@ -748,7 +610,7 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        -736,
+        -704,
         592
       ],
       "credentials": {
@@ -760,12 +622,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const days = ['domingo','segunda','terÃ§a','quarta','quinta','sexta','sÃ¡bado'];\nconst pad = (n) => String(n).padStart(2, '0');\nconst TZ = 'America/Sao_Paulo';\nfunction getParts(date) {\n  const parts = new Intl.DateTimeFormat('pt-BR', {timeZone: TZ, weekday: 'long', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false}).formatToParts(date);\n  const obj = {};\n  for (const p of parts) obj[p.type] = p.value;\n  const weekday = (obj.weekday || '').toLowerCase().replace('-feira', '').trim();\n  return {weekday, day: obj.day, month: obj.month, year2: obj.year, hour: obj.hour, minute: obj.minute};\n}\nconst now = new Date();\nconst nowP = getParts(now);\nlet result = `Hoje Ã© ${nowP.weekday} ${nowP.day}/${nowP.month}/${nowP.year2} Ã s ${nowP.hour}:${nowP.minute}\\n`;\nfor (let i = 1; i <= 3; i++) {\n  const future = new Date(now);\n  future.setDate(now.getDate() + i);\n  const fP = getParts(future);\n  let label = i === 1 ? `AmanhÃ£ Ã© ${fP.weekday} ${fP.day}/${fP.month}/${fP.year2}` : `${fP.weekday} ${fP.day}/${fP.month}/${fP.year2}`;\n  result += `${label}\\n`;\n}\nreturn [{json: {resultado: result.trim()}}];\n"
+        "jsCode": "const days = ['domingo','segunda','ter�a','quarta','quinta','sexta','s�bado'];\nconst pad = (n) => String(n).padStart(2, '0');\nconst TZ = 'America/Sao_Paulo';\nfunction getParts(date) {\n  const parts = new Intl.DateTimeFormat('pt-BR', {timeZone: TZ, weekday: 'long', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false}).formatToParts(date);\n  const obj = {};\n  for (const p of parts) obj[p.type] = p.value;\n  const weekday = (obj.weekday || '').toLowerCase().replace('-feira', '').trim();\n  return {weekday, day: obj.day, month: obj.month, year2: obj.year, hour: obj.hour, minute: obj.minute};\n}\nconst now = new Date();\nconst nowP = getParts(now);\nlet result = `Hoje � ${nowP.weekday} ${nowP.day}/${nowP.month}/${nowP.year2} ��s ${nowP.hour}:${nowP.minute}\\n`;\nfor (let i = 1; i <= 3; i++) {\n  const future = new Date(now);\n  future.setDate(now.getDate() + i);\n  const fP = getParts(future);\n  let label = i === 1 ? `Amanh� � ${fP.weekday} ${fP.day}/${fP.month}/${fP.year2}` : `${fP.weekday} ${fP.day}/${fP.month}/${fP.year2}`;\n  result += `${label}\\n`;\n}\nreturn [{json: {resultado: result.trim()}}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -448,
+        -464,
         592
       ],
       "id": "a1b2c3d4-0025-0025-0025-000000000025",
@@ -778,7 +640,7 @@
             {
               "id": "si_1",
               "name": "msgLead",
-              "value": "={{ $('ConcatenaMsg').first().json.message }}",
+              "value": "={{ $('Separar Imagens e Textos').first().json.message }}",
               "type": "string"
             },
             {
@@ -816,6 +678,12 @@
               "name": "id_conversa",
               "value": "={{ $('setarInfo4').first().json.msg.id_conversa }}",
               "type": "string"
+            },
+            {
+              "id": "urls-img-array",
+              "name": "urls",
+              "value": "={{ $('Separar Imagens e Textos').first().json.urls }}",
+              "type": "array"
             }
           ]
         },
@@ -835,7 +703,7 @@
         "promptType": "define",
         "text": "={{ $('setarInfo').first().json.msgLead }}",
         "options": {
-          "systemMessage": "DADOS DA OS ATIVA DO TÉCNICO (do banco ordens_servico):\n{{ JSON.stringify($('BuscarTecnico').first()?.json || {}, null, 2) }}\n\n===== LEIA O JSON ACIMA. SE TEM os_codigo, CONTINUE DE ONDE PAROU =====\n\n## IDENTIDADE\nVocê é **Vanda**, assistente da **Piccinin Security** (CFTV, alarmes, controle de acesso).\nTécnico: {{ $('setarInfo').first().json.nomeTecnico }} (ID: {{ $('setarInfo4').first().json.msg.identicacaoLead }})\nWhatsApp: {{ $('setarInfo4').first().json.msg.numberLead }}\nData: {{ $('setarInfo').first().json.dataHora }}\nConversa ID: {{ $('setarInfo').first().json.id_conversa }}\n\n---\n\n## REGRA 0 — INÍCIO\n- Se o JSON acima tem \\`os_codigo\\`, o técnico já tem OS ativa. CONTINUE de onde parou (veja fase_ia e status_os).\n- Se o JSON acima está vazio, o técnico não tem OS ativa. Pergunte: 'Qual o nome do cliente?'\n- PROIBIDO chamar \\`criarOS\\` sem ter chamado \\`buscarCliente\\` NESTA conversa.\n\n## REGRA 1 — CLIENTE\n1. Pergunte o NOME do cliente.\n2. Chame \\`buscarCliente\\` com o nome.\n3. O retorno contém \\`cliente_id\\` — ESTE é o único ID válido.\n4. Técnico confirma? Chame \\`salvarContexto\\` com \\`os_codigo\\`, \\`cliente_codigo\\` e \\`cliente_nome\\`.\n\n⛔ NUNCA use um cliente_id inventado ou de memória. Sempre do retorno do buscarCliente.\n\n## REGRA 2 — OS\n1. Use \\`buscarOS\\` ou \\`criarOS\\` (só após REGRA 1).\n2. O criarOS retorna \\`os_id\\` e \\`os_codigo\\`. O \\`os_codigo\\` é como você identifica a OS daqui pra frente.\n3. Após criar/achar OS: chame \\`salvarContexto\\` com \\`os_codigo\\`, \\`os_id_bomsaldo\\`, \\`fase_ia: coleta_tecnica\\`.\n\n## REGRA 3 — ITENS E EVIDÊNCIAS\n1. Use \\`buscarProdutos\\` / \\`buscarServicos\\`. NUNCA invente códigos.\n2. SEMPRE peça foto do serviço. Se enviou, chame \\`salvarEvidencia\\` passando \\`cliente_nome\\` junto.\n3. A URL da foto já está disponível no campo urlMedia da mensagem.\n\n## REGRA 4 — FECHAMENTO\n1. Chame \\`buscarContexto\\` com o \\`os_codigo\\` para confirmar dados.\n2. Pergunte: Garantia ou Cobrado?\n3. Escreva \\`relatorio_tecnico\\` profissional e detalhado. NUNCA copie a frase informal do técnico.\n4. Chame \\`atualizarOS\\` com \\`os_codigo\\` + \\`os_id\\` + todos os dados.\n5. Sucesso? \\`salvarContexto\\` com \\`fase_ia: fechado\\`, \\`status_os: concluida\\`.\n\n## REGRA 5 — CANCELAMENTO\n1. Chame \\`cancelarOS\\` com \\`os_id\\` + \\`os_codigo\\` + \\`motivo\\`.\n2. Sucesso? \\`salvarContexto\\` com \\`fase_ia: cancelado\\`, \\`status_os: cancelada\\`.\n\n## FORMATO\nRespostas CURTAS e diretas. Perguntas objetivas. Sem rodeios.\n\n## TOOLS — REGRA DE OURO\n- \\`os_codigo\\` é a chave principal (ex: 1604). Use em TODAS as tools.\n- \\`os_id\\` / \\`os_id_bomsaldo\\` é o ID interno (7+ dígitos). Necessário só no atualizarOS e cancelarOS.\n- Se não tem a informação, envie string vazia \"\". NUNCA omita o parâmetro.\n\n\nREGRA EXTRA PRODUTOS: Quando o técnico confirmar itens escolhidos, chame salvarContexto passando dados completos em produtos_json/servicos_json.\n\nREGRA DE HORÁRIOS: Ao registrar hora de chegada (check-in) na mensagem do técnico (ex: \"iniciando OS\"), chame salvarContexto com hora_entrada em ISO format (ex: 2024-01-15T14:30:00). Ao registrar saída/finalização: chame salvarContexto com hora_saida e preencha fase_ia como \"encerramento\"."
+          "systemMessage": "DADOS DA OS ATIVA DO TÉCNICO (do banco ordens_servico):\n{{ JSON.stringify($('BuscarTecnico').first()?.json || {}, null, 2) }}\n\n===== LEIA O JSON ACIMA. SE TEM os_codigo, CONTINUE DE ONDE PAROU =====\n\n## IDENTIDADE\nVocê é **Vanda**, assistente da **Piccinin Security** (CFTV, alarmes, controle de acesso).\nTécnico: {{ $('setarInfo').first().json.nomeTecnico }} (ID: {{ $('setarInfo4').first().json.msg.identicacaoLead }})\nWhatsApp: {{ $('setarInfo4').first().json.msg.numberLead }}\nData: {{ $('setarInfo').first().json.dataHora }}\nConversa ID: {{ $('setarInfo').first().json.id_conversa }}\n\n---\n\n## REGRA 0 — INÍCIO\n- Se o JSON acima tem `os_codigo`, o técnico já tem OS ativa. CONTINUE de onde parou (veja fase_ia e status_os).\n- Se o JSON acima está vazio, o técnico não tem OS ativa. Pergunte: 'Qual o nome do cliente?'\n- PROIBIDO chamar `criarOS` sem ter chamado `buscarCliente` NESTA conversa.\n\n## REGRA 1 — CLIENTE\n1. Pergunte o NOME do cliente e chame `buscarCliente` com o nome.\n2. Se a busca retornar única opção, você recebe um `cliente_id`.\n3. Se retornar múltiplas (`option_map`), pergunte a opção (1, 2, etc). Ao receber a resposta, NÃO CHAME `buscarCliente` DE NOVO! Obtenha o ID correspondente lendo o `option_map` no histórico de mensagens (sua resposta anterior).\n4. Com o ID correto em mãos, chame `salvarContexto` com `os_codigo`, `cliente_codigo` (esse id extraído) e `cliente_nome`.\n\n⛔ NUNCA use um cliente_id inventado. Sempre extraia do buscarCliente.\n\n## REGRA 2 — OS\n1. Use `buscarOS` ou `criarOS` (só após REGRA 1).\n2. O criarOS retorna `os_id` e `os_codigo`. O `os_codigo` é como você identifica a OS daqui pra frente.\n3. Após criar/achar OS: chame `salvarContexto` com `os_codigo`, `os_id_bomsaldo`, `fase_ia: coleta_tecnica`.\n\n## REGRA 3 — ITENS E EVIDÊNCIAS\n1. Use `buscarProdutos` / `buscarServicos`. NUNCA invente códigos. Importante: Se retornar option_map, a mesma regra de cliente se aplica! Leia do histórico, nunca busque de novo.\n2. Sempre peça foto do serviço (lembre-se que o upload é feito autom\\u00e1ticamente, você s\\u00f3 relata ao usu\\u00e1rio).\n3. A URL da foto já está disponível no campo urlMedia da mensagem.\n\n## REGRA 4 — FECHAMENTO\n1. Chame `buscarContexto` com o `os_codigo` para confirmar dados.\n2. Pergunte: Garantia ou Cobrado?\n3. Escreva `relatorio_tecnico` profissional e detalhado. NUNCA copie a frase informal do técnico.\n4. Chame `atualizarOS` com `os_codigo` + `os_id` + todos os dados.\n5. Sucesso? `salvarContexto` com `fase_ia: fechado`, `status_os: concluida`.\n\n## REGRA 5 — CANCELAMENTO\n1. Chame `cancelarOS` com `os_id` + `os_codigo` + `motivo`.\n2. Sucesso? `salvarContexto` com `fase_ia: cancelado`, `status_os: cancelada`.\n\n## FORMATO\nRespostas CURTAS e diretas. Perguntas objetivas. Sem rodeios.\n\n## TOOLS — REGRA DE OURO\n- `os_codigo` é a chave principal (ex: 1604). Use em TODAS as tools.\n- `os_id` / `os_id_bomsaldo` é o ID interno (7+ dígitos). Necessário só no atualizarOS e cancelarOS.\n- Se não tem a informação, envie string vazia \"\". NUNCA omita o parâmetro.\\n\\n2. O upload das fotos é automático pelo sistema e você nem precisa se preocupar!\\n\\n\\n\\n## REGRAS DE FECHAMENTO (AJUSTADAS)\\n1. **HORÁRIO DE ENTRADA/SAÍDA:** Você DEVE perguntar ao técnico a hora de entrada e de saída. Mas ATENÇÃO: não é obrigatório para fechar. Se ele não souber ou não quiser falar, ou disser 'vamos fechar' direto, pode seguir o fechamento sem o horário.\\n2. **LAUDO TÉCNICO:** VOCÊ, como inteligência da Vanda, DEVE gerar o laudo / observações SOZINHA com base no que já conversaram sobre o defeito, causa e solução. NUNCA diga 'informe o laudo técnico'. Você apenas cria o laudo em background na hora de fechar a OS e atualiza o sistema.\\n3. **RESUMO:** Quando for atualizar a OS, mande os dados que colheu (hora, pagamentos, os_codigo) e não exija nada que não seja crucial. Pergunte a hora de entrada/saída, mas prossiga caso o técnico force o encerramento.\\n4. **AÇÃO DIRETA:** Seja objetiva.\\n\\n\\n## REGRA DE SALVAMENTO DE CONTEXTO (MUITO IMPORTANTE)\\nSempre que o técnico fornecer UMA NOVA INFORMAÇÃO (ex: equipamento, defeito, causa, solução, observação, nome do cliente, etc.), você DEVE chamar a tool 'salvarContexto' IMEDIATAMENTE para persistir os dados da OS no banco. NÃO ESPERE o final do atendimento ou o fechamento para salvar. Salve conforme os dados vão chegando!\\n\n\n\n\n\n\n\n## REGRA DE SALVAMENTO DE CONTEXTO (MUITO IMPORTANTE)\nSempre que o técnico fornecer UMA NOVA INFORMAÇÃO (ex: equipamento, defeito, causa, resolução, etc.), você DEVE chamar a tool 'salvarContexto' para persistir os dados.\n🚫 LIMITAÇÃO CRÍTICA: Você NUNCA pode chamar salvarContexto se ainda não existir um 'os_codigo'. Se a OS ainda não foi aberta no ERP (via criarOS), NÃO CHAME salvarContexto.\n\nREGRA EXTRA PRODUTOS: Quando o técnico confirmar itens escolhidos, chame salvarContexto passando dados completos em produtos_json/servicos_json.\n\nREGRA DE HORÁRIOS: Ao registrar hora de chegada (check-in) na mensagem do técnico (ex: \"iniciando OS\"), chame salvarContexto com hora_entrada em ISO format (ex: 2024-01-15T14:30:00). Ao registrar saída/finalização: chame salvarContexto com hora_saida e preencha fase_ia como \"encerramento\".\n\n\nREGRA REFORÇADA PARA IDS DE PRODUTOS/SERVIÇOS:\nQuando usar a ferramenta 'atualizarOS' OU 'salvarContexto', NUNCA envie apenas o nome do produto/serviço. VOCÊ DEVE pegar o 'id' ou 'codigo_interno' que retornou da ferramenta buscarProdutos/buscarServicos, e passar no array do JSON como `produto_id` e `servico_id`. Ex: [{\"produto_id\": \"123\", \"quantidade\": \"1\", \"valor_venda\": \"15.50\"}]. O Bom Saldo VAI RECUSAR se não tiver o ID."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -896,16 +764,16 @@
     },
     {
       "parameters": {
-        "description": "Busca cliente no Bom Saldo pelo nome. Use SEMPRE antes de criarOS.\nRetorna: cliente_id (numero), cliente_nome, e lista de clientes para confirmacao.\nIMPORTANTE: O 'cliente_id' retornado aqui e o unico ID valido para usar no criarOS.",
+        "description": "Busca cliente no Bom Saldo pelo nome.\nSe unico: retorna cliente_id.\nSe multiplos: retorna option_map onde voce pergunta o numero da opcao. Quando o usuario responder o numero, NAO chame a tool de novo. Em vez disso, olhe o option_map da ultima mensagem e extraia o id. ESTE e o ID que vai no cliente_id do criarOS.",
         "workflowId": {
           "__rl": true,
-          "value": "cdirQ2Av9MVLrDIK",
-          "mode": "id"
+          "mode": "id",
+          "value": "cdirQ2Av9MVLrDIK"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "nome": "={{ $fromAI('nome_cliente', 'Nome do cliente informado pelo tÃ©cnico', 'string') }}"
+            "nome": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nome', `inserir o nome do cliente que o tecnico informou`, 'string') }}"
           },
           "matchingColumns": [
             "nome"
@@ -937,7 +805,7 @@
     },
     {
       "parameters": {
-        "description": "Busca Ordens de ServiÃ§o no Bom Saldo. Use quando o tÃ©cnico quiser ver uma OS existente de um cliente. Informe o cliente_id e opcionalmente o codigo da OS.",
+        "description": "Busca Ordens de Servi�o no Bom Saldo. Use quando o t�cnico quiser ver uma OS existente de um cliente. Informe o cliente_id e opcionalmente o codigo da OS.",
         "workflowId": {
           "__rl": true,
           "value": "u9jabM2Dlah82Qrd",
@@ -972,7 +840,7 @@
           "mappingMode": "defineBelow",
           "value": {
             "cliente_id": "={{ $fromAI('cliente_id', 'ID numerico do cliente se voce souber. Se nao souber, envie string vazia.', 'string') }}",
-            "situacao_id": "={{ $fromAI('situacao_id', 'ID da situacao. Sempre use 6237497 (Aguardando Atendimento) a menos que o tecnico peÃ§a outro.', 'string') }}",
+            "situacao_id": "={{ $fromAI('situacao_id', 'ID da situacao. Sempre use 6237497 (Aguardando Atendimento) a menos que o tecnico pe�a outro.', 'string') }}",
             "observacoes": "={{ $fromAI('observacoes', 'Descricao inicial do atendimento relatado pelo tecnico. Escreva em portugues.', 'string') }}",
             "tecnico_nome": "={{ $('setarInfo4').first().json.msg.nomeLead }}",
             "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}",
@@ -991,6 +859,34 @@
               "canBeUsedToMatch": true,
               "type": "string",
               "removed": false
+            },
+            {
+              "id": "tecnico_id",
+              "displayName": "tecnico_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tecnico_nome",
+              "displayName": "tecnico_nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "tecnico_whatsapp",
+              "displayName": "tecnico_whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
             },
             {
               "id": "situacao_id",
@@ -1013,43 +909,22 @@
               "removed": false
             },
             {
-              "id": "tecnico_nome",
-              "displayName": "tecnico_nome",
+              "id": "cliente_nome",
+              "displayName": "cliente_nome",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "tecnico_id",
-              "displayName": "tecnico_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_whatsapp",
-              "displayName": "tecnico_whatsapp",
-              "required": false,
-              "display": true,
               "type": "string"
             },
             {
               "id": "conversa_id",
               "displayName": "conversa_id",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
               "type": "string"
-            },
-            {
-              "id": "cliente_nome",
-              "displayName": "cliente_nome",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -1067,7 +942,7 @@
     },
     {
       "parameters": {
-        "description": "Busca produtos/materiais no catÃ¡logo do Bom Saldo pelo nome. Use quando o tÃ©cnico mencionar um material utilizado. Nunca use produtos que nÃ£o existam no catÃ¡logo.",
+        "description": "Busca produtos/materiais no cat�logo do Bom Saldo pelo nome. Use quando o t�cnico mencionar um material utilizado. Nunca use produtos que n�o existam no cat�logo.",
         "workflowId": {
           "__rl": true,
           "value": "iJRYEqsLzCVACG0j",
@@ -1076,7 +951,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "nome": "={{ $fromAI('nome', 'O nome, cÃ³digo ou termo do produto para buscar no catÃ¡logo do Bom Saldo. Exemplos: VHL 1120, CÃ‚MERA', 'string') }}"
+            "nome": "={{ $fromAI('nome', 'O nome, c�digo ou termo do produto para buscar no cat�logo do Bom Saldo. Exemplos: VHL 1120, C�\u001aMERA', 'string') }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -1098,15 +973,15 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        320,
-        912
+        336,
+        928
       ],
       "id": "a1b2c3d4-0033-0033-0033-000000000033",
       "name": "buscarProdutos"
     },
     {
       "parameters": {
-        "description": "Busca serviÃ§os no catÃ¡logo do Bom Saldo pelo nome. Use quando o tÃ©cnico mencionar um serviÃ§o executado. Nunca use serviÃ§os que nÃ£o existam no catÃ¡logo.",
+        "description": "Busca servi�os no cat�logo do Bom Saldo pelo nome. Use quando o t�cnico mencionar um servi�o executado. Nunca use servi�os que n�o existam no cat�logo.",
         "workflowId": {
           "__rl": true,
           "value": "Dhp6XByNpzhyVqza",
@@ -1115,7 +990,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "nome": "={{ $fromAI('nome', 'O nome do serviÃ§o para buscar no catÃ¡logo. Exemplos: ManutenÃ§Ã£o de cÃ¢mera', 'string') }}"
+            "nome": "={{ $fromAI('nome', 'O nome do servi�o para buscar no cat�logo. Exemplos: Manuten��o de c�mera', 'string') }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -1137,79 +1012,15 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        448,
-        912
+        464,
+        928
       ],
       "id": "a1b2c3d4-0034-0034-0034-000000000034",
       "name": "buscarServicos"
     },
     {
       "parameters": {
-        "description": "Salva uma imagem/foto de evidÃªncia no Google Drive na pasta da OS. Use sempre que o tÃ©cnico enviar uma foto. Passe o cliente_nome para criar a pasta com o nome do cliente.",
-        "workflowId": {
-          "__rl": true,
-          "value": "0HxglGmNg0W0JYIs",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "urlImagem": "={{ $fromAI('url_imagem', 'URL da imagem enviada pelo tÃ©cnico. Use a urlMedia da mensagem original.', 'string') }}",
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo da OS para organizaÃ§Ã£o no Drive', 'string') }}",
-            "cliente_nome": "={{ $fromAI('cliente_nome', 'Nome do cliente da OS para nomear a pasta no Drive', 'string') }}",
-            "descricao": "={{ $fromAI('descricao', 'Breve descriÃ§Ã£o do que mostra a imagem', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "urlImagem",
-              "displayName": "urlImagem",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "os_codigo",
-              "displayName": "os_codigo",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "cliente_nome",
-              "displayName": "cliente_nome",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "descricao",
-              "displayName": "descricao",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        576,
-        912
-      ],
-      "id": "a1b2c3d4-0035-0035-0035-000000000035",
-      "name": "salvarEvidencia"
-    },
-    {
-      "parameters": {
-        "description": "Finaliza a OS, adicionando produtos/serviÃ§os, dados financeiros e horÃ¡rios. IMPORTANTE: os produtos DEVEM conter `produto_id` e `variacao_id` retirados do `option_map` do buscarProdutos. NUNCA invente e NUNCA peÃ§a IDs ao tÃ©cnico.",
+        "description": "Finaliza a OS, adicionando produtos/servi�os, dados financeiros e hor�rios. IMPORTANTE: os produtos DEVEM conter `produto_id` e `variacao_id` retirados do `option_map` do buscarProdutos. NUNCA invente e NUNCA pe�a IDs ao t�cnico.",
         "workflowId": {
           "__rl": true,
           "value": "hhFMx49xvO5WSxW9",
@@ -1218,24 +1029,24 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "os_id": "={{ $fromAI('os_id', 'ID INTERNO da OS (7+ digitos, do Bom Saldo). ObrigatÃ³rio.', 'string') }}",
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo visÃ­vel da OS (ex: 1604). ObrigatÃ³rio.', 'string') }}",
-            "relatorio_tecnico": "={{ $fromAI('relatorio_tecnico', 'Texto completo do relatÃ³rio tÃ©cnico gerado', 'string') }}",
+            "os_id": "={{ $fromAI('os_id', 'ID INTERNO da OS (7+ digitos, do Bom Saldo). Obrigat�rio.', 'string') }}",
+            "os_codigo": "={{ $fromAI('os_codigo', 'C�digo vis�vel da OS (ex: 1604). Obrigat�rio.', 'string') }}",
+            "relatorio_tecnico": "={{ $fromAI('relatorio_tecnico', 'Texto completo do relat�rio t�cnico gerado', 'string') }}",
             "equipamento": "={{ $fromAI('equipamento', 'Nome do equipamento atendido', 'string') }}",
             "marca": "={{ $fromAI('marca', 'Marca do equipamento', 'string') }}",
             "modelo": "={{ $fromAI('modelo', 'Modelo do equipamento', 'string') }}",
             "defeito": "={{ $fromAI('defeito', 'Defeito encontrado', 'string') }}",
-            "solucao": "={{ $fromAI('solucao', 'SoluÃ§Ã£o aplicada', 'string') }}",
-            "laudo": "={{ $fromAI('laudo', 'Laudo tÃ©cnico completo', 'string') }}",
-            "produtos_json": "={{ $fromAI('produtos_json', 'JSON array de produtos. Use NOME do produto (campo nome retornado pelo buscarProdutos), quantidade e valor_venda. Exemplo: [{\"nome\":\"Camera HDCVI 1080p\",\"quantidade\":\"1\",\"valor_venda\":\"350.00\"}]. Se nao houver produtos, envie string vazia.', 'string') }}",
-            "servicos_json": "={{ $fromAI('servicos_json', 'JSON array de servicos. Use NOME do servico (campo nome retornado pelo buscarServicos), quantidade e valor_venda. Exemplo: [{\"nome\":\"Manutencao preventiva CFTV\",\"quantidade\":\"1\",\"valor_venda\":\"200.00\"}]. Se nao houver servicos, envie string vazia.', 'string') }}",
-            "link_drive": "={{ $fromAI('link_drive', 'Link da pasta de evidÃªncias no Google Drive', 'string') }}",
-            "situacao_id": "={{ $fromAI('situacao_id', 'ID da situaÃ§Ã£o de fechamento (ex: 6237499 = Concretizada)', 'string') }}",
+            "solucao": "={{ $fromAI('solucao', 'Solu��o aplicada', 'string') }}",
+            "laudo": "={{ $fromAI('laudo', 'Laudo t�cnico completo', 'string') }}",
+            "produtos_json": "={{ $fromAI('produtos_json', 'JSON array de produtos. Use produto_id (do option_map), quantidade e valor_venda. Exemplo: [{\"produto_id\":\"123\",\"quantidade\":\"1\",\"valor_venda\":\"350.00\"}]. Se nao houver produtos, envie string vazia.', 'string') }}",
+            "servicos_json": "={{ $fromAI('servicos_json', 'JSON array de servicos. Use servico_id (do option_map), quantidade e valor_venda. Exemplo: [{\"servico_id\":\"456\",\"quantidade\":\"1\",\"valor_venda\":\"200.00\"}]. Se nao houver servicos, envie string vazia.', 'string') }}",
+            "link_drive": "={{ $fromAI('link_drive', 'Link da pasta de evid��ncias no Google Drive', 'string') }}",
+            "situacao_id": "={{ $fromAI('situacao_id', 'ID da situa��o de fechamento (ex: 6237499 = Concretizada)', 'string') }}",
             "tipo_pagamento": "={{ $fromAI('tipo_pagamento', 'A forma de pagamento informada pelo tecnico (Ex: Dinheiro, Pix, Boleto, Faturar no Escritorio)', 'string') }}",
-            "hora_entrada": "={{ $fromAI('hora_entrada', 'HorÃ¡rio de entrada do tÃ©cnico no atendimento (ex: 14:30)', 'string') }}",
-            "hora_saida": "={{ $fromAI('hora_saida', 'HorÃ¡rio de saÃ­da do tÃ©cnico no atendimento (ex: 16:00)', 'string') }}",
-            "em_garantia": "={{ $fromAI('em_garantia', 'true se for atendimento em garantia, false caso contrÃ¡rio', 'string') }}",
-            "tipo_servico": "={{ $fromAI('tipo_servico', 'Tipo do serviÃ§o executado. Quando for atendimento em garantia, SEMPRE enviar o valor exato: Garantia. Quando for manutenÃ§Ã£o, enviar: ManutenÃ§Ã£o. Quando for instalaÃ§Ã£o, enviar: InstalaÃ§Ã£o. Outros tipos conforme contexto.', 'string') }}",
+            "hora_entrada": "={{ $fromAI('hora_entrada', 'Hor�rio de entrada do t�cnico no atendimento (ex: 14:30)', 'string') }}",
+            "hora_saida": "={{ $fromAI('hora_saida', 'Hor�rio de sa�da do t�cnico no atendimento (ex: 16:00)', 'string') }}",
+            "em_garantia": "={{ $fromAI('em_garantia', 'true se for atendimento em garantia, false caso contr�rio', 'string') }}",
+            "tipo_servico": "={{ $fromAI('tipo_servico', 'Tipo do servi�o executado. Quando for atendimento em garantia, SEMPRE enviar o valor exato: Garantia. Quando for manuten��o, enviar: Manuten����o. Quando for instala��o, enviar: Instala��o. Outros tipos conforme contexto.', 'string') }}",
             "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}"
           },
           "matchingColumns": [],
@@ -1391,7 +1202,7 @@
     },
     {
       "parameters": {
-        "description": "Grava dados da OS na tabela ordens_servico. CHAME SEMPRE que tiver um dado novo (cliente, OS, equipamento, etc). A chave Ã© o os_codigo.",
+        "description": "Grava dados da OS na tabela ordens_servico. CHAME SEMPRE que tiver um dado novo (cliente, OS, equipamento, etc). A chave � o os_codigo.",
         "workflowId": {
           "__rl": true,
           "value": "cYIrVtfY8qfkwj38",
@@ -1400,94 +1211,339 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "os_codigo": "={{ $fromAI('os_codigo', 'OBRIGATÃ“RIO: CÃ³digo da OS (ex: 1604). Se nÃ£o tiver, envie vazio.', 'string') }}",
-            "os_id_bomsaldo": "={{ $fromAI('os_id_bomsaldo', 'ID interno Bom Saldo (7+ digitos). Envie vazio se nÃ£o tiver.', 'string') }}",
+            "os_codigo": "={{ $fromAI('os_codigo', 'OBRIGAT�\u001cRIO: C�digo da OS (ex: 1604). Se n�o tiver, envie vazio.', 'string') }}",
+            "os_id_bomsaldo": "={{ $fromAI('os_id_bomsaldo', 'ID interno Bom Saldo (7+ digitos). Envie vazio se n�o tiver.', 'string') }}",
             "conversa_id": "={{ $('setarInfo').item.json.id_conversa }}",
             "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}",
             "tecnico_nome": "={{ $('setarInfo4').first().json.msg.nomeLead }}",
             "tecnico_whatsapp": "={{ $('setarInfo4').first().json.msg.numberLead }}",
-            "cliente_codigo": "={{ $fromAI('cliente_codigo', 'ID numÃ©rico do cliente no Bom Saldo', 'string') }}",
+            "cliente_codigo": "={{ $fromAI('cliente_codigo', 'ID num�rico do cliente no Bom Saldo', 'string') }}",
             "cliente_nome": "={{ $fromAI('cliente_nome', 'Nome do Cliente', 'string') }}",
             "fase_ia": "={{ $fromAI('fase_ia', 'Fase: identificacao, coleta_tecnica, itens, encerramento, fechado, cancelado', 'string') }}",
-            "status_os": "={{ $fromAI('status_os', 'Status: aberta, em_andamento, concluida, cancelada. Envie vazio para manter.', 'string') }}"
+            "status_os": "={{ $fromAI('status_os', 'Status: aberta, em_andamento, concluida, cancelada. Envie vazio para manter.', 'string') }}",
+            "cliente_endereco": "={{ $fromAI('cliente_endereco', ``, 'string') }}",
+            "equipamento": "={{ $fromAI('equipamento', ``, 'string') }}",
+            "equipamento_codigo": "={{ $fromAI('equipamento_codigo', ``, 'string') }}",
+            "marca": "={{ $fromAI('marca', ``, 'string') }}",
+            "modelo": "={{ $fromAI('modelo', ``, 'string') }}",
+            "defeito": "={{ $fromAI('defeito', ``, 'string') }}",
+            "causa": "={{ $fromAI('causa', ``, 'string') }}",
+            "solucao": "={{ $fromAI('solucao', ``, 'string') }}",
+            "relatorio_tecnico": "={{ $fromAI('relatorio_tecnico', ``, 'string') }}",
+            "tipo_servico": "={{ $fromAI('tipo_servico', ``, 'string') }}",
+            "servico_nome": "={{ $fromAI('servico_nome', ``, 'string') }}",
+            "servico_codigo": "={{ $fromAI('servico_codigo', ``, 'string') }}",
+            "observacoes_orientacao": "={{ $fromAI('observacoes_orientacao', ``, 'string') }}",
+            "em_garantia": "={{ $fromAI('em_garantia', ``, 'string') }}",
+            "tipo_pagamento": "={{ $fromAI('tipo_pagamento', ``, 'string') }}",
+            "forma_pagamento_id": "={{ $fromAI('forma_pagamento_id', ``, 'string') }}",
+            "valor_total": "={{ $fromAI('valor_total', ``, 'string') }}",
+            "hora_entrada": "={{ $fromAI('hora_entrada', ``, 'string') }}",
+            "hora_saida": "={{ $fromAI('hora_saida', ``, 'string') }}",
+            "link_pasta_drive": "={{ $fromAI('link_pasta_drive', ``, 'string') }}",
+            "motivo_cancelamento": "={{ $fromAI('motivo_cancelamento', ``, 'string') }}"
           },
           "matchingColumns": [],
           "schema": [
             {
               "id": "os_codigo",
               "displayName": "os_codigo",
-              "required": true,
+              "required": false,
+              "defaultMatch": false,
               "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "type": "string"
             },
             {
               "id": "os_id_bomsaldo",
               "displayName": "os_id_bomsaldo",
               "required": false,
+              "defaultMatch": false,
               "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "type": "string"
             },
             {
               "id": "conversa_id",
               "displayName": "conversa_id",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
               "type": "string"
             },
             {
               "id": "tecnico_id",
               "displayName": "tecnico_id",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
               "type": "string"
             },
             {
               "id": "tecnico_nome",
               "displayName": "tecnico_nome",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
               "type": "string"
             },
             {
               "id": "tecnico_whatsapp",
               "displayName": "tecnico_whatsapp",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "cliente_nome",
+              "displayName": "cliente_nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
               "type": "string"
             },
             {
               "id": "cliente_codigo",
               "displayName": "cliente_codigo",
               "required": false,
+              "defaultMatch": false,
               "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "type": "string"
             },
             {
-              "id": "cliente_nome",
-              "displayName": "cliente_nome",
+              "id": "cliente_endereco",
+              "displayName": "cliente_endereco",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "removed": false
             },
             {
-              "id": "fase_ia",
-              "displayName": "fase_ia",
+              "id": "equipamento",
+              "displayName": "equipamento",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "removed": false
+            },
+            {
+              "id": "equipamento_codigo",
+              "displayName": "equipamento_codigo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "marca",
+              "displayName": "marca",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "modelo",
+              "displayName": "modelo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "defeito",
+              "displayName": "defeito",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "causa",
+              "displayName": "causa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "solucao",
+              "displayName": "solucao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "relatorio_tecnico",
+              "displayName": "relatorio_tecnico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "tipo_servico",
+              "displayName": "tipo_servico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "servico_nome",
+              "displayName": "servico_nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "servico_codigo",
+              "displayName": "servico_codigo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "observacoes_orientacao",
+              "displayName": "observacoes_orientacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "em_garantia",
+              "displayName": "em_garantia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "tipo_pagamento",
+              "displayName": "tipo_pagamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "forma_pagamento_id",
+              "displayName": "forma_pagamento_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "valor_total",
+              "displayName": "valor_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "hora_entrada",
+              "displayName": "hora_entrada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "hora_saida",
+              "displayName": "hora_saida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "link_pasta_drive",
+              "displayName": "link_pasta_drive",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
             },
             {
               "id": "status_os",
               "displayName": "status_os",
               "required": false,
+              "defaultMatch": false,
               "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "fase_ia",
+              "displayName": "fase_ia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "motivo_cancelamento",
+              "displayName": "motivo_cancelamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -1505,7 +1561,7 @@
     },
     {
       "parameters": {
-        "description": "Recupera todos os dados da OS ativa do tÃ©cnico na tabela ordens_servico. Chame quando precisar de os_id, cliente, equipamento ou qualquer dado da OS.",
+        "description": "Recupera todos os dados da OS ativa do t�cnico na tabela ordens_servico. Chame quando precisar de os_id, cliente, equipamento ou qualquer dado da OS.",
         "workflowId": {
           "__rl": true,
           "value": "euPVASK7Ycfi6zWk",
@@ -1514,7 +1570,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo da OS para buscar. Se nÃ£o souber, envie vazio que busca pela OS ativa do tÃ©cnico.', 'string') }}",
+            "os_codigo": "={{ $fromAI('os_codigo', 'C�digo da OS para buscar. Se n�o souber, envie vazio que busca pela OS ativa do t�cnico.', 'string') }}",
             "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}"
           },
           "matchingColumns": [],
@@ -1560,8 +1616,8 @@
           "mappingMode": "defineBelow",
           "value": {
             "os_id": "={{ $fromAI('os_id', 'ID interno da OS (7+ digitos do Bom Saldo)', 'string') }}",
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo visÃ­vel da OS (ex: 1604)', 'string') }}",
-            "motivo": "={{ $fromAI('motivo', 'O motivo detalhado fornecido pelo prÃ³prio tÃ©cnico para justificar o cancelamento', 'string') }}",
+            "os_codigo": "={{ $fromAI('os_codigo', 'C�digo vis�vel da OS (ex: 1604)', 'string') }}",
+            "motivo": "={{ $fromAI('motivo', 'O motivo detalhado fornecido pelo pr�prio t�cnico para justificar o cancelamento', 'string') }}",
             "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}",
             "tecnico_nome": "={{ $('setarInfo').first().json.nomeTecnico }}"
           },
@@ -1621,112 +1677,6 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "sma1",
-              "name": "message_agent",
-              "value": "={{ $json.output }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        896,
-        608
-      ],
-      "id": "a1b2c3d4-0037-0037-0037-000000000037",
-      "name": "setarMsgAgent"
-    },
-    {
-      "parameters": {
-        "promptType": "=define",
-        "text": "=Quebre a mensagem abaixo em partes menores e remova toda formataÃ§Ã£o markdown. Jamais faÃ§a comentÃ¡rios adicionais.\n\nA mensagem:\n\n{{ $('setarMsgAgent').item.json.message_agent }}",
-        "options": {
-          "systemMessage": "VocÃª formata mensagens para WhatsApp. Quebre textos longos em blocos menores (mÃ¡x. 300 caracteres por bloco), sem alterar nenhuma palavra. Remova Markdown e use apenas texto puro. Use \\n para separar blocos. NÃ£o adicione comentÃ¡rios."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        1152,
-        608
-      ],
-      "id": "a1b2c3d4-0038-0038-0038-000000000038",
-      "name": "quebrar_mensagem"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "gpt-4o-mini",
-          "mode": "list"
-        },
-        "options": {
-          "temperature": 0
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.2,
-      "position": [
-        1136,
-        832
-      ],
-      "id": "a1b2c3d4-0039-0039-0039-000000000039",
-      "name": "gpt-4o-mini Quebrar",
-      "credentials": {
-        "openAiApi": {
-          "id": "TMMdy9XgNtm5j7mS",
-          "name": "OpenAi | danilopatrimonium"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const mensagensTexto = $input.first().json.output || '';\nif (typeof mensagensTexto !== 'string' || !mensagensTexto.trim()) return [];\nconst textoCorrigido = mensagensTexto.replace(/\\\\n/g, '\\n');\nconst mensagensArray = textoCorrigido.split(/\\n/).map(line => line.trim()).filter(line => line.length > 0);\nreturn mensagensArray.map(msg => ({ json: { output: msg } }));\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1728,
-        624
-      ],
-      "id": "a1b2c3d4-0040-0040-0040-000000000040",
-      "name": "SplitMensagens"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "output",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        1968,
-        624
-      ],
-      "id": "a1b2c3d4-0041-0041-0041-000000000041",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        2160,
-        608
-      ],
-      "id": "a1b2c3d4-0042-0042-0042-000000000042",
-      "name": "Loop Mensagens"
-    },
-    {
-      "parameters": {
         "method": "POST",
         "url": "=https://piccininsecurity-chatwoot.cloudfy.live/api/v1/accounts/{{ $('setarInfo').first().json.id_conta }}/conversations/{{ $('setarInfo').first().json.id_conversa }}/messages",
         "authentication": "genericCredentialType",
@@ -1749,8 +1699,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2560,
-        704
+        816,
+        560
       ],
       "id": "a1b2c3d4-0043-0043-0043-000000000043",
       "name": "respostaChatwoot",
@@ -1763,39 +1713,356 @@
     },
     {
       "parameters": {
-        "amount": 2
+        "assignments": {
+          "assignments": [
+            {
+              "id": "siurl1",
+              "name": "msg",
+              "value": "={{ '[[IMG]]' + $('setarInfo4').item.json.msg.urlMedia }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        2832,
-        784
+        -2304,
+        912
       ],
-      "id": "a1b2c3d4-0044-0044-0044-000000000044",
-      "name": "2 segundos",
-      "webhookId": "protek-wait-2s-001"
+      "id": "setarImagemUrl-uuid",
+      "name": "setarImagemUrl"
     },
     {
       "parameters": {
+        "jsCode": "const messages = $('Get Redis').item.json.message || [];\nconst texts = [];\nconst urls = [];\nfor (const m of messages) {\n    if (m && m.startsWith('[[IMG]]')) {\n        urls.push(m.replace('[[IMG]]', ''));\n    } else if (m) {\n        texts.push(m);\n    }\n}\n\nlet textoFinal = texts.join('\\n').trim();\nif (urls.length > 0) {\n    if (textoFinal !== '') textoFinal += '\\n\\n';\n    textoFinal += '[SISTEMA INTERNO]: O usuário enviou foto(s). O sistema de Inteligência da ProtekOS as enviou automaticamente para a pasta da OS no Google Drive com sucesso. Não é necessário chamar NENHUMA tool para salvar essas evidências.';\n}\n\n// Buscar OS ativa do técnico direto no Supabase REST API\nlet os_codigo = '';\nlet cliente_nome = '';\n\ntry {\n    const tecnico_id = $('setarInfo4').first().json.msg.identicacaoLead;\n    if (tecnico_id) {\n        const resp = await $helpers.httpRequest({\n            method: 'GET',\n            url: 'https://bnghvmromtukmflzeojd.supabase.co/rest/v1/ordens_servico',\n            headers: {\n                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo',\n                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo',\n                'Content-Type': 'application/json'\n            },\n            qs: {\n                'tecnico_id': 'eq.' + tecnico_id,\n                'status_os': 'in.(aberta,em_andamento)',\n                'order': 'criado_em.desc',\n                'limit': '1',\n                'select': 'os_codigo,cliente_nome'\n            }\n        });\n        if (Array.isArray(resp) && resp.length > 0) {\n            os_codigo = String(resp[0].os_codigo || '');\n            cliente_nome = String(resp[0].cliente_nome || '');\n        }\n    }\n} catch(e) {\n    // fallback: tentar BuscarTecnico\n    try {\n        const allItems = $('BuscarTecnico').all();\n        for (const item of allItems) {\n            if (item.json && item.json.os_codigo) {\n                os_codigo = String(item.json.os_codigo || '');\n                cliente_nome = String(item.json.cliente_nome || '');\n                break;\n            }\n        }\n    } catch(e2) {}\n}\n\nconst itemsParaUpload = [];\n\nif (urls.length > 0) {\n    for (let i = 0; i < urls.length; i++) {\n        itemsParaUpload.push({\n            urlImagem: urls[i],\n            os_codigo: os_codigo,\n            cliente_nome: cliente_nome,\n            descricao: 'Evidência ' + (i+1)\n        });\n    }\n}\n\nreturn [{\n    json: {\n        message: textoFinal,\n        urls: urls,\n        itemsParaUpload: itemsParaUpload,\n        os_codigo: os_codigo,\n        cliente_nome: cliente_nome\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        720
+      ],
+      "id": "separador-img-txt",
+      "name": "Separar Imagens e Textos"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "itemsParaUpload",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
+      "id": "split-urls-node-1234",
+      "name": "Split URLs Upload",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
       "position": [
-        -2576,
-        1120
-      ],
-      "id": "6e71c4e8-b312-47d3-96fe-0ff5f9f2b26a",
-      "name": "2.5Flash",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "4NL5vsvVhjhBLw1V",
-          "name": "Google Gemini saderisistemas Piccinin"
-        }
-      }
+        -320,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0HxglGmNg0W0JYIs",
+          "mode": "list",
+          "cachedResultName": "W7 - Tool - Salvar Evidencias Drive"
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "id": "674cf4a0-7b56-4cf3-b8e7-ebc5286595ee",
+      "name": "Sub - Salvar Evidencias2",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// HTTP Request retorna array JSON - pegar primeiro item\nlet os_codigo = '';\nlet cliente_nome = '';\n\ntry {\n    // HTTP Request node retorna os dados como array dentro do json\n    const httpItems = $('Buscar OS Tecnico').all();\n    for (const item of httpItems) {\n        // n8n httpRequest: resultado pode estar em item.json diretamente (array) ou item.json[0]\n        let dados = null;\n        if (Array.isArray(item.json) && item.json.length > 0) {\n            dados = item.json[0];\n        } else if (item.json && item.json.os_codigo) {\n            dados = item.json;\n        }\n        if (dados && dados.os_codigo) {\n            os_codigo = String(dados.os_codigo || '');\n            cliente_nome = String(dados.cliente_nome || '');\n            break;\n        }\n    }\n} catch(e) {}\n\n// Pegar itemsParaUpload do Separar Imagens e Textos\nconst separar = $('Separar Imagens e Textos').first().json;\nconst itemsParaUpload = (separar.itemsParaUpload || []).map((item, i) => ({\n    urlImagem: item.urlImagem,\n    os_codigo: os_codigo || item.os_codigo,\n    cliente_nome: cliente_nome || item.cliente_nome,\n    descricao: 'Evidência ' + (i+1)\n}));\n\nreturn [{\n    json: {\n        message: separar.message,\n        urls: separar.urls,\n        itemsParaUpload: itemsParaUpload,\n        os_codigo: os_codigo,\n        cliente_nome: cliente_nome\n    }\n}];"
+      },
+      "id": "enriquecer-upload-node-w1",
+      "name": "Enriquecer Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://bnghvmromtukmflzeojd.supabase.co/rest/v1/ordens_servico",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "tecnico_id",
+              "value": "=eq.{{ $('setarInfo4').first().json.msg.identicacaoLead }}"
+            },
+            {
+              "name": "status_os",
+              "value": "in.(aberta,em_andamento)"
+            },
+            {
+              "name": "order",
+              "value": "criado_em.desc"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "select",
+              "value": "os_codigo,cliente_nome"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "buscar-os-tec-node-w1",
+      "name": "Buscar OS Tecnico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        720
+      ]
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Trigger": [
+      {
+        "json": {
+          "cliente_id": "",
+          "tecnico_id": "554484089133@s.whatsapp.net",
+          "tecnico_nome": "Danilo Saderi",
+          "tecnico_whatsapp": "+554484089133",
+          "situacao_id": "6237497",
+          "observacoes": "Aguardando detalhes do atendimento técnico.",
+          "cliente_nome": "SAINT PETER´S (CONDOMINIO EDIFICIO SAINT PETER´S)",
+          "conversa_id": "12"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Webhook Chatwoot": [
+      {
+        "json": {
+          "headers": {
+            "host": "piccininsecurity-n8n.cloudfy.live",
+            "user-agent": "rest-client/2.1.0 (linux-musl x86_64) ruby/3.4.4p34",
+            "content-length": "6323",
+            "accept": "application/json",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "157.180.94.233",
+            "cf-ipcountry": "FI",
+            "cf-ray": "9e8e31befe8f613b-FRA",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.70.240.11",
+            "x-forwarded-host": "piccininsecurity-n8n.cloudfy.live",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "87eae9105141",
+            "x-real-ip": "172.70.240.11"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "account": {
+              "id": 1,
+              "name": "Piccinin Security"
+            },
+            "additional_attributes": {},
+            "content_attributes": {},
+            "content_type": "text",
+            "content": null,
+            "conversation": {
+              "additional_attributes": {},
+              "can_reply": true,
+              "channel": "Channel::Api",
+              "contact_inbox": {
+                "id": 21,
+                "contact_id": 2,
+                "inbox_id": 2,
+                "source_id": "ef3a1cd3-045b-496c-93ac-7a75221b8f06",
+                "created_at": "2026-03-28T21:57:06.604Z",
+                "updated_at": "2026-03-28T21:57:06.604Z",
+                "hmac_verified": false,
+                "pubsub_token": "UVdqezoHN7sVZkGEBAtvS2x7"
+              },
+              "id": 12,
+              "inbox_id": 2,
+              "messages": [
+                {
+                  "id": 3914,
+                  "content": null,
+                  "account_id": 1,
+                  "inbox_id": 2,
+                  "conversation_id": 12,
+                  "message_type": 0,
+                  "created_at": 1775619035,
+                  "updated_at": "2026-04-08T03:30:35.811Z",
+                  "private": false,
+                  "status": "sent",
+                  "source_id": "WAID:AC85240418068393E13E34CC414379C7",
+                  "content_type": "text",
+                  "content_attributes": {},
+                  "sender_type": "Contact",
+                  "sender_id": 2,
+                  "external_source_ids": {},
+                  "additional_attributes": {},
+                  "processed_message_content": null,
+                  "sentiment": {},
+                  "conversation": {
+                    "assignee_id": null,
+                    "unread_count": 10,
+                    "last_activity_at": 1775619035,
+                    "contact_inbox": {
+                      "source_id": "ef3a1cd3-045b-496c-93ac-7a75221b8f06"
+                    }
+                  },
+                  "attachments": [
+                    {
+                      "id": 128,
+                      "message_id": 3914,
+                      "file_type": "image",
+                      "account_id": 1,
+                      "extension": null,
+                      "data_url": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBYUU9IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59d326cc1615f22d956b5aafac53bb7f5472452f/0k1vut.jpeg",
+                      "thumb_url": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBYUU9IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59d326cc1615f22d956b5aafac53bb7f5472452f/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lKYW5CbFp3WTZCa1ZVT2hOeVpYTnBlbVZmZEc5ZlptbHNiRnNIYVFINk1BPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--6e2ed42df4374431a43c3869ff96a5b9465ecbf5/0k1vut.jpeg",
+                      "file_size": 25004,
+                      "width": null,
+                      "height": null
+                    }
+                  ],
+                  "sender": {
+                    "additional_attributes": {
+                      "avatar_url_hash": "98b6bf21057437b84b57cc8ba85583db71006408308818029d9fd570b0933d2f",
+                      "last_avatar_sync_at": "2026-02-11T22:56:10Z"
+                    },
+                    "custom_attributes": {},
+                    "email": null,
+                    "id": 2,
+                    "identifier": "554484089133@s.whatsapp.net",
+                    "name": "Danilo Saderi",
+                    "phone_number": "+554484089133",
+                    "thumbnail": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHUT09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59a7405a7c2ec55cb8692e82b2c46b3927e13947/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--9a9a2707f1758fdf94f18b132f21946a8257181e/610362851_1239847084907134_8186157582197969631_n.jpg",
+                    "blocked": false,
+                    "type": "contact"
+                  }
+                }
+              ],
+              "labels": [],
+              "meta": {
+                "sender": {
+                  "additional_attributes": {
+                    "avatar_url_hash": "98b6bf21057437b84b57cc8ba85583db71006408308818029d9fd570b0933d2f",
+                    "last_avatar_sync_at": "2026-02-11T22:56:10Z"
+                  },
+                  "custom_attributes": {},
+                  "email": null,
+                  "id": 2,
+                  "identifier": "554484089133@s.whatsapp.net",
+                  "name": "Danilo Saderi",
+                  "phone_number": "+554484089133",
+                  "thumbnail": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHUT09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59a7405a7c2ec55cb8692e82b2c46b3927e13947/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--9a9a2707f1758fdf94f18b132f21946a8257181e/610362851_1239847084907134_8186157582197969631_n.jpg",
+                  "blocked": false,
+                  "type": "contact"
+                },
+                "assignee": null,
+                "assignee_type": null,
+                "team": null,
+                "hmac_verified": false
+              },
+              "status": "open",
+              "custom_attributes": {},
+              "snoozed_until": null,
+              "unread_count": 10,
+              "first_reply_created_at": "2026-03-28T21:57:21.453Z",
+              "priority": null,
+              "waiting_since": 1775619034,
+              "agent_last_seen_at": 1775611784,
+              "contact_last_seen_at": 1775618523,
+              "last_activity_at": 1775619035,
+              "timestamp": 1775619035,
+              "created_at": 1774735026,
+              "updated_at": 1775619035.8142183
+            },
+            "created_at": "2026-04-08T03:30:35.811Z",
+            "id": 3914,
+            "inbox": {
+              "id": 2,
+              "name": "Vanda-Lead"
+            },
+            "message_type": "incoming",
+            "private": false,
+            "sender": {
+              "account": {
+                "id": 1,
+                "name": "Piccinin Security"
+              },
+              "additional_attributes": {
+                "avatar_url_hash": "98b6bf21057437b84b57cc8ba85583db71006408308818029d9fd570b0933d2f",
+                "last_avatar_sync_at": "2026-02-11T22:56:10Z"
+              },
+              "avatar": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHUT09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59a7405a7c2ec55cb8692e82b2c46b3927e13947/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--9a9a2707f1758fdf94f18b132f21946a8257181e/610362851_1239847084907134_8186157582197969631_n.jpg",
+              "custom_attributes": {},
+              "email": null,
+              "id": 2,
+              "identifier": "554484089133@s.whatsapp.net",
+              "name": "Danilo Saderi",
+              "phone_number": "+554484089133",
+              "thumbnail": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBHUT09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59a7405a7c2ec55cb8692e82b2c46b3927e13947/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lJYW5CbkJqb0dSVlE2RTNKbGMybDZaVjkwYjE5bWFXeHNXd2RwQWZvdyIsImV4cCI6bnVsbCwicHVyIjoidmFyaWF0aW9uIn19--9a9a2707f1758fdf94f18b132f21946a8257181e/610362851_1239847084907134_8186157582197969631_n.jpg",
+              "blocked": false
+            },
+            "source_id": "WAID:AC85240418068393E13E34CC414379C7",
+            "attachments": [
+              {
+                "id": 128,
+                "message_id": 3914,
+                "file_type": "image",
+                "account_id": 1,
+                "extension": null,
+                "data_url": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBYUU9IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59d326cc1615f22d956b5aafac53bb7f5472452f/0k1vut.jpeg",
+                "thumb_url": "https://piccininsecurity-chatwoot.cloudfy.live/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBYUU9IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--59d326cc1615f22d956b5aafac53bb7f5472452f/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaDdCem9MWm05eWJXRjBTU0lKYW5CbFp3WTZCa1ZVT2hOeVpYTnBlbVZmZEc5ZlptbHNiRnNIYVFINk1BPT0iLCJleHAiOm51bGwsInB1ciI6InZhcmlhdGlvbiJ9fQ==--6e2ed42df4374431a43c3869ff96a5b9465ecbf5/0k1vut.jpeg",
+                "file_size": 25004,
+                "width": null,
+                "height": null
+              }
+            ],
+            "event": "message_created"
+          },
+          "webhookUrl": "https://piccininsecurity-n8n.cloudfy.live/webhook/pici-vanda",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook Chatwoot": {
       "main": [
@@ -1803,50 +2070,6 @@
           {
             "node": "Switch Filtro",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "SplitMensagens": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "2 segundos": {
-      "main": [
-        [
-          {
-            "node": "Loop Mensagens",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarImagem": {
-      "main": [
-        [
-          {
-            "node": "Merge Multimodal",
-            "type": "main",
-            "index": 2
-          }
-        ]
-      ]
-    },
-    "2.5Flash": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "analisadorImagem",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -1881,18 +2104,7 @@
       "main": [
         [
           {
-            "node": "W11 Get Contexto OS",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarMsgAgent": {
-      "main": [
-        [
-          {
-            "node": "quebrar_mensagem",
+            "node": "Vanda",
             "type": "main",
             "index": 0
           }
@@ -1903,12 +2115,13 @@
       "main": [
         [
           {
-            "node": "setarMsgAgent",
+            "node": "respostaChatwoot",
             "type": "main",
             "index": 0
           }
         ]
-      ]
+      ],
+      "ai_tool": []
     },
     "Wait Buffer": {
       "main": [
@@ -1916,17 +2129,6 @@
           {
             "node": "Get Redis",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "analisarImagem": {
-      "ai_tool": [
-        [
-          {
-            "node": "analisadorImagem",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -1969,7 +2171,7 @@
       "main": [
         [
           {
-            "node": "ConcatenaMsg",
+            "node": "Separar Imagens e Textos",
             "type": "main",
             "index": 0
           }
@@ -2032,39 +2234,6 @@
         ]
       ]
     },
-    "setarUrlImagem": {
-      "main": [
-        [
-          {
-            "node": "analisadorImagem",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "ConcatenaMsg": {
-      "main": [
-        [
-          {
-            "node": "Delete Buffer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "analisadorImagem": {
-      "main": [
-        [
-          {
-            "node": "setarImagem",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "setarMsg": {
       "main": [
         [
@@ -2083,17 +2252,6 @@
             "node": "Merge Multimodal",
             "type": "main",
             "index": 1
-          }
-        ]
-      ]
-    },
-    "salvarEvidencia": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
           }
         ]
       ]
@@ -2127,7 +2285,7 @@
         ],
         [
           {
-            "node": "setarUrlImagem",
+            "node": "setarImagemUrl",
             "type": "main",
             "index": 0
           }
@@ -2150,17 +2308,6 @@
         [
           {
             "node": "Merge Multimodal",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "respostaChatwoot": {
-      "main": [
-        [
-          {
-            "node": "2 segundos",
             "type": "main",
             "index": 0
           }
@@ -2201,18 +2348,6 @@
         [
           {
             "node": "Wait Buffer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Mensagens": {
-      "main": [
-        [],
-        [
-          {
-            "node": "respostaChatwoot",
             "type": "main",
             "index": 0
           }
@@ -2274,33 +2409,11 @@
         ]
       ]
     },
-    "gpt-4o-mini Quebrar": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "quebrar_mensagem",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "dataHora": {
       "main": [
         [
           {
             "node": "setarInfo",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Loop Mensagens",
             "type": "main",
             "index": 0
           }
@@ -2313,17 +2426,6 @@
           {
             "node": "Vanda",
             "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "quebrar_mensagem": {
-      "main": [
-        [
-          {
-            "node": "SplitMensagens",
-            "type": "main",
             "index": 0
           }
         ]
@@ -2350,19 +2452,91 @@
           }
         ]
       ]
+    },
+    "respostaChatwoot": {
+      "main": [
+        []
+      ]
+    },
+    "setarImagemUrl": {
+      "main": [
+        [
+          {
+            "node": "Merge Multimodal",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Separar Imagens e Textos": {
+      "main": [
+        [
+          {
+            "node": "Delete Buffer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar OS Tecnico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split URLs Upload": {
+      "main": [
+        [
+          {
+            "node": "Sub - Salvar Evidencias2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub - Salvar Evidencias2": {
+      "main": [
+        []
+      ]
+    },
+    "Buscar OS Tecnico": {
+      "main": [
+        [
+          {
+            "node": "Enriquecer Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enriquecer Upload": {
+      "main": [
+        [
+          {
+            "node": "Split URLs Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "binaryMode": "separate"
   },
-  "versionId": "9eae08ea-c3bd-4f0c-8c68-e4b589a36baa",
+  "versionId": "67c1a6f2-bbae-4463-b436-0e4eab41c49f",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "52423c8eed14a700113dd7744ad17756f0722f80a0afb8f160f2fa37d099cb8c"
   },
-  "id": "cecf2wY4MQsp4mr8",
+  "id": "BZ429y5KhQxWZ76O",
   "tags": []
 }

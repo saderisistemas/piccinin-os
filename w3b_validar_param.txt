@@ -1,0 +1,57 @@
+const triggerParams = $('Limpar Nome').first().json;
+const apiResp = $input.first().json;
+const clientes = (apiResp.data || []);
+
+let clienteIdReal = null;
+let clienteNomeReal = null;
+
+if (clientes.length > 0) {
+  const nomeOriginal = (triggerParams.cliente_nome_original || '').toLowerCase().trim();
+  const nomeBusca = (triggerParams.cliente_nome_busca || '').toLowerCase().trim();
+  
+  let match = clientes.find(c =>
+    (c.nome || '').toLowerCase().trim() === nomeBusca ||
+    (c.razao_social || '').toLowerCase().trim() === nomeBusca
+  );
+  
+  if (!match) {
+    match = clientes.find(c =>
+      (c.nome || '').toLowerCase().includes(nomeBusca) ||
+      nomeBusca.includes((c.nome || '').toLowerCase())
+    );
+  }
+  
+  if (!match) {
+    match = clientes.find(c =>
+      nomeOriginal.includes((c.nome || '').toLowerCase()) ||
+      (c.nome || '').toLowerCase().includes(nomeOriginal.replace(/\s*\(.*?\)\s*$/g, ''))
+    );
+  }
+  
+  if (!match) match = clientes[0];
+  
+  clienteIdReal = String(match.id);
+  clienteNomeReal = match.nome;
+}
+
+if (!clienteIdReal && triggerParams.cliente_id && /^[0-9]{5,}$/.test(String(triggerParams.cliente_id).trim())) {
+  clienteIdReal = String(triggerParams.cliente_id).trim();
+}
+
+if (!clienteIdReal) {
+  return [{ json: { 
+    error: "Nao encontrei o cliente '" + (triggerParams.cliente_nome_original || '???') + "' no Bom Saldo. Pergunte o nome correto ao tecnico.",
+    sucesso: false 
+  } }];
+}
+
+return [{ json: {
+  cliente_id: clienteIdReal,
+  cliente_nome_validado: clienteNomeReal || triggerParams.cliente_nome_original,
+  tecnico_id: triggerParams.tecnico_id,
+  tecnico_nome: triggerParams.tecnico_nome,
+  tecnico_whatsapp: triggerParams.tecnico_whatsapp,
+  situacao_id: triggerParams.situacao_id,
+  observacoes: triggerParams.observacoes,
+  conversa_id: triggerParams.conversa_id
+} }];

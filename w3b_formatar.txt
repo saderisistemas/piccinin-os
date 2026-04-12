@@ -1,0 +1,37 @@
+const payloadJson = $('Validar Parametros').first().json;
+if (payloadJson.error) {
+  return [{ json: { resultado: payloadJson.error, os_id: null, sucesso: false } }];
+}
+
+const resp = $input.first().json;
+
+if (resp.status === 'error' || resp.error || resp.message || (resp.statusCode && resp.statusCode >= 400)) {
+  const detalheErro = resp.message || resp.error || JSON.stringify(resp);
+  return [{ json: {
+    resultado: 'Erro ao criar a OS: ' + detalheErro + '. Verifique se o cliente esta cadastrado corretamente.',
+    os_id: null,
+    sucesso: false
+  } }];
+}
+
+if (resp.code === 200 && resp.data) {
+  const os = resp.data;
+  return [{ json: {
+    resultado: 'OS #' + os.codigo + ' aberta com sucesso. ID interno: ' + os.id + '.',
+    os_id:         String(os.id),
+    os_codigo:     String(os.codigo),
+    cliente_id:    String(payloadJson.cliente_id),
+    cliente_nome:  payloadJson.cliente_nome_validado,
+    tecnico_id:    payloadJson.tecnico_id || null,
+    tecnico_nome:  payloadJson.tecnico_nome || null,
+    tecnico_whatsapp: payloadJson.tecnico_whatsapp || null,
+    conversa_id:   payloadJson.conversa_id || null,
+    sucesso: true
+  } }];
+} else {
+  return [{ json: {
+    resultado: 'Erro desconhecido ao abrir OS: ' + JSON.stringify(resp),
+    os_id: null,
+    sucesso: false
+  } }];
+}

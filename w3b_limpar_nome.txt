@@ -1,0 +1,6 @@
+const input = $input.first().json;
+let nome = (input.cliente_nome || '').trim();
+nome = nome.replace(/\s*\(.*?\)\s*$/g, '').trim();
+const palavras = nome.split(/\s+/);
+const nomeBusca = palavras.length > 5 ? palavras.slice(0, 3).join(' ') : nome;
+return [{ json: { ...input, cliente_nome_busca: nomeBusca, cliente_nome_original: input.cliente_nome } }];

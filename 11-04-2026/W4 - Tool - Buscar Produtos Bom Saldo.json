@@ -17,7 +17,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -500,
+        -496,
         400
       ],
       "id": "0e9d6e00-fdf2-48b6-9500-dbf2adfc2d26",
@@ -30,7 +30,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -280,
+        -288,
         400
       ],
       "id": "4765f897-ae28-44c5-94b3-b2afdfd0f01d",
@@ -38,7 +38,6 @@
     },
     {
       "parameters": {
-        "method": "GET",
         "url": "=https://bomsaldo.com/api/produtos/?nome={{ encodeURIComponent($json.termo_normalizado) }}&ativo=1&limit=20",
         "sendHeaders": true,
         "headerParameters": {
@@ -56,7 +55,6 @@
         "options": {
           "redirect": {
             "redirect": {
-              "followRedirects": true,
               "maxRedirects": 5
             }
           }
@@ -65,15 +63,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -40,
-        260
+        -48,
+        272
       ],
       "id": "3efb4487-8e90-4946-80a4-d923bc8c313f",
       "name": "GET Produtos Exato"
     },
     {
       "parameters": {
-        "method": "GET",
         "url": "=https://bomsaldo.com/api/produtos/?nome={{ encodeURIComponent($json.token_principal) }}&ativo=1&limit=20",
         "sendHeaders": true,
         "headerParameters": {
@@ -91,7 +88,6 @@
         "options": {
           "redirect": {
             "redirect": {
-              "followRedirects": true,
               "maxRedirects": 5
             }
           }
@@ -100,8 +96,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -40,
-        540
+        -48,
+        544
       ],
       "id": "239d9c93-792e-45bf-8ae4-3ee32dabb10c",
       "name": "GET Produtos Broad"
@@ -113,7 +109,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        220,
+        224,
         400
       ],
       "id": "843eb3d0-de66-41f0-ac67-6c7e1c3e2f8c",
@@ -126,13 +122,14 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        460,
+        464,
         400
       ],
       "id": "3d111aec-c3f1-4caf-be74-423217fa6e16",
       "name": "Formatar Produtos"
     }
   ],
+  "pinData": {},
   "connections": {
     "Trigger": {
       "main": [
@@ -195,11 +192,18 @@
       ]
     }
   },
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo"
   },
+  "versionId": "83d5997e-e3e2-4110-95dd-902db1a4df6d",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "instanceId": "52423c8eed14a700113dd7744ad17756f0722f80a0afb8f160f2fa37d099cb8c"
   },
-  "pinData": {}
+  "id": "iJRYEqsLzCVACG0j",
+  "tags": []
 }

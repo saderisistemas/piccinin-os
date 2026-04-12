@@ -1,0 +1,8 @@
+const resp = $('Formatar Resposta').first().json;
+return [{ json: {
+  resultado:    resp.resultado,
+  os_id:        resp.os_id,
+  os_codigo:    resp.os_codigo,
+  cliente_nome: resp.cliente_nome,
+  sucesso:      resp.sucesso
+} }];

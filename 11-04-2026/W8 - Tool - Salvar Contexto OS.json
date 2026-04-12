@@ -107,27 +107,27 @@
           ]
         }
       },
+      "id": "t-w8-trigger",
+      "name": "Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -600,
-        300
-      ],
-      "id": "t-w8-trigger",
-      "name": "Trigger"
+        -608,
+        304
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Valida e filtra apenas campos com valor\nconst p = $input.first().json;\n\nif (!p.os_codigo) {\n  throw new Error('os_codigo é OBRIGATÓRIO para salvar contexto.');\n}\n\nconst out = { os_codigo: String(p.os_codigo) };\n\nconst campos = [\n  'os_id_bomsaldo', 'conversa_id',\n  'tecnico_id', 'tecnico_nome', 'tecnico_whatsapp',\n  'cliente_nome', 'cliente_codigo', 'cliente_endereco',\n  'equipamento', 'equipamento_codigo', 'marca', 'modelo',\n  'defeito', 'causa', 'solucao', 'relatorio_tecnico',\n  'tipo_servico', 'servico_nome', 'servico_codigo', 'observacoes_orientacao',\n  'tipo_pagamento', 'forma_pagamento_id',\n  'hora_entrada', 'hora_saida',\n  'link_pasta_drive',\n  'status_os', 'fase_ia', 'motivo_cancelamento',\n  'produtos_json', 'servicos_json'\n];\n\nfor (const campo of campos) {\n  if (p[campo] !== undefined && p[campo] !== null && p[campo] !== '') {\n    out[campo] = String(p[campo]);\n  }\n}\n\n// Campos numéricos\nif (p.valor_total !== undefined && p.valor_total !== null && p.valor_total !== '') {\n  out.valor_total = Number(p.valor_total) || 0;\n}\n\n// Campo boolean\nif (p.em_garantia !== undefined && p.em_garantia !== null && p.em_garantia !== '') {\n  out.em_garantia = (p.em_garantia === 'true' || p.em_garantia === true);\n}\n\nreturn [{ json: out }];"
+        "jsCode": "// Valida e filtra apenas campos com valor\nconst p = $input.first().json;\n\nif (!p.os_codigo) {\n  throw new Error('ERRO: os_codigo e OBRIGATORIO para salvar contexto.');\n}\n\nconst out = { os_codigo: String(p.os_codigo) };\n\nconst camposStr = [\n  'os_id_bomsaldo', 'conversa_id',\n  'tecnico_id', 'tecnico_nome', 'tecnico_whatsapp',\n  'cliente_nome', 'cliente_codigo', 'cliente_endereco',\n  'equipamento', 'equipamento_codigo', 'marca', 'modelo',\n  'defeito', 'causa', 'solucao', 'relatorio_tecnico',\n  'tipo_servico', 'servico_nome', 'servico_codigo', 'observacoes_orientacao',\n  'tipo_pagamento', 'forma_pagamento_id',\n  'hora_entrada', 'hora_saida',\n  'link_pasta_drive',\n  'status_os', 'fase_ia', 'motivo_cancelamento',\n  'produtos_json', 'servicos_json'\n];\n\nfor (const campo of camposStr) {\n  if (p[campo] !== undefined && p[campo] !== null && p[campo] !== '') {\n    out[campo] = String(p[campo]);\n  }\n}\n\n// Campos numericos\nif (p.valor_total !== undefined && p.valor_total !== null && p.valor_total !== '') {\n  out.valor_total = Number(p.valor_total) || 0;\n}\n\n// Campo boolean\nif (p.em_garantia !== undefined && p.em_garantia !== null && p.em_garantia !== '') {\n  out.em_garantia = (p.em_garantia === 'true' || p.em_garantia === true);\n}\n\n// Campos JSON - produtos_json e servicos_json\n// Aceita string JSON ou array diretamente\nconst parseJSON = (val) => {\n  if (!val || val === '') return null;\n  if (Array.isArray(val)) return val.length > 0 ? JSON.stringify(val) : null;\n  if (typeof val === 'string') {\n    try { const arr = JSON.parse(val); return Array.isArray(arr) && arr.length > 0 ? val : null; } catch { return null; }\n  }\n  return null;\n};\n\nconst pj = parseJSON(p.produtos_json);\nif (pj) out.produtos_json = pj;\n\nconst sj = parseJSON(p.servicos_json);\nif (sj) out.servicos_json = sj;\n\n// Flag interna\nout._tem_os_id = !!(out.os_id_bomsaldo && out.os_id_bomsaldo !== '');\n\nreturn [{ json: out }];"
       },
+      "id": "t-w8-validar",
+      "name": "Validar Params",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -380,
-        300
-      ],
-      "id": "t-w8-validar",
-      "name": "Validar Params"
+        -384,
+        304
+      ]
     },
     {
       "parameters": {
@@ -142,15 +142,14 @@
           ]
         }
       },
+      "id": "t-w8-get",
+      "name": "GET OS por Codigo",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
         -160,
-        300
+        304
       ],
-      "id": "t-w8-get",
-      "name": "GET OS por Codigo",
-      "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
           "id": "3TZFb8LBSmrd137a",
@@ -179,42 +178,43 @@
             }
           ],
           "combinator": "and"
-        }
+        },
+        "options": {}
       },
+      "id": "t-w8-exists",
+      "name": "OS Existe?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        60,
-        300
-      ],
-      "id": "t-w8-exists",
-      "name": "OS Existe?"
+        64,
+        304
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Merge: manter existente, sobrescrever com novos valores não-nulos\nconst novos = $('Validar Params').first().json;\nconst existente = $input.first().json;\nconst merged = { ...existente };\n\nfor (const key in novos) {\n  if (novos[key] !== null && novos[key] !== undefined && novos[key] !== '') {\n    merged[key] = novos[key];\n  }\n}\n\nmerged.atualizado_em = new Date().toISOString();\ndelete merged.id;\ndelete merged.criado_em;\n\nreturn [{ json: merged }];"
+        "jsCode": "// Merge: manter existente, sobrescrever com novos valores não-nulos\nconst novos = $('Validar Params').first().json;\nconst existente = $input.first().json;\nconst merged = { ...existente };\n\nfor (const key in novos) {\n  if (novos[key] !== null && novos[key] !== undefined && novos[key] !== '') {\n    merged[key] = novos[key];\n  }\n}\n\nmerged.atualizado_em = new Date().toISOString();\ndelete merged.id;\ndelete merged.criado_em;\n\n// Normalizar hora_entrada e hora_saida para texto simples HH:MM\n// Coluna agora é text - aceita qualquer formato legivel\nconst normalizeHora = (raw) => {\n  if (!raw || raw === '') return null;\n  const s = String(raw).trim();\n  // Já é HH:MM ou HH:MM:SS\n  const mColon = s.match(/^(\\d{1,2}):(\\d{2})/);\n  if (mColon) return `${mColon[1].padStart(2,'0')}:${mColon[2]}`;\n  // HHhMM ou HHh\n  const mH = s.match(/^(\\d{1,2})h(\\d{2})?$/i);\n  if (mH) return `${mH[1].padStart(2,'0')}:${(mH[2]||'00').padStart(2,'0')}`;\n  // ISO timestamp - extrair hora no fuso SP\n  try {\n    const d = new Date(s);\n    if (!isNaN(d.getTime())) {\n      return d.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hour12:false});\n    }\n  } catch {}\n  return s;\n};\n\nif (merged.hora_entrada) merged.hora_entrada = normalizeHora(merged.hora_entrada) || merged.hora_entrada;\nif (merged.hora_saida) merged.hora_saida = normalizeHora(merged.hora_saida) || merged.hora_saida;\n\nreturn [{ json: merged }];"
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        300,
-        200
-      ],
       "id": "t-w8-merge",
-      "name": "Merge para Update"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Preparar INSERT de nova OS\nconst novos = $('Validar Params').first().json;\nconst out = { ...novos };\nout.fase_ia = out.fase_ia || 'identificacao';\nout.status_os = out.status_os || 'aberta';\nreturn [{ json: out }];"
-      },
+      "name": "Merge para Update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        300,
-        420
-      ],
+        304,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preparar INSERT de nova OS\nconst novos = $('Validar Params').first().json;\nconst out = { ...novos };\nout.fase_ia = out.fase_ia || 'identificacao';\nout.status_os = out.status_os || 'aberta';\n\n// Normalizar hora para texto simples HH:MM (coluna é text)\nconst normalizeHora = (raw) => {\n  if (!raw || raw === '') return null;\n  const s = String(raw).trim();\n  const mColon = s.match(/^(\\d{1,2}):(\\d{2})/);\n  if (mColon) return `${mColon[1].padStart(2,'0')}:${mColon[2]}`;\n  const mH = s.match(/^(\\d{1,2})h(\\d{2})?$/i);\n  if (mH) return `${mH[1].padStart(2,'0')}:${(mH[2]||'00').padStart(2,'0')}`;\n  try {\n    const d = new Date(s);\n    if (!isNaN(d.getTime())) {\n      return d.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hour12:false});\n    }\n  } catch {}\n  return s;\n};\n\nif (out.hora_entrada) out.hora_entrada = normalizeHora(out.hora_entrada) || out.hora_entrada;\nif (out.hora_saida) out.hora_saida = normalizeHora(out.hora_saida) || out.hora_saida;\n\nreturn [{ json: out }];"
+      },
       "id": "t-w8-prep",
-      "name": "Prep para Insert"
+      "name": "Prep para Insert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        432
+      ]
     },
     {
       "parameters": {
@@ -224,6 +224,7 @@
           "conditions": [
             {
               "keyName": "os_codigo",
+              "condition": "eq",
               "keyValue": "={{ $json.os_codigo }}"
             }
           ]
@@ -365,15 +366,14 @@
           ]
         }
       },
+      "id": "t-w8-update",
+      "name": "UPDATE OS",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
         560,
-        200
+        208
       ],
-      "id": "t-w8-update",
-      "name": "UPDATE OS",
-      "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
           "id": "3TZFb8LBSmrd137a",
@@ -383,7 +383,6 @@
     },
     {
       "parameters": {
-        "operation": "create",
         "tableId": "ordens_servico",
         "fieldsUi": {
           "fieldValues": [
@@ -518,15 +517,14 @@
           ]
         }
       },
+      "id": "t-w8-insert",
+      "name": "INSERT OS",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
         560,
-        420
+        432
       ],
-      "id": "t-w8-insert",
-      "name": "INSERT OS",
-      "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
           "id": "3TZFb8LBSmrd137a",
@@ -535,32 +533,31 @@
       }
     },
     {
-      "parameters": {
-        "mode": "append"
-      },
+      "parameters": {},
+      "id": "t-w8-join",
+      "name": "Join Flows",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        780,
-        300
-      ],
-      "id": "t-w8-join",
-      "name": "Join Flows"
+        784,
+        304
+      ]
     },
     {
       "parameters": {
-        "jsCode": "let r = {};\nif ($input.first()) { r = $input.first().json || {}; }\nconst p = $('Validar Params').first().json;\n\nreturn [{ json: {\n  sucesso: true,\n  os_codigo: r.os_codigo || p.os_codigo,\n  os_id_bomsaldo: r.os_id_bomsaldo || p.os_id_bomsaldo || null,\n  fase_ia: r.fase_ia || p.fase_ia || 'identificacao',\n  status_os: r.status_os || p.status_os || 'aberta',\n  tecnico_id: r.tecnico_id || p.tecnico_id || null,\n  cliente_codigo: r.cliente_codigo || p.cliente_codigo || null,\n  mensagem: 'Contexto OS #' + (r.os_codigo || p.os_codigo) + ' salvo com sucesso.'\n}}];"
+        "jsCode": "let r = {};\ntry { r = $input.first().json || {}; } catch {}\nconst p = $('Validar Params').first().json;\n\n// Detectar se foi INSERT (OS nao existia no banco)\n// Se o Supabase INSERT retornou o registro, ele tera 'id' (pk do Supabase)\nconst foiInsert = r.id !== undefined && r.os_id_bomsaldo !== undefined;\n\n// ALERTA: INSERT sem os_id_bomsaldo = OS nao criada no Bom Saldo ainda\n// Isso significa que a Vanda chamou salvarContexto antes de criarOS\nif (foiInsert && !r.os_id_bomsaldo && !p._tem_os_id) {\n  return [{ json: {\n    sucesso: false,\n    erro: 'OS registrada localmente sem os_id_bomsaldo. A OS ainda NAO foi criada no Bom Saldo. Use a tool criarOS primeiro, depois salvarContexto.',\n    os_codigo: r.os_codigo || p.os_codigo,\n    os_id_bomsaldo: null,\n    acao: 'INSERT_SEM_OS_ID',\n    mensagem: 'ERRO: Chame criarOS antes de salvarContexto. Sem os_id_bomsaldo a OS nao existe no sistema ERP.'\n  }}];\n}\n\nreturn [{ json: {\n  sucesso: true,\n  os_codigo: r.os_codigo || p.os_codigo,\n  os_id_bomsaldo: r.os_id_bomsaldo || p.os_id_bomsaldo || null,\n  fase_ia: r.fase_ia || p.fase_ia || 'identificacao',\n  status_os: r.status_os || p.status_os || 'aberta',\n  tecnico_id: r.tecnico_id || p.tecnico_id || null,\n  cliente_codigo: r.cliente_codigo || p.cliente_codigo || null,\n  mensagem: 'Contexto OS #' + (r.os_codigo || p.os_codigo) + ' salvo com sucesso.'\n}}];"
       },
+      "id": "t-w8-resp",
+      "name": "Formatar Resposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1000,
-        300
-      ],
-      "id": "t-w8-resp",
-      "name": "Formatar Resposta"
+        1008,
+        304
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Trigger": {
       "main": [
@@ -669,11 +666,16 @@
       ]
     }
   },
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
+  "versionId": "eb07d45e-dc61-48f6-b5f3-94c50835d247",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "instanceId": "52423c8eed14a700113dd7744ad17756f0722f80a0afb8f160f2fa37d099cb8c"
   },
-  "pinData": {}
+  "id": "cYIrVtfY8qfkwj38",
+  "tags": []
 }

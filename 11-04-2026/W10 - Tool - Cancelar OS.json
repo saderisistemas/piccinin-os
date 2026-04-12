@@ -1,0 +1,274 @@
+{
+  "name": "W10 - Tool - Cancelar OS",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "os_id"
+            },
+            {
+              "name": "os_codigo"
+            },
+            {
+              "name": "motivo"
+            },
+            {
+              "name": "tecnico_id"
+            },
+            {
+              "name": "tecnico_nome"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        304
+      ],
+      "id": "e2c45665-717f-4772-ad89-580e0018b837",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\nconst erros = [];\n\nif (!p.os_id || !/^[0-9]+$/.test(String(p.os_id))) \n  erros.push('os_id inválido ou ausente — deve ser o ID interno numérico da OS');\nif (!p.motivo || String(p.motivo).trim().length < 5)\n  erros.push('motivo do cancelamento obrigatório (mínimo 5 caracteres)');\nif (!p.tecnico_id)\n  erros.push('tecnico_id obrigatório');\n\nif (erros.length > 0) {\n  throw new Error('Parâmetros inválidos:\\n' + erros.join('\\n'));\n}\n\nreturn [{ json: {\n  os_id:            String(p.os_id),\n  os_codigo:        p.os_codigo || null,\n  motivo:           String(p.motivo).trim(),\n  tecnico_nome:     p.tecnico_nome || 'Desconhecido',\n  tecnico_id:       String(p.tecnico_id),\n  timestamp_cancel: new Date().toISOString()\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        304
+      ],
+      "id": "77779e1b-3294-449d-b728-1c9838a04ea5",
+      "name": "Validar Params"
+    },
+    {
+      "parameters": {
+        "url": "=https://bomsaldo.com/api/ordens_servicos/{{ $json.os_id }}/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        304
+      ],
+      "id": "0dd98bde-b238-4fa4-b26c-093a44a7f009",
+      "name": "GET OS Atual"
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger = $('Validar Params').first().json;\nconst resp = $input.first().json;\n\nconst os = resp.data;\nif (!os) throw new Error(`OS ${trigger.os_id} não encontrada na API.`);\n\nif (String(os.situacao_id) === '6237500') {\n  throw new Error(`OS #${os.codigo} já está cancelada. Nenhuma ação necessária.`);\n}\n\nif (String(os.situacao_id) === '6237499' && os.servicos && os.servicos.length > 0) {\n  throw new Error(`OS #${os.codigo} já está concluída com serviços registrados. Para desfazer, edite manualmente no sistema.`);\n}\n\nreturn [{ json: {\n  os_id:          trigger.os_id,\n  os_codigo:      trigger.os_codigo || String(os.codigo),\n  cliente_id:     os.cliente_id,\n  data_os:        os.data || os.data_entrada,\n  motivo:         trigger.motivo,\n  tecnico_id:     trigger.tecnico_id,\n  tecnico_nome:   trigger.tecnico_nome,\n  timestamp:      trigger.timestamp_cancel\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        304
+      ],
+      "id": "abe33b8b-a221-43d6-a4da-4b77a1880ae3",
+      "name": "Verificar OS"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://bomsaldo.com/api/ordens_servicos/{{ $json.os_id }}/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"codigo\": \"{{ $json.os_codigo }}\",\n  \"cliente_id\": {{ $json.cliente_id }},\n  \"data\": \"{{ $json.data_os }}\",\n  \"situacao_id\": 6237500,\n  \"observacoes_interna\": \"CANCELADO em {{ $json.timestamp }}. Motivo: {{ $json.motivo }}. Responsável: {{ $json.tecnico_nome }}.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        304
+      ],
+      "id": "73c8a52f-aea5-4424-b36e-9a1664d05a94",
+      "name": "PUT Cancelar OS"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $('Verificar OS').first().json.os_codigo }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status_os",
+              "fieldValue": "cancelada"
+            },
+            {
+              "fieldId": "fase_ia",
+              "fieldValue": "cancelado"
+            },
+            {
+              "fieldId": "motivo_cancelamento",
+              "fieldValue": "={{ $('Verificar OS').first().json.motivo }}"
+            },
+            {
+              "fieldId": "fechado_em",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        400,
+        304
+      ],
+      "id": "a5ef2dbc-8b13-4da3-8685-9974e1447732",
+      "name": "Cancelar OS Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const info = $('Verificar OS').first().json;\nreturn [{\n  json: {\n    sucesso: true,\n    mensagem: `✅ OS #${info.os_codigo} cancelada com sucesso.\\n\\nMotivo: ${info.motivo}\\nResponsável: ${info.tecnico_nome}\\nHorário: ${info.timestamp}`,\n    os_id: info.os_id,\n    os_codigo: info.os_codigo\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "842aed73-cd33-4cd9-b383-6a75f5ded7da",
+      "name": "Confirmar Cancelamento"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validar Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Params": {
+      "main": [
+        [
+          {
+            "node": "GET OS Atual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET OS Atual": {
+      "main": [
+        [
+          {
+            "node": "Verificar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar OS": {
+      "main": [
+        [
+          {
+            "node": "PUT Cancelar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUT Cancelar OS": {
+      "main": [
+        [
+          {
+            "node": "Cancelar OS Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelar OS Supabase": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "binaryMode": "separate"
+  },
+  "versionId": "24c4436b-6c60-425d-88eb-55d04e5c6835",
+  "meta": {
+    "instanceId": "52423c8eed14a700113dd7744ad17756f0722f80a0afb8f160f2fa37d099cb8c"
+  },
+  "id": "wNgtnqLZ6S09QRlF",
+  "tags": []
+}
