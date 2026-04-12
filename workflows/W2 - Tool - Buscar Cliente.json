@@ -2,11 +2,19 @@
   "name": "W2 - Tool - Buscar Cliente Bom Saldo",
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "nome"
+            }
+          ]
+        }
+      },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -500,
+        -496,
         400
       ],
       "id": "d528853a-a9d3-4644-835b-8effe89bb5ea",
@@ -14,12 +22,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─── NORMALIZAÇÃO ────────────────────────────────────────────────────────────\nfunction normalize(str) {\n  if (!str) return '';\n  return str\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '') // remove acentos\n    .replace(/[^a-z0-9 ]/g, ' ')     // remove caracteres especiais\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// Palavras muito genéricas para remover antes de comparar\nconst STOP_WORDS = ['ltda', 'eireli', 'epp', 'me', 'sa', 'ss', 'sociedade', 'empresa',\n  'comercio', 'comercial', 'industria', 'industrial', 'servico', 'servicos',\n  'solucao', 'solucoes', 'grupo', 'brasil', 'do', 'da', 'de', 'dos', 'das', 'e'];\n\nfunction tokenize(str) {\n  return normalize(str)\n    .split(' ')\n    .filter(t => t.length > 2 && !STOP_WORDS.includes(t));\n}\n\nconst rawNome = $input.first().json.nome || '';\nconst nomeNorm = normalize(rawNome);\nconst tokens = tokenize(rawNome);\n\nreturn [{ json: { \n  nome_original: rawNome,\n  nome_normalizado: nomeNorm,\n  tokens,\n  token_principal: tokens[0] || nomeNorm.split(' ')[0] || rawNome\n} }];\n"
+        "jsCode": "function normalize(str) {\n  if (!str) return '';\n  return str.toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst STOP = ['ltda','eireli','epp','me','sa','ss','comercio','comercial','industria','servico','servicos','grupo','brasil','do','da','de','dos','das','e'];\nfunction tokenize(str) {\n  return normalize(str).split(' ').filter(t => t.length > 2 && !STOP.includes(t));\n}\nconst rawNome = $input.first().json.nome || '';\nconst nomeNorm = normalize(rawNome);\nconst tokens = tokenize(rawNome);\nconst tokenPrincipal = tokens[0] || nomeNorm.split(' ')[0] || rawNome;\nreturn [{ json: { nome_original: rawNome, nome_normalizado: nomeNorm, tokens, token_principal: tokenPrincipal } }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -280,
+        -288,
         400
       ],
       "id": "68135ca7-1496-430b-8831-901e23aabf23",
@@ -27,8 +35,7 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($json.nome_original) }}&ativo=1&limit=10",
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($json.nome_original) }}&ativo=1&limit=50",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -45,7 +52,6 @@
         "options": {
           "redirect": {
             "redirect": {
-              "followRedirects": true,
               "maxRedirects": 5
             }
           }
@@ -54,16 +60,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -60,
-        280
+        -64,
+        272
       ],
       "id": "4bea46f6-da67-482a-9a86-38fb6ab09935",
       "name": "Busca Direta"
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($('Normalizar Nome').item.json.token_principal) }}&ativo=1&limit=15",
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($('Normalizar Nome').item.json.token_principal) }}&ativo=1&limit=50",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -80,7 +85,6 @@
         "options": {
           "redirect": {
             "redirect": {
-              "followRedirects": true,
               "maxRedirects": 5
             }
           }
@@ -89,24 +93,35 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -60,
-        520
+        -64,
+        544
       ],
       "id": "089062e6-1506-4c47-8582-580307a34d40",
       "name": "Busca por Token"
     },
     {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        192,
+        400
+      ],
+      "id": "a1b2c3d4-1111-1111-1111-000000000001",
+      "name": "Aguardar Buscas"
+    },
+    {
       "parameters": {
-        "jsCode": "// ─── MERGE e DEDUP das duas buscas ──────────────────────────────────────────\nconst normalize = (str) => !str ? '' : str\n  .toLowerCase()\n  .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\n\nconst tokenize = (str) => {\n  const STOP = ['ltda','eireli','epp','me','sa','ss','comercio','comercial',\n    'industria','servico','servicos','grupo','brasil','do','da','de','dos','das','e'];\n  return normalize(str).split(' ').filter(t => t.length > 2 && !STOP.includes(t));\n};\n\nconst normInput = $('Normalizar Nome').item.json;\nconst nomeNorm = normInput.nome_normalizado;\nconst tokensInput = normInput.tokens;\n\n// Coletar resultados das duas buscas\nconst allItems = $input.all();\nconst todosClientes = [];\nconst idsVistos = new Set();\n\nallItems.forEach(item => {\n  const clientes = item.json.data || [];\n  clientes.forEach(c => {\n    if (!idsVistos.has(c.id)) {\n      idsVistos.add(c.id);\n      todosClientes.push(c);\n    }\n  });\n});\n\n// ─── SCORING: quão parecido é o nome do cliente com o que o técnico disse ────\nfunction score(cliente) {\n  const nomeC = normalize(cliente.nome || '');\n  const razaoC = normalize(cliente.razao_social || '');\n  const nomeFantasiaC = normalize(cliente.nome_fantasia || '');\n  const target = nomeNorm;\n  let s = 0;\n  \n  // Correspondência exata\n  if (nomeC === target || razaoC === target || nomeFantasiaC === target) return 100;\n  \n  // O nome do cliente contém o que o técnico disse (ou vice-versa)\n  if (nomeC.includes(target) || target.includes(nomeC)) s += 60;\n  if (razaoC.includes(target) || target.includes(razaoC)) s += 55;\n  if (nomeFantasiaC.includes(target) || target.includes(nomeFantasiaC)) s += 55;\n  \n  // Tokens em comum\n  const tokensC = tokenize(cliente.nome || '');\n  const tokensR = tokenize(cliente.razao_social || '');\n  const tokensF = tokenize(cliente.nome_fantasia || '');\n  const todosTokensC = [...new Set([...tokensC, ...tokensR, ...tokensF])];\n  \n  tokensInput.forEach(t => {\n    if (todosTokensC.some(tc => tc.includes(t) || t.includes(tc))) s += 20;\n    if (todosTokensC.includes(t)) s += 10; // bonus exato\n  });\n  \n  // Token principal coincide\n  if (tokensInput[0] && todosTokensC.some(tc => tc.includes(tokensInput[0]))) s += 15;\n  \n  return s;\n}\n\n// Aplicar score e ordenar\nconst rankados = todosClientes\n  .map(c => ({ ...c, _score: score(c) }))\n  .filter(c => c._score > 0)\n  .sort((a, b) => b._score - a._score);\n\nconst top = rankados.slice(0, 5);\n\nif (top.length === 0) {\n  return [{ json: {\n    resultado: `Nenhum cliente encontrado para \"${normInput.nome_original}\". Pode confirmar:\n1. Nome completo ou razão social\n2. Cidade ou endereço\n3. Número de OS anterior`,\n    clientes: [],\n    total_encontrado: 0,\n    status: 'not_found'\n  } }];\n}\n\n// Formatar lista para a Vanda apresentar ao técnico\nconst formatar = (c, i) => {\n  const complemento = c.razao_social && normalize(c.razao_social) !== normalize(c.nome)\n    ? ` (${c.razao_social})` : '';\n  const tel = c.telefone || c.celular || '';\n  const end = c.enderecos?.[0]?.endereco;\n  const cidade = end ? `${end.nome_cidade}/${end.estado}` : '';\n  return `${i+1}. ${c.nome}${complemento}${cidade ? ' — ' + cidade : ''}${tel ? ' | ' + tel : ''}`;\n};\n\n// Se há apenas 1 resultado com score alto, retorna direto sem pedir confirmação\nif (top.length === 1 && top[0]._score >= 60) {\n  const c = top[0];\n  const end = c.enderecos?.[0]?.endereco;\n  const endereco = end\n    ? `${end.logradouro}, ${end.numero} - ${end.bairro} - ${end.nome_cidade}/${end.estado}`\n    : '';\n  return [{ json: {\n    resultado: `Achei: *${c.nome}*${c.razao_social ? ' (' + c.razao_social + ')' : ''}${endereco ? ' — ' + endereco : ''}. Confirma?`,\n    cliente_id: String(c.id),\n    cliente_nome: c.nome,\n    clientes: [{ id: c.id, nome: c.nome, razao_social: c.razao_social || '', telefone: c.telefone || c.celular || '', endereco }],\n    total_encontrado: 1,\n    status: 'single_match'\n  } }];\n}\n\n// Múltiplos resultados — listar para confirmação\nconst lista = top.map(formatar).join('\\n');\n// Build option_map so LLM can look up ID by option number\nconst option_map = {};\ntop.forEach((c, i) => { option_map[String(i+1)] = { id: String(c.id), nome: c.nome }; });\nreturn [{ json: {\n  resultado: `Encontrei ${top.length} clientes parecidos:\\n${lista}\\n\\nQual é o correto? Responde o número.`,\n  option_map,\n  clientes: top.map(c => ({\n    id: c.id,\n    nome: c.nome,\n    razao_social: c.razao_social || '',\n    telefone: c.telefone || c.celular || '',\n    endereco: (() => {\n      const e = c.enderecos?.[0]?.endereco;\n      return e ? `${e.logradouro}, ${e.numero} - ${e.bairro} - ${e.nome_cidade}/${e.estado}` : '';\n    })()\n  })),\n  total_encontrado: top.length,\n  status: 'multiple_matches'\n} }];\n"
+        "jsCode": "// ─── Helpers ───────────────────────────────────────────────────────────────\nfunction normalize(str) {\n  if (!str) return '';\n  return str.toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst STOP = ['ltda','eireli','epp','me','sa','ss','comercio','comercial','industria','servico','servicos','grupo','brasil','do','da','de','dos','das','e'];\nfunction tokenize(str) {\n  return normalize(str).split(' ').filter(t => t.length > 2 && !STOP.includes(t));\n}\n\n// ─── Dados de entrada ─────────────────────────────────────────────────────────\nconst normInput = $('Normalizar Nome').item.json;\nconst nomeNorm = normInput.nome_normalizado;\nconst tokens = normInput.tokens;\n\n// ─── Merge + Dedup dos resultados ─────────────────────────────────────────────\n// $input.all() agora tem TODOS os itens das duas buscas graças ao nó Merge\nconst seen = new Set();\nconst todos = [];\nfor (const item of $input.all()) {\n  const clientes = item.json.data || [];\n  for (const c of clientes) {\n    if (!seen.has(c.id)) { seen.add(c.id); todos.push(c); }\n  }\n}\n\n// ─── Score de semelhança ──────────────────────────────────────────────────────\nfunction score(c) {\n  const nC = normalize(c.nome||''), rC = normalize(c.razao_social||''), fC = normalize(c.nome_fantasia||'');\n  if (nC === nomeNorm || rC === nomeNorm || fC === nomeNorm) return 100;\n  let s = 0;\n  if (nC.includes(nomeNorm) || nomeNorm.includes(nC)) s += 60;\n  if (rC.includes(nomeNorm) || nomeNorm.includes(rC)) s += 55;\n  if (fC.includes(nomeNorm) || nomeNorm.includes(fC)) s += 55;\n  const tC = [...new Set([...tokenize(c.nome||''), ...tokenize(c.razao_social||''), ...tokenize(c.nome_fantasia||'')])];\n  tokens.forEach(t => {\n    if (tC.some(tc => tc.includes(t)||t.includes(tc))) s += 20;\n    if (tC.includes(t)) s += 10;\n  });\n  if (tokens[0] && tC.some(tc => tc.includes(tokens[0]))) s += 15;\n  return s;\n}\n\n// Ranquear TODOS — sem limite de top 5\nconst rankados = todos\n  .map(c => ({...c, _score: score(c)}))\n  .filter(c => c._score > 0)\n  .sort((a,b) => b._score - a._score);\n\n// ─── Not found ────────────────────────────────────────────────────────────────\nif (rankados.length === 0) {\n  return [{ json: {\n    resultado: 'Nenhum cliente encontrado para \"' + normInput.nome_original + '\". Peça mais informações.',\n    clientes: [], total_encontrado: 0, status: 'not_found'\n  }}];\n}\n\n// ─── Helper endereço ──────────────────────────────────────────────────────────\nconst addr = c => {\n  const e = c.enderecos && c.enderecos[0] && c.enderecos[0].endereco;\n  return e ? (e.logradouro + ', ' + e.numero + ' - ' + e.bairro + ' - ' + e.nome_cidade + '/' + e.estado) : '';\n};\n\n// ─── Single match: score exato 100 OU único resultado com score ≥ 60 ──────────\nif (rankados[0]._score === 100 || (rankados.length === 1 && rankados[0]._score >= 60)) {\n  const c = rankados[0], end = addr(c);\n  return [{ json: {\n    resultado: 'Achei: *' + c.nome + '*' + (c.razao_social ? ' (' + c.razao_social + ')' : '') + (end ? ' — ' + end : '') + '. Confirma?',\n    cliente_id: String(c.id),\n    cliente_nome: c.nome,\n    clientes: [{ id: c.id, nome: c.nome, razao_social: c.razao_social||'', telefone: c.telefone||c.celular||'', endereco: end }],\n    total_encontrado: 1,\n    status: 'single_match'\n  }}];\n}\n\n// ─── Multiple matches: mostra TODOS os resultados ranqueados ──────────────────\nconst fmt = (c, i) => {\n  const e = c.enderecos && c.enderecos[0] && c.enderecos[0].endereco;\n  const cidade = e ? (e.nome_cidade + '/' + e.estado) : '';\n  const tel = c.telefone || c.celular || '';\n  return (i+1) + '. ' + c.nome + (cidade ? ' — ' + cidade : '') + (tel ? ' | ' + tel : '');\n};\nconst option_map = {};\nrankados.forEach((c,i) => { option_map[String(i+1)] = { id: String(c.id), nome: c.nome }; });\n\nreturn [{ json: {\n  resultado: 'Encontrei ' + rankados.length + ' clientes com nome parecido:\\n' + rankados.map(fmt).join('\\n') + '\\n\\nQual é o correto? Responde o número.',\n  option_map: option_map,\n  clientes: rankados.map(c => ({ id: c.id, nome: c.nome, razao_social: c.razao_social||'', telefone: c.telefone||c.celular||'', endereco: addr(c) })),\n  total_encontrado: rankados.length,\n  status: 'multiple_matches'\n}}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        200,
+        384,
         400
       ],
       "id": "586ba7e3-2713-4eef-8f24-f15ea255e77d",
-      "name": "Merge e Ranking"
+      "name": "Rankear e Retornar"
     }
   ],
   "connections": {
@@ -141,7 +156,7 @@
       "main": [
         [
           {
-            "node": "Merge e Ranking",
+            "node": "Aguardar Buscas",
             "type": "main",
             "index": 0
           }
@@ -152,19 +167,34 @@
       "main": [
         [
           {
-            "node": "Merge e Ranking",
+            "node": "Aguardar Buscas",
             "type": "main",
             "index": 1
+          }
+        ]
+      ]
+    },
+    "Aguardar Buscas": {
+      "main": [
+        [
+          {
+            "node": "Rankear e Retornar",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "binaryMode": "separate"
   },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
+  "staticData": null,
+  "meta": null,
   "pinData": {}
 }

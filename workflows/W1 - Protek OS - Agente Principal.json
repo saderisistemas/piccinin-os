@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "protek-os",
+        "path": "pici-vanda",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -185,32 +185,9 @@
       "parameters": {
         "operation": "getAll",
         "tableId": "ordens_servico",
-        "returnAll": false,
         "limit": 1,
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "tecnico_id",
-              "condition": "eq",
-              "keyValue": "={{ $json.msg.identicacaoLead }}"
-            },
-            {
-              "keyName": "status_os",
-              "condition": "in",
-              "keyValue": "aberta,em_andamento"
-            }
-          ]
-        },
-        "options": {
-          "order": {
-            "fields": [
-              {
-                "fieldName": "atualizado_em",
-                "direction": "desc"
-              }
-            ]
-          }
-        }
+        "filterType": "string",
+        "filterString": "tecnico_id=eq.{{ $json.msg.identicacaoLead }}&status_os=in.(aberta,em_andamento)"
       },
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -475,106 +452,14 @@
       "typeVersion": 3.4,
       "position": [
         -2512,
-        704
+        463
       ],
       "id": "a1b2c3d4-0012-0012-0012-000000000012",
       "name": "setarTexto"
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "eu1",
-              "name": "URL",
-              "value": "={{ $('setarInfo4').item.json.msg.urlMedia }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -2752,
-        912
-      ],
-      "id": "a1b2c3d4-0013-0013-0013-000000000013",
-      "name": "setarUrlImagem"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Analise essa imagem de campo tÃ©cnico: {{ $json.URL }}\n\nSempre chame a tool \"analisarImagem\"",
-        "options": {
-          "systemMessage": "VocÃª Ã© um especialista em analisar imagens de campo de seguranÃ§a eletrÃ´nica. Descreva com clareza o que aparece na imagem: equipamentos (cÃ¢meras, centrais, sensores, cabos), condiÃ§Ãµes (instalaÃ§Ã£o, danos, defeitos visÃ­veis), ambiente (externo/interno, estrutura). Resposta sempre comeÃ§a: 'O tÃ©cnico enviou uma imagem do tipo [TIPO]: [DESCRIÃ‡ÃƒO DETALHADA].' Nunca invente informaÃ§Ãµes."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        -2544,
-        912
-      ],
-      "id": "a1b2c3d4-0014-0014-0014-000000000014",
-      "name": "analisadorImagem"
-    },
-    {
-      "parameters": {
-        "resource": "image",
-        "operation": "analyze",
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-2.5-flash",
-          "mode": "list"
-        },
-        "text": "={{ $fromAI('Text_Input', '', 'string') }}",
-        "imageUrls": "={{ $('setarUrlImagem').item.json.URL }}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.googleGeminiTool",
-      "typeVersion": 1,
-      "position": [
-        -2352,
-        1120
-      ],
-      "id": "a1b2c3d4-0015-0015-0015-000000000015",
-      "name": "analisarImagem",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "4NL5vsvVhjhBLw1V",
-          "name": "Google Gemini saderisistemas Piccinin"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "si1",
-              "name": "msg",
-              "value": "={{ $json.output }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -2240,
-        912
-      ],
-      "id": "a1b2c3d4-0016-0016-0016-000000000016",
-      "name": "setarImagem"
-    },
-    {
-      "parameters": {
-        "mode": "chooseBranch",
-        "output": "input1"
+        "numberInputs": 3
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
@@ -717,29 +602,6 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "cm1",
-              "name": "message",
-              "value": "={{ $('Get Redis').item.json.message.join('\\n') }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -912,
-        720
-      ],
-      "id": "a1b2c3d4-0023-0023-0023-000000000023",
-      "name": "ConcatenaMsg"
-    },
-    {
-      "parameters": {
         "operation": "delete",
         "key": "={{ $('setarInfo4').item.json.msg.identicacaoLead }}"
       },
@@ -748,7 +610,7 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        -736,
+        -704,
         592
       ],
       "credentials": {
@@ -765,7 +627,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -448,
+        -464,
         592
       ],
       "id": "a1b2c3d4-0025-0025-0025-000000000025",
@@ -778,7 +640,7 @@
             {
               "id": "si_1",
               "name": "msgLead",
-              "value": "={{ $('ConcatenaMsg').first().json.message }}",
+              "value": "={{ $('Separar Imagens e Textos').first().json.message }}",
               "type": "string"
             },
             {
@@ -816,6 +678,12 @@
               "name": "id_conversa",
               "value": "={{ $('setarInfo4').first().json.msg.id_conversa }}",
               "type": "string"
+            },
+            {
+              "id": "urls-img-array",
+              "name": "urls",
+              "value": "={{ $('Separar Imagens e Textos').first().json.urls }}",
+              "type": "array"
             }
           ]
         },
@@ -825,7 +693,7 @@
       "typeVersion": 3.4,
       "position": [
         -176,
-        592
+        704
       ],
       "id": "a1b2c3d4-0026-0026-0026-000000000026",
       "name": "setarInfo"
@@ -835,8 +703,7 @@
         "promptType": "define",
         "text": "={{ $('setarInfo').first().json.msgLead }}",
         "options": {
-          "systemMessage": "DADOS DA OS ATIVA DO TÉCNICO (do banco ordens_servico):\n{{ JSON.stringify($('BuscarTecnico').first()?.json || {}, null, 2) }}\n\n===== LEIA O JSON ACIMA. SE TEM os_codigo, CONTINUE DE ONDE PAROU =====\n\n## IDENTIDADE\nVocê é **Vanda**, assistente da **Piccinin Security** (CFTV, alarmes, controle de acesso).\nTécnico: {{ $('setarInfo').first().json.nomeTecnico }} (ID: {{ $('setarInfo4').first().json.msg.identicacaoLead }})\nWhatsApp: {{ $('setarInfo4').first().json.msg.numberLead }}\nData: {{ $('setarInfo').first().json.dataHora }}\nConversa ID: {{ $('setarInfo').first().json.id_conversa }}\n\n---\n\n## REGRA 0 — INÍCIO\n- Se o JSON acima tem \\`os_codigo\\`, o técnico já tem OS ativa. CONTINUE de onde parou (veja fase_ia e status_os).\n- Se o JSON acima está vazio, o técnico não tem OS ativa. Pergunte: 'Qual o nome do cliente?'\n- PROIBIDO chamar \\`criarOS\\` sem ter chamado \\`buscarCliente\\` NESTA conversa.\n\n## REGRA 1 — CLIENTE\n1. Pergunte o NOME do cliente.\n2. Chame \\`buscarCliente\\` com o nome.\n3. O retorno contém \\`cliente_id\\` — ESTE é o único ID válido.\n4. Técnico confirma? Chame \\`salvarContexto\\` com \\`os_codigo\\`, \\`cliente_codigo\\` e \\`cliente_nome\\`.\n\n⛔ NUNCA use um cliente_id inventado ou de memória. Sempre do retorno do buscarCliente.\n\n## REGRA 2 — OS\n1. Use \\`buscarOS\\` ou \\`criarOS\\` (só após REGRA 1).\n2. O criarOS retorna \\`os_id\\` e \\`os_codigo\\`. O \\`os_codigo\\` é como você identifica a OS daqui pra frente.\n3. Após criar/achar OS: chame \\`salvarContexto\\` com \\`os_codigo\\`, \\`os_id_bomsaldo\\`, \\`fase_ia: coleta_tecnica\\`.\n\n## REGRA 3 — ITENS E EVIDÊNCIAS\n1. Use \\`buscarProdutos\\` / \\`buscarServicos\\`. NUNCA invente códigos.\n2. SEMPRE peça foto do serviço. Se enviou, chame \\`salvarEvidencia\\` passando \\`cliente_nome\\` junto.\n3. A URL da foto já está disponível no campo urlMedia da mensagem.\n\n## REGRA 4 — FECHAMENTO\n1. Chame \\`buscarContexto\\` com o \\`os_codigo\\` para confirmar dados.\n2. Pergunte: Garantia ou Cobrado?\n3. Escreva \\`relatorio_tecnico\\` profissional e detalhado. NUNCA copie a frase informal do técnico.\n4. Chame \\`atualizarOS\\` com \\`os_codigo\\` + \\`os_id\\` + todos os dados.\n5. Sucesso? \\`salvarContexto\\` com \\`fase_ia: fechado\\`, \\`status_os: concluida\\`.\n\n## REGRA 5 — CANCELAMENTO\n1. Chame \\`cancelarOS\\` com \\`os_id\\` + \\`os_codigo\\` + \\`motivo\\`.\n2. Sucesso? \\`salvarContexto\\` com \\`fase_ia: cancelado\\`, \\`status_os: cancelada\\`.\n\n## FORMATO\nRespostas CURTAS e diretas. Perguntas objetivas. Sem rodeios.\n\n## TOOLS — REGRA DE OURO\n- \\`os_codigo\\` é a chave principal (ex: 1604). Use em TODAS as tools.\n- \\`os_id\\` / \\`os_id_bomsaldo\\` é o ID interno (7+ dígitos). Necessário só no atualizarOS e cancelarOS.\n- Se não tem a informação, envie string vazia \"\". NUNCA omita o parâmetro.\n\n\nREGRA EXTRA PRODUTOS: Quando o técnico confirmar itens escolhidos, chame salvarContexto passando dados completos em produtos_json/servicos_json.\n\nREGRA DE HORÁRIOS: Ao registrar hora de chegada (check-in) na mensagem do técnico (ex: \"iniciando OS\"), chame salvarContexto com hora_entrada em ISO format (ex: 2024-01-15T14:30:00). Ao registrar saída/finalização: chame salvarContexto com hora_saida e preencha fase_ia como \"encerramento\"."
-        }
+          "systemMessage": "DADOS DA OS ATIVA DO TÉCNICO (do banco ordens_servico):\n{{ JSON.stringify($('BuscarTecnico').first()?.json || {}, null, 2) }}\n\n===== LEIA O JSON ACIMA. SE TEM os_codigo, CONTINUE DE ONDE PAROU =====\n\n## IDENTIDADE\nVocê é **Vanda**, assistente da **Piccinin Security** (CFTV, alarmes, controle de acesso).\nTécnico: {{ $('setarInfo').first().json.nomeTecnico }} (ID: {{ $('setarInfo4').first().json.msg.identicacaoLead }})\nWhatsApp: {{ $('setarInfo4').first().json.msg.numberLead }}\nData: {{ $('setarInfo').first().json.dataHora }}\nConversa ID: {{ $('setarInfo').first().json.id_conversa }}\n\n---\n\n## REGRA 0 — INÍCIO\n- Se o JSON acima tem `os_codigo`, o técnico já tem OS ativa. CONTINUE de onde parou (veja fase_ia e status_os).\n- Se o JSON acima está vazio, o técnico não tem OS ativa. Pergunte: 'Qual o nome do cliente?'\n- PROIBIDO chamar `criarOS` sem ter chamado `buscarCliente` NESTA conversa.\n\n## REGRA 1 — CLIENTE\n1. Pergunte o NOME do cliente e chame `buscarCliente` com o nome.\n2. Se o resultado retornar `status: single_match`, o cliente foi identificado com certeza. USE o `cliente_id` do resultado DIRETAMENTE. Apresente o cliente e diga: Achei o cliente X. Confirma? NÃO mostre lista de opções.\n3. Se retornar `status: multiple_matches` com `option_map`, apresente a lista e pergunte a opção (1, 2, etc). Ao receber a resposta, NÃO CHAME `buscarCliente` DE NOVO! Obtenha o ID correspondente lendo o `option_map` no histórico de mensagens (sua resposta anterior).\n4. Com o ID correto em mãos, chame `salvarContexto` com `os_codigo`, `cliente_codigo` (esse id extraído) e `cliente_nome`.\n5. Se o técnico disser que o cliente foi recém-criado: chame `buscarCliente` novamente. IGNORE resultados de buscas anteriores no histórico.\n\n⛔ NUNCA use um cliente_id inventado. Sempre extraia do buscarCliente.\n\n## REGRA 2 — OS\n1. Use `buscarOS` ou `criarOS` (só após REGRA 1).\n2. O criarOS retorna `os_id` e `os_codigo`. O `os_codigo` é como você identifica a OS daqui pra frente.\n3. Após criar/achar OS: chame `salvarContexto` com `os_codigo`, `os_id_bomsaldo`, `fase_ia: coleta_tecnica`.\n\n## REGRA 3 — ITENS E EVIDÊNCIAS\n1. Use `buscarProdutos` / `buscarServicos`. NUNCA invente códigos. Importante: Se retornar option_map, a mesma regra de cliente se aplica! Leia do histórico, nunca busque de novo.\n2. Sempre peça foto do serviço (lembre-se que o upload é feito autom\\u00e1ticamente, você s\\u00f3 relata ao usu\\u00e1rio).\n3. A URL da foto já está disponível no campo urlMedia da mensagem.\n\n## REGRA 4 — FECHAMENTO\n1. Chame `buscarContexto` com o `os_codigo` para confirmar dados.\n2. Pergunte: Garantia ou Cobrado?\n3. Escreva `relatorio_tecnico` profissional e detalhado. NUNCA copie a frase informal do técnico.\n4. Chame `atualizarOS` com `os_codigo` + `os_id` + todos os dados.\n5. Sucesso? `salvarContexto` com `fase_ia: fechado`, `status_os: concluida`.\n\n## REGRA 5 — CANCELAMENTO\n1. Chame `cancelarOS` com `os_id` + `os_codigo` + `motivo`.\n2. Sucesso? `salvarContexto` com `fase_ia: cancelado`, `status_os: cancelada`.\n\n## FORMATO\nRespostas CURTAS e diretas. Perguntas objetivas. Sem rodeios.\n\n## TOOLS — REGRA DE OURO\n- `os_codigo` é a chave principal (ex: 1604). Use em TODAS as tools.\n- `os_id` / `os_id_bomsaldo` é o ID interno (7+ dígitos). Necessário só no atualizarOS e cancelarOS.\n- Se não tem a informação, envie string vazia \"\". NUNCA omita o parâmetro.\\n\\n2. O upload das fotos é automático pelo sistema e você nem precisa se preocupar!\\n\\n\\n\\n## REGRAS DE FECHAMENTO (AJUSTADAS)\\n1. **HORÁRIO DE ENTRADA/SAÍDA:** Você DEVE perguntar ao técnico a hora de entrada e de saída. Mas ATENÇÃO: não é obrigatório para fechar. Se ele não souber ou não quiser falar, ou disser 'vamos fechar' direto, pode seguir o fechamento sem o horário.\\n2. **LAUDO TÉCNICO:** VOCÊ, como inteligência da Vanda, DEVE gerar o laudo / observações SOZINHA com base no que já conversaram sobre o defeito, causa e solução. NUNCA diga 'informe o laudo técnico'. Você apenas cria o laudo em background na hora de fechar a OS e atualiza o sistema.\\n3. **RESUMO:** Quando for atualizar a OS, mande os dados que colheu (hora, pagamentos, os_codigo) e não exija nada que não seja crucial. Pergunte a hora de entrada/saída, mas prossiga caso o técnico force o encerramento.\\n4. **AÇÃO DIRETA:** Seja objetiva.\\n\\n\\n## REGRA DE SALVAMENTO DE CONTEXTO (MUITO IMPORTANTE)\\nSempre que o técnico fornecer UMA NOVA INFORMAÇÃO (ex: equipamento, defeito, causa, solução, observação, nome do cliente, etc.), você DEVE chamar a tool 'salvarContexto' IMEDIATAMENTE para persistir os dados da OS no banco. NÃO ESPERE o final do atendimento ou o fechamento para salvar. Salve conforme os dados vão chegando!\\n\n\n\n\n\n\n\n## REGRA DE SALVAMENTO DE CONTEXTO (MUITO IMPORTANTE)\nSempre que o técnico fornecer UMA NOVA INFORMAÇÃO (ex: equipamento, defeito, causa, resolução, etc.), você DEVE chamar a tool 'salvarContexto' para persistir os dados.\n🚫 LIMITAÇÃO CRÍTICA: Você NUNCA pode chamar salvarContexto se ainda não existir um 'os_codigo'. Se a OS ainda não foi aberta no ERP (via criarOS), NÃO CHAME salvarContexto.\n\nREGRA EXTRA PRODUTOS: Quando o técnico confirmar itens escolhidos, chame salvarContexto passando dados completos em produtos_json/servicos_json.\n\nREGRA DE HORÁRIOS: Ao registrar hora de chegada (check-in) na mensagem do técnico (ex: \"iniciando OS\"), chame salvarContexto com hora_entrada em ISO format (ex: 2024-01-15T14:30:00). Ao registrar saída/finalização: chame salvarContexto com hora_saida e preencha fase_ia como \"encerramento\".\n\n\nREGRA REFORÇADA PARA IDS DE PRODUTOS/SERVIÇOS:\nQuando usar a ferramenta 'atualizarOS' OU 'salvarContexto', NUNCA envie apenas o nome do produto/serviço. VOCÊ DEVE pegar o 'id' ou 'codigo_interno' que retornou da ferramenta buscarProdutos/buscarServicos, e passar no array do JSON como `produto_id` e `servico_id`. Ex: [{\"produto_id\": \"123\", \"quantidade\": \"1\", \"valor_venda\": \"15.50\"}]. O Bom Saldo VAI RECUSAR se não tiver o ID."
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.8,
@@ -893,909 +760,8 @@
           "name": "Postgres Vanda OS"
         }
       }
-    },
-    {
-      "parameters": {
-        "description": "Busca cliente no Bom Saldo pelo nome. Use SEMPRE antes de criarOS.\nRetorna: cliente_id (numero), cliente_nome, e lista de clientes para confirmacao.\nIMPORTANTE: O 'cliente_id' retornado aqui e o unico ID valido para usar no criarOS.",
-        "workflowId": {
-          "__rl": true,
-          "value": "cdirQ2Av9MVLrDIK",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "nome": "={{ $fromAI('nome_cliente', 'Nome do cliente informado pelo tÃ©cnico', 'string') }}"
-          },
-          "matchingColumns": [
-            "nome"
-          ],
-          "schema": [
-            {
-              "id": "nome",
-              "displayName": "nome",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        320,
-        768
-      ],
-      "id": "a1b2c3d4-0030-0030-0030-000000000030",
-      "name": "buscarCliente"
-    },
-    {
-      "parameters": {
-        "description": "Busca Ordens de ServiÃ§o no Bom Saldo. Use quando o tÃ©cnico quiser ver uma OS existente de um cliente. Informe o cliente_id e opcionalmente o codigo da OS.",
-        "workflowId": {
-          "__rl": true,
-          "value": "u9jabM2Dlah82Qrd",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        448,
-        768
-      ],
-      "id": "a1b2c3d4-0031-0031-0031-000000000031",
-      "name": "buscarOS"
-    },
-    {
-      "parameters": {
-        "description": "Abre nova OS no Bom Saldo e registra na base.\nREGRAS:\n1. Voce DEVE ter chamado buscarCliente ANTES nesta conversa.\n2. Passe o cliente_id EXATO (numero) do buscarCliente + o cliente_nome EXATO.\n3. Se tem cliente_id valido, o sistema usa ele diretamente. Senao resolve pelo nome.",
-        "workflowId": {
-          "value": "v3DTO6nSZ2rZERYD",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "cliente_id": "={{ $fromAI('cliente_id', 'ID numerico do cliente se voce souber. Se nao souber, envie string vazia.', 'string') }}",
-            "situacao_id": "={{ $fromAI('situacao_id', 'ID da situacao. Sempre use 6237497 (Aguardando Atendimento) a menos que o tecnico peÃ§a outro.', 'string') }}",
-            "observacoes": "={{ $fromAI('observacoes', 'Descricao inicial do atendimento relatado pelo tecnico. Escreva em portugues.', 'string') }}",
-            "tecnico_nome": "={{ $('setarInfo4').first().json.msg.nomeLead }}",
-            "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}",
-            "tecnico_whatsapp": "={{ $('setarInfo4').first().json.msg.numberLead }}",
-            "conversa_id": "={{ $('setarInfo').first().json.id_conversa }}",
-            "cliente_nome": "={{ $fromAI('cliente_nome', 'OBRIGATORIO: Nome EXATO do cliente que foi confirmado pelo tecnico. Copie o nome exatamente como retornado pelo buscarCliente.', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "cliente_id",
-              "displayName": "cliente_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "situacao_id",
-              "displayName": "situacao_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "observacoes",
-              "displayName": "observacoes",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "tecnico_nome",
-              "displayName": "tecnico_nome",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "tecnico_id",
-              "displayName": "tecnico_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_whatsapp",
-              "displayName": "tecnico_whatsapp",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "conversa_id",
-              "displayName": "conversa_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "cliente_nome",
-              "displayName": "cliente_nome",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        576,
-        768
-      ],
-      "id": "a1b2c3d4-0032-0032-0032-000000000032",
-      "name": "criarOS"
-    },
-    {
-      "parameters": {
-        "description": "Busca produtos/materiais no catÃ¡logo do Bom Saldo pelo nome. Use quando o tÃ©cnico mencionar um material utilizado. Nunca use produtos que nÃ£o existam no catÃ¡logo.",
-        "workflowId": {
-          "__rl": true,
-          "value": "iJRYEqsLzCVACG0j",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "nome": "={{ $fromAI('nome', 'O nome, cÃ³digo ou termo do produto para buscar no catÃ¡logo do Bom Saldo. Exemplos: VHL 1120, CÃ‚MERA', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "nome",
-              "displayName": "nome",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        320,
-        912
-      ],
-      "id": "a1b2c3d4-0033-0033-0033-000000000033",
-      "name": "buscarProdutos"
-    },
-    {
-      "parameters": {
-        "description": "Busca serviÃ§os no catÃ¡logo do Bom Saldo pelo nome. Use quando o tÃ©cnico mencionar um serviÃ§o executado. Nunca use serviÃ§os que nÃ£o existam no catÃ¡logo.",
-        "workflowId": {
-          "__rl": true,
-          "value": "Dhp6XByNpzhyVqza",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "nome": "={{ $fromAI('nome', 'O nome do serviÃ§o para buscar no catÃ¡logo. Exemplos: ManutenÃ§Ã£o de cÃ¢mera', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "nome",
-              "displayName": "nome",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        448,
-        912
-      ],
-      "id": "a1b2c3d4-0034-0034-0034-000000000034",
-      "name": "buscarServicos"
-    },
-    {
-      "parameters": {
-        "description": "Salva uma imagem/foto de evidÃªncia no Google Drive na pasta da OS. Use sempre que o tÃ©cnico enviar uma foto. Passe o cliente_nome para criar a pasta com o nome do cliente.",
-        "workflowId": {
-          "__rl": true,
-          "value": "0HxglGmNg0W0JYIs",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "urlImagem": "={{ $fromAI('url_imagem', 'URL da imagem enviada pelo tÃ©cnico. Use a urlMedia da mensagem original.', 'string') }}",
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo da OS para organizaÃ§Ã£o no Drive', 'string') }}",
-            "cliente_nome": "={{ $fromAI('cliente_nome', 'Nome do cliente da OS para nomear a pasta no Drive', 'string') }}",
-            "descricao": "={{ $fromAI('descricao', 'Breve descriÃ§Ã£o do que mostra a imagem', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "urlImagem",
-              "displayName": "urlImagem",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "os_codigo",
-              "displayName": "os_codigo",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "cliente_nome",
-              "displayName": "cliente_nome",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "descricao",
-              "displayName": "descricao",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        576,
-        912
-      ],
-      "id": "a1b2c3d4-0035-0035-0035-000000000035",
-      "name": "salvarEvidencia"
-    },
-    {
-      "parameters": {
-        "description": "Finaliza a OS, adicionando produtos/serviÃ§os, dados financeiros e horÃ¡rios. IMPORTANTE: os produtos DEVEM conter `produto_id` e `variacao_id` retirados do `option_map` do buscarProdutos. NUNCA invente e NUNCA peÃ§a IDs ao tÃ©cnico.",
-        "workflowId": {
-          "__rl": true,
-          "value": "hhFMx49xvO5WSxW9",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "os_id": "={{ $fromAI('os_id', 'ID INTERNO da OS (7+ digitos, do Bom Saldo). ObrigatÃ³rio.', 'string') }}",
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo visÃ­vel da OS (ex: 1604). ObrigatÃ³rio.', 'string') }}",
-            "relatorio_tecnico": "={{ $fromAI('relatorio_tecnico', 'Texto completo do relatÃ³rio tÃ©cnico gerado', 'string') }}",
-            "equipamento": "={{ $fromAI('equipamento', 'Nome do equipamento atendido', 'string') }}",
-            "marca": "={{ $fromAI('marca', 'Marca do equipamento', 'string') }}",
-            "modelo": "={{ $fromAI('modelo', 'Modelo do equipamento', 'string') }}",
-            "defeito": "={{ $fromAI('defeito', 'Defeito encontrado', 'string') }}",
-            "solucao": "={{ $fromAI('solucao', 'SoluÃ§Ã£o aplicada', 'string') }}",
-            "laudo": "={{ $fromAI('laudo', 'Laudo tÃ©cnico completo', 'string') }}",
-            "produtos_json": "={{ $fromAI('produtos_json', 'JSON array de produtos. Use NOME do produto (campo nome retornado pelo buscarProdutos), quantidade e valor_venda. Exemplo: [{\"nome\":\"Camera HDCVI 1080p\",\"quantidade\":\"1\",\"valor_venda\":\"350.00\"}]. Se nao houver produtos, envie string vazia.', 'string') }}",
-            "servicos_json": "={{ $fromAI('servicos_json', 'JSON array de servicos. Use NOME do servico (campo nome retornado pelo buscarServicos), quantidade e valor_venda. Exemplo: [{\"nome\":\"Manutencao preventiva CFTV\",\"quantidade\":\"1\",\"valor_venda\":\"200.00\"}]. Se nao houver servicos, envie string vazia.', 'string') }}",
-            "link_drive": "={{ $fromAI('link_drive', 'Link da pasta de evidÃªncias no Google Drive', 'string') }}",
-            "situacao_id": "={{ $fromAI('situacao_id', 'ID da situaÃ§Ã£o de fechamento (ex: 6237499 = Concretizada)', 'string') }}",
-            "tipo_pagamento": "={{ $fromAI('tipo_pagamento', 'A forma de pagamento informada pelo tecnico (Ex: Dinheiro, Pix, Boleto, Faturar no Escritorio)', 'string') }}",
-            "hora_entrada": "={{ $fromAI('hora_entrada', 'HorÃ¡rio de entrada do tÃ©cnico no atendimento (ex: 14:30)', 'string') }}",
-            "hora_saida": "={{ $fromAI('hora_saida', 'HorÃ¡rio de saÃ­da do tÃ©cnico no atendimento (ex: 16:00)', 'string') }}",
-            "em_garantia": "={{ $fromAI('em_garantia', 'true se for atendimento em garantia, false caso contrÃ¡rio', 'string') }}",
-            "tipo_servico": "={{ $fromAI('tipo_servico', 'Tipo do serviÃ§o executado. Quando for atendimento em garantia, SEMPRE enviar o valor exato: Garantia. Quando for manutenÃ§Ã£o, enviar: ManutenÃ§Ã£o. Quando for instalaÃ§Ã£o, enviar: InstalaÃ§Ã£o. Outros tipos conforme contexto.', 'string') }}",
-            "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "os_id",
-              "displayName": "os_id",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "os_codigo",
-              "displayName": "os_codigo",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "relatorio_tecnico",
-              "displayName": "relatorio_tecnico",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "equipamento",
-              "displayName": "equipamento",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "marca",
-              "displayName": "marca",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "modelo",
-              "displayName": "modelo",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "defeito",
-              "displayName": "defeito",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "solucao",
-              "displayName": "solucao",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "laudo",
-              "displayName": "laudo",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "produtos_json",
-              "displayName": "produtos_json",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "servicos_json",
-              "displayName": "servicos_json",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "link_drive",
-              "displayName": "link_drive",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "situacao_id",
-              "displayName": "situacao_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tipo_pagamento",
-              "displayName": "tipo_pagamento",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "hora_entrada",
-              "displayName": "hora_entrada",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "hora_saida",
-              "displayName": "hora_saida",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "em_garantia",
-              "displayName": "em_garantia",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tipo_servico",
-              "displayName": "tipo_servico",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_id",
-              "displayName": "tecnico_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        688,
-        848
-      ],
-      "id": "a1b2c3d4-0036-0036-0036-000000000036",
-      "name": "atualizarOS"
-    },
-    {
-      "parameters": {
-        "description": "Grava dados da OS na tabela ordens_servico. CHAME SEMPRE que tiver um dado novo (cliente, OS, equipamento, etc). A chave Ã© o os_codigo.",
-        "workflowId": {
-          "__rl": true,
-          "value": "cYIrVtfY8qfkwj38",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "os_codigo": "={{ $fromAI('os_codigo', 'OBRIGATÃ“RIO: CÃ³digo da OS (ex: 1604). Se nÃ£o tiver, envie vazio.', 'string') }}",
-            "os_id_bomsaldo": "={{ $fromAI('os_id_bomsaldo', 'ID interno Bom Saldo (7+ digitos). Envie vazio se nÃ£o tiver.', 'string') }}",
-            "conversa_id": "={{ $('setarInfo').item.json.id_conversa }}",
-            "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}",
-            "tecnico_nome": "={{ $('setarInfo4').first().json.msg.nomeLead }}",
-            "tecnico_whatsapp": "={{ $('setarInfo4').first().json.msg.numberLead }}",
-            "cliente_codigo": "={{ $fromAI('cliente_codigo', 'ID numÃ©rico do cliente no Bom Saldo', 'string') }}",
-            "cliente_nome": "={{ $fromAI('cliente_nome', 'Nome do Cliente', 'string') }}",
-            "fase_ia": "={{ $fromAI('fase_ia', 'Fase: identificacao, coleta_tecnica, itens, encerramento, fechado, cancelado', 'string') }}",
-            "status_os": "={{ $fromAI('status_os', 'Status: aberta, em_andamento, concluida, cancelada. Envie vazio para manter.', 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "os_codigo",
-              "displayName": "os_codigo",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "os_id_bomsaldo",
-              "displayName": "os_id_bomsaldo",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "conversa_id",
-              "displayName": "conversa_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_id",
-              "displayName": "tecnico_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_nome",
-              "displayName": "tecnico_nome",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_whatsapp",
-              "displayName": "tecnico_whatsapp",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "cliente_codigo",
-              "displayName": "cliente_codigo",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "cliente_nome",
-              "displayName": "cliente_nome",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "fase_ia",
-              "displayName": "fase_ia",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "status_os",
-              "displayName": "status_os",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        816,
-        1056
-      ],
-      "id": "7b3ba7c7-4b9e-44be-a4c4-332e6fce85d5",
-      "name": "salvarContexto"
-    },
-    {
-      "parameters": {
-        "description": "Recupera todos os dados da OS ativa do tÃ©cnico na tabela ordens_servico. Chame quando precisar de os_id, cliente, equipamento ou qualquer dado da OS.",
-        "workflowId": {
-          "__rl": true,
-          "value": "euPVASK7Ycfi6zWk",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo da OS para buscar. Se nÃ£o souber, envie vazio que busca pela OS ativa do tÃ©cnico.', 'string') }}",
-            "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "os_codigo",
-              "displayName": "os_codigo",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "tecnico_id",
-              "displayName": "tecnico_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        944,
-        1056
-      ],
-      "id": "15b303a8-9d51-47af-b08e-db1493e9d6c3",
-      "name": "buscarContexto"
-    },
-    {
-      "parameters": {
-        "description": "Cancela a OS no sistema Bom Saldo de forma imediata e permanente.",
-        "workflowId": {
-          "__rl": true,
-          "value": "wNgtnqLZ6S09QRlF",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "os_id": "={{ $fromAI('os_id', 'ID interno da OS (7+ digitos do Bom Saldo)', 'string') }}",
-            "os_codigo": "={{ $fromAI('os_codigo', 'CÃ³digo visÃ­vel da OS (ex: 1604)', 'string') }}",
-            "motivo": "={{ $fromAI('motivo', 'O motivo detalhado fornecido pelo prÃ³prio tÃ©cnico para justificar o cancelamento', 'string') }}",
-            "tecnico_id": "={{ $('setarInfo4').first().json.msg.identicacaoLead }}",
-            "tecnico_nome": "={{ $('setarInfo').first().json.nomeTecnico }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "os_id",
-              "displayName": "os_id",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "os_codigo",
-              "displayName": "os_codigo",
-              "required": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "motivo",
-              "displayName": "motivo",
-              "required": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "tecnico_id",
-              "displayName": "tecnico_id",
-              "required": false,
-              "display": true,
-              "type": "string"
-            },
-            {
-              "id": "tecnico_nome",
-              "displayName": "tecnico_nome",
-              "required": false,
-              "display": true,
-              "type": "string"
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        1072,
-        1056
-      ],
-      "id": "47d7f9fc-83da-4164-8c06-014cc7b46934",
-      "name": "cancelarOS"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "sma1",
-              "name": "message_agent",
-              "value": "={{ $json.output }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        896,
-        608
-      ],
-      "id": "a1b2c3d4-0037-0037-0037-000000000037",
-      "name": "setarMsgAgent"
-    },
-    {
-      "parameters": {
-        "promptType": "=define",
-        "text": "=Quebre a mensagem abaixo em partes menores e remova toda formataÃ§Ã£o markdown. Jamais faÃ§a comentÃ¡rios adicionais.\n\nA mensagem:\n\n{{ $('setarMsgAgent').item.json.message_agent }}",
-        "options": {
-          "systemMessage": "VocÃª formata mensagens para WhatsApp. Quebre textos longos em blocos menores (mÃ¡x. 300 caracteres por bloco), sem alterar nenhuma palavra. Remova Markdown e use apenas texto puro. Use \\n para separar blocos. NÃ£o adicione comentÃ¡rios."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [
-        1152,
-        608
-      ],
-      "id": "a1b2c3d4-0038-0038-0038-000000000038",
-      "name": "quebrar_mensagem"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "gpt-4o-mini",
-          "mode": "list"
-        },
-        "options": {
-          "temperature": 0
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.2,
-      "position": [
-        1136,
-        832
-      ],
-      "id": "a1b2c3d4-0039-0039-0039-000000000039",
-      "name": "gpt-4o-mini Quebrar",
-      "credentials": {
-        "openAiApi": {
-          "id": "TMMdy9XgNtm5j7mS",
-          "name": "OpenAi | danilopatrimonium"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const mensagensTexto = $input.first().json.output || '';\nif (typeof mensagensTexto !== 'string' || !mensagensTexto.trim()) return [];\nconst textoCorrigido = mensagensTexto.replace(/\\\\n/g, '\\n');\nconst mensagensArray = textoCorrigido.split(/\\n/).map(line => line.trim()).filter(line => line.length > 0);\nreturn mensagensArray.map(msg => ({ json: { output: msg } }));\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1728,
-        624
-      ],
-      "id": "a1b2c3d4-0040-0040-0040-000000000040",
-      "name": "SplitMensagens"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "output",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        1968,
-        624
-      ],
-      "id": "a1b2c3d4-0041-0041-0041-000000000041",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        2160,
-        608
-      ],
-      "id": "a1b2c3d4-0042-0042-0042-000000000042",
-      "name": "Loop Mensagens"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://piccininsecurity-chatwoot.cloudfy.live/api/v1/accounts/{{ $('setarInfo').first().json.id_conta }}/conversations/{{ $('setarInfo').first().json.id_conversa }}/messages",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "content",
-              "value": "={{ $json.output }}"
-            },
-            {
-              "name": "message_type",
-              "value": "outgoing"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2560,
-        704
-      ],
-      "id": "a1b2c3d4-0043-0043-0043-000000000043",
-      "name": "respostaChatwoot",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "7jXmH6zlb3Pg2oJf",
-          "name": "Chatwoot"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "amount": 2
-      },
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
-      "position": [
-        2832,
-        784
-      ],
-      "id": "a1b2c3d4-0044-0044-0044-000000000044",
-      "name": "2 segundos",
-      "webhookId": "protek-wait-2s-001"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        -2576,
-        1120
-      ],
-      "id": "6e71c4e8-b312-47d3-96fe-0ff5f9f2b26a",
-      "name": "2.5Flash",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "4NL5vsvVhjhBLw1V",
-          "name": "Google Gemini saderisistemas Piccinin"
-        }
-      }
     }
   ],
-  "pinData": {},
   "connections": {
     "Webhook Chatwoot": {
       "main": [
@@ -1808,135 +774,24 @@
         ]
       ]
     },
-    "SplitMensagens": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "2 segundos": {
-      "main": [
-        [
-          {
-            "node": "Loop Mensagens",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarImagem": {
-      "main": [
-        [
-          {
-            "node": "Merge Multimodal",
-            "type": "main",
-            "index": 2
-          }
-        ]
-      ]
-    },
-    "2.5Flash": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "analisadorImagem",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Switch Filtro": {
       "main": [
+        [],
+        [],
         [
           {
             "node": "msgChatWoot",
             "type": "main",
             "index": 0
           }
-        ],
-        [
-          {
-            "node": "msgChatWoot",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        ]
+      ]
+    },
+    "msgChatWoot": {
+      "main": [
         [
           {
             "node": "setarInfo4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarInfo": {
-      "main": [
-        [
-          {
-            "node": "W11 Get Contexto OS",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarMsgAgent": {
-      "main": [
-        [
-          {
-            "node": "quebrar_mensagem",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Vanda": {
-      "main": [
-        [
-          {
-            "node": "setarMsgAgent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Wait Buffer": {
-      "main": [
-        [
-          {
-            "node": "Get Redis",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "analisarImagem": {
-      "ai_tool": [
-        [
-          {
-            "node": "analisadorImagem",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Delete Buffer": {
-      "main": [
-        [
-          {
-            "node": "dataHora",
             "type": "main",
             "index": 0
           }
@@ -1954,155 +809,40 @@
         ]
       ]
     },
-    "buscarCliente": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ultima mensagem?": {
-      "main": [
-        [
-          {
-            "node": "ConcatenaMsg",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "gpt-4.1-mini Vanda": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "memoriaVanda": {
-      "ai_memory": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "salvarContexto": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Multimodal": {
-      "main": [
-        [
-          {
-            "node": "setarMsg",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "transcreverAudio": {
-      "main": [
-        [
-          {
-            "node": "setarAudio",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarUrlImagem": {
-      "main": [
-        [
-          {
-            "node": "analisadorImagem",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "ConcatenaMsg": {
-      "main": [
-        [
-          {
-            "node": "Delete Buffer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "analisadorImagem": {
-      "main": [
-        [
-          {
-            "node": "setarImagem",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarMsg": {
-      "main": [
-        [
-          {
-            "node": "Push",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarTexto": {
-      "main": [
-        [
-          {
-            "node": "Merge Multimodal",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "salvarEvidencia": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "BuscarTecnico": {
       "main": [
         [
           {
             "node": "TecnicoExiste?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TecnicoExiste?": {
+      "main": [
+        [
+          {
+            "node": "CriarSessao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CriarSessao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CriarSessao": {
+      "main": [
+        [
+          {
+            "node": "Switch Multimodal",
             "type": "main",
             "index": 0
           }
@@ -2125,204 +865,10 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "setarUrlImagem",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "criarOS": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "setarAudio": {
-      "main": [
-        [
-          {
-            "node": "Merge Multimodal",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "respostaChatwoot": {
-      "main": [
-        [
-          {
-            "node": "2 segundos",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "TecnicoExiste?": {
-      "main": [
-        [
-          {
-            "node": "Switch Multimodal",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "CriarSessao",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "buscarOS": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Push": {
-      "main": [
-        [
-          {
-            "node": "Wait Buffer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Mensagens": {
-      "main": [
         [],
         [
           {
-            "node": "respostaChatwoot",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "buscarContexto": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "buscarServicos": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "atualizarOS": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "CriarSessao": {
-      "main": [
-        [
-          {
-            "node": "Switch Multimodal",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Redis": {
-      "main": [
-        [
-          {
-            "node": "Ultima mensagem?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "gpt-4o-mini Quebrar": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "quebrar_mensagem",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "dataHora": {
-      "main": [
-        [
-          {
-            "node": "setarInfo",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Loop Mensagens",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "buscarProdutos": {
-      "ai_tool": [
-        [
-          {
-            "node": "Vanda",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "quebrar_mensagem": {
-      "main": [
-        [
-          {
-            "node": "SplitMensagens",
+            "node": "setarTexto",
             "type": "main",
             "index": 0
           }
@@ -2340,29 +886,172 @@
         ]
       ]
     },
-    "cancelarOS": {
-      "ai_tool": [
+    "transcreverAudio": {
+      "main": [
+        [
+          {
+            "node": "setarAudio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setarAudio": {
+      "main": [
+        [
+          {
+            "node": "Merge Multimodal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setarTexto": {
+      "main": [
+        [
+          {
+            "node": "Merge Multimodal",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Multimodal": {
+      "main": [
+        [
+          {
+            "node": "setarMsg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setarMsg": {
+      "main": [
+        [
+          {
+            "node": "Push",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push": {
+      "main": [
+        [
+          {
+            "node": "Wait Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Buffer": {
+      "main": [
+        [
+          {
+            "node": "Get Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Redis": {
+      "main": [
+        [
+          {
+            "node": "Ultima mensagem?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ultima mensagem?": {
+      "main": [
+        [
+          {
+            "node": "Delete Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Buffer": {
+      "main": [
+        [
+          {
+            "node": "dataHora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "dataHora": {
+      "main": [
+        [
+          {
+            "node": "setarInfo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setarInfo": {
+      "main": [
         [
           {
             "node": "Vanda",
-            "type": "ai_tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4.1-mini Vanda": {
+      "main": [
+        [
+          {
+            "node": "Vanda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memoriaVanda": {
+      "main": [
+        [
+          {
+            "node": "Vanda",
+            "type": "main",
             "index": 0
           }
         ]
       ]
     }
   },
-  "active": true,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "binaryMode": "separate"
   },
-  "versionId": "9eae08ea-c3bd-4f0c-8c68-e4b589a36baa",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "52423c8eed14a700113dd7744ad17756f0722f80a0afb8f160f2fa37d099cb8c"
-  },
-  "id": "cecf2wY4MQsp4mr8",
-  "tags": []
+  "meta": null,
+  "pinData": {}
 }
