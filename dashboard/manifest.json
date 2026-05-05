@@ -1,21 +1,58 @@
 {
-  "name": "Piccinin Security OS",
+  "name": "Piccinin Security — Comando Ao Vivo",
   "short_name": "Piccinin OS",
-  "description": "Painel de Auditoria Operacional (Vanda AI) da Piccinin Security.",
-  "start_url": "./index.html",
+  "description": "Central de Operações Piccinin Security. Monitore OS, KPIs e Inteligência da Vanda AI em tempo real.",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#009c5d",
+  "orientation": "any",
+  "background_color": "#020704",
+  "theme_color": "#00ff88",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "./img/piccinin-semfundo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "./img/piccinin-semfundo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./img/piccinin-semfundo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./img/piccinin-semfundo.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Comando Ao Vivo — Mobile"
+    },
+    {
+      "src": "./img/piccinin-semfundo.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Comando Ao Vivo — Desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Relatórios",
+      "short_name": "Relatórios",
+      "description": "Abrir relatórios analíticos",
+      "url": "./relatorios.html?source=shortcut",
+      "icons": [{ "src": "./img/piccinin-semfundo.png", "sizes": "96x96" }]
     }
   ]
 }
