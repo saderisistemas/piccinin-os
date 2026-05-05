@@ -7,6 +7,12 @@
           "values": [
             {
               "name": "nome"
+            },
+            {
+              "name": "tecnico_id"
+            },
+            {
+              "name": "id_conversa"
             }
           ]
         }
@@ -122,6 +128,107 @@
       ],
       "id": "586ba7e3-2713-4eef-8f24-f15ea255e77d",
       "name": "Rankear e Retornar"
+    },
+    {
+      "id": "w2-prod-prepare-state",
+      "name": "Preparar Estado Vanda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst trigger = $('Trigger').first().json || {};\nconst clientes = Array.isArray(input.clientes) ? input.clientes : [];\nconst optionMap = input.option_map && typeof input.option_map === 'object' ? input.option_map : {};\nconst hasOptions = Object.keys(optionMap).length > 0;\nconst isMultiple = String(input.status || '') === 'multiple_matches' || hasOptions;\nconst fromClientes = clientes.length > 0;\nconst listaTexto = isMultiple\n  ? [\n      'Encontrei clientes parecidos:',\n      ...(fromClientes\n        ? clientes.slice(0, 10).map((c, idx) => (idx + 1) + '. ' + String(c.cliente_nome || c.nome || c.razao_social || 'Cliente') + (c.endereco ? ' - ' + c.endereco : ''))\n        : Object.keys(optionMap).sort((a, b) => Number(a) - Number(b)).slice(0, 10).map((k) => String(k) + '. ' + String(optionMap[k]?.nome || optionMap[k]?.cliente_nome || optionMap[k]?.nome_fantasia || 'Cliente'))\n      ),\n      '',\n      'Informe o numero da opcao correta.'\n    ].join('\\n')\n  : '';\n\nconst state = isMultiple ? {\n  estado: 'aguardando_escolha_cliente_nova_os',\n  cliente_nome_pesquisado: String(input.resultado || '').replace(/^.*?\"(.*)\".*$/, '$1'),\n  option_map: optionMap,\n  lista_texto: listaTexto,\n  id_conversa: String(trigger.id_conversa || ''),\n  tecnico_id: String(trigger.tecnico_id || ''),\n  criado_em: new Date().toISOString()\n} : null;\n\nreturn [{ json: {\n  ...input,\n  lista_texto: listaTexto,\n  state_key: 'piccinin_os:vanda_estado:' + String(trigger.tecnico_id || ''),\n  should_persist_state: isMultiple,\n  state_json: state ? JSON.stringify(state) : '',\n  technical_context: {\n    tecnico_id: String(trigger.tecnico_id || ''),\n    id_conversa: String(trigger.id_conversa || '')\n  }\n}}];"
+      }
+    },
+    {
+      "id": "w2-prod-save-if",
+      "name": "Salvar Estado Nova OS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        800,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "w2-prod-save-state",
+              "leftValue": "={{ $json.should_persist_state }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "w2-prod-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $json.state_key }}"
+      }
+    },
+    {
+      "id": "w2-prod-state-save",
+      "name": "Salvar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.state_key }}",
+        "messageData": "={{ $json.state_json }}",
+        "tail": true
+      }
+    },
+    {
+      "id": "w2-prod-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        320
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
+      }
     }
   ],
   "connections": {
@@ -183,6 +290,62 @@
             "index": 0
           }
         ]
+      ]
+    },
+    "Rankear e Retornar": {
+      "main": [
+        [
+          {
+            "node": "Preparar Estado Vanda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Estado Nova OS?": {
+      "main": [
+        [
+          {
+            "node": "Limpar Estado Nova OS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpar Estado Nova OS": {
+      "main": [
+        [
+          {
+            "node": "Salvar Estado Nova OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Estado Nova OS": {
+      "main": [
+        [
+          {
+            "node": "Retornar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retornar Resultado": {
+      "main": [
+        []
       ]
     }
   },

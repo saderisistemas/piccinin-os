@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piccinin Security OS</title>
+    <title>Piccinin OS | Comando Ao Vivo</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#009c5d">
     <link rel="apple-touch-icon" href="img/piccinin-semfundo.png">
@@ -16,12 +16,18 @@
 
     <!-- Premium Navbar -->
     <nav class="navbar">
-        <div class="logo-placeholder">
-            <img src="img/piccinin-semfundo.png" alt="Piccinin Security Logo" style="height: 120px; filter: drop-shadow(0px 4px 6px rgba(0,255,100,0.2));">
+        <div class="brand-group">
+            <div class="logo-placeholder">
+                <img src="img/piccinin-semfundo.png" alt="Piccinin Security Logo" class="logo">
+            </div>
+            <div class="saderi-header-watermark">
+                <span>Powered by</span>
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo">
+            </div>
         </div>
         <div class="nav-links">
-            <a href="#" class="nav-link active">Auditoria Vanda</a>
-            <a href="#" class="nav-link">Relatórios</a>
+            <a href="index.html" class="nav-link active">Comando Ao Vivo</a>
+            <a href="relatorios.html" class="nav-link">Inteligência & Relatórios</a>
             <a href="#" class="nav-link">Sair</a>
         </div>
     </nav>
@@ -100,8 +106,8 @@
         <button class="btn-solid"><i class="ri-download-cloud-2-line"></i> Exportar Dados</button>
     </div>
 
-    <!-- Main List Section -->
-    <main class="main-content">
+    <!-- Main List Section (Moved Up since Analytics is gone) -->
+    <main class="main-content" style="margin-top: 2rem;">
         <div class="table-header">
             <h2 class="heading-font">Histórico de Atendimentos</h2>
         </div>
@@ -136,16 +142,19 @@
     </div>
 
     <!-- Footer Commercial / Developer -->
-    <footer class="app-footer">
-        <div class="footer-content">
-            <span class="developer-text">Desenvolvido por</span>
-            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link">
-                <img src="img/saderi12.png" alt="Saderi Sistemas" class="saderi-logo" title="Falar com a Saderi Sistemas">
+    <footer class="app-footer" style="padding: 40px 20px; text-align: center; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(0,255,136,0.1); background: rgba(0,0,0,0.6); margin-top: 60px;">
+        <div class="footer-content" style="display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 400px;">
+            <span class="developer-text" style="font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 500;">Arquitetura & Engenharia</span>
+            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link" style="transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: inline-block;">
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo" style="height: 65px; opacity: 0.9; filter: drop-shadow(0 0 15px rgba(0,255,136,0.3)); transition: all 0.4s ease;" onmouseover="this.style.opacity='1'; this.style.filter='drop-shadow(0 0 20px rgba(0,255,136,0.6))'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.9'; this.style.filter='drop-shadow(0 0 15px rgba(0,255,136,0.3))'; this.style.transform='scale(1)'">
             </a>
         </div>
     </footer>
 
+    <!-- Scripts (No charts.js anymore for index) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

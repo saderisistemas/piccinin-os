@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+    /* Cyber-Industrial Brand Colors */
+    --piccinin-black: #050505; /* Absolute darkness */
+    --piccinin-dark: #090c0a;  /* Surface dark */
+    --piccinin-grey: #111814;  /* Component grey */
+    --piccinin-border: rgba(0, 255, 136, 0.15); /* Neon border */
+    
+    --piccinin-green: #00ff88; /* Cyber Neon Green */
+    --piccinin-green-dim: rgba(0, 255, 136, 0.08); /* Ghost Green */
+    --piccinin-green-dark: #009c5d;
+    
+    --text-white: #ffffff;
+    --text-grey: #a0b3a8;
+    --text-muted: #4a5c53;
+    
+    /* Cyber-Industrial Effects */
+    --glow-green: 0 0 25px rgba(0, 255, 136, 0.6);
+    --glow-green-sm: 0 0 12px rgba(0, 255, 136, 0.3);
+    --glow-green-text: 0 0 8px rgba(0, 255, 136, 0.8);
+    --glass-bg: rgba(5, 5, 5, 0.75);
+    
+    /* Layout */
+    --radius-pill: 50px;
+    --radius-box: 8px; /* Sharper edges for industrial look */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--piccinin-black);
+    color: var(--text-white);
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* Industrial Noise & Scanline Background */
+    background-image: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 136, 0.02) 2px,
+            rgba(0, 255, 136, 0.02) 4px
+        ),
+        radial-gradient(circle at 50% -20%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* Typography */
+h1, h2, h3, .heading-font {
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+}
+
+/* Selection */
+::selection {
+    background: var(--piccinin-green);
+    color: var(--piccinin-black);
+}

@@ -24,7 +24,7 @@ self.addEventListener('fetch', event => {
     caches.match(event.request)
       .then(response => {
         // Se a requisição está no cache, retorne-a. Senão, busque da rede.
-        return response || fetch(event.request);
+        return response || fetch(event.request).catch(err => console.warn('Fetch falhou (possível extensão/adblock):', err));
       })
   );
 });

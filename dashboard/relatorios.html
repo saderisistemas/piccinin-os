@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccinin OS | Inteligência Tática</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#009c5d">
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- Icons & Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Premium Navbar -->
+    <nav class="navbar">
+        <div class="brand-group">
+            <div class="logo-placeholder">
+                <img src="img/piccinin-semfundo.png" alt="Piccinin Security Logo" class="logo">
+            </div>
+            <div class="saderi-header-watermark">
+                <span>Powered by</span>
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo">
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Comando Ao Vivo</a>
+            <a href="relatorios.html" class="nav-link active">Inteligência & Relatórios</a>
+            <a href="#" class="nav-link">Sair</a>
+        </div>
+    </nav>
+
+    <!-- Cinematic Hero Section -->
+    <section class="hero-dashboard cyber-hero">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+            <h2 class="dashboard-title heading-font glow-text">Centro de Inteligência Tática</h2>
+            <p class="dashboard-subtitle">Cruzamento automático de OS, defeitos, técnicos e garantias — inteligência que nenhum sistema isolado consegue mostrar.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content" style="padding-top: 0; margin-top: -3rem; position: relative; z-index: 10;">
+
+        <!-- ======== SEÇÃO 1: KPIs EXECUTIVOS ======== -->
+        <div class="table-header">
+            <h2 class="heading-font"><i class="ri-pulse-line" style="color:var(--piccinin-green)"></i> Visão Executiva (Últimos 30 Dias)</h2>
+        </div>
+        <div class="kpi-grid" style="margin-bottom: 40px;">
+            <div class="kpi-box cyber-card">
+                <div class="cyber-accent"></div>
+                <span class="kpi-label">OS Executadas</span>
+                <span class="kpi-value glow-text" id="kpi-total-os">—</span>
+                <span class="kpi-trend" style="color:var(--piccinin-green)"><i class="ri-file-list-3-line"></i> Fechadas + Concluídas</span>
+            </div>
+            <div class="kpi-box cyber-card">
+                <div class="cyber-accent" style="background: #ff4d4d; box-shadow: 0 0 15px #ff4d4d;"></div>
+                <span class="kpi-label">Taxa de Garantia</span>
+                <span class="kpi-value glow-text" id="kpi-taxa-garantia" style="color:#ff6b6b;">—</span>
+                <span class="kpi-trend" style="color:#ff6b6b;"><i class="ri-shield-cross-line"></i> % de retrabalho</span>
+            </div>
+            <div class="kpi-box cyber-card">
+                <div class="cyber-accent" style="background:#00bfff; box-shadow: 0 0 15px #00bfff;"></div>
+                <span class="kpi-label">Defeito Mais Comum</span>
+                <span class="kpi-value" id="kpi-top-defeito" style="font-size:1.4rem; font-family:'Outfit',sans-serif; font-weight:700; color:#fff; line-height:1.2; padding-top:8px;">—</span>
+                <span class="kpi-trend" style="color:#00bfff;"><i class="ri-bug-line"></i> Maior frequência</span>
+            </div>
+            <div class="kpi-box cyber-card">
+                <div class="cyber-accent" style="background:#f0c040; box-shadow: 0 0 15px #f0c040;"></div>
+                <span class="kpi-label">Técnico Top</span>
+                <span class="kpi-value" id="kpi-top-tecnico" style="font-size:1.4rem; font-family:'Outfit',sans-serif; font-weight:700; color:#fff; line-height:1.2; padding-top:8px;">—</span>
+                <span class="kpi-trend" style="color:#f0c040;"><i class="ri-trophy-line"></i> Mais OS fechadas</span>
+            </div>
+        </div>
+
+        <!-- ======== SEÇÃO 2: INTELIGÊNCIA DE DEFEITOS ======== -->
+        <div class="table-header">
+            <h2 class="heading-font"><i class="ri-bug-2-line" style="color:var(--piccinin-green)"></i> Inteligência de Defeitos</h2>
+        </div>
+        <div class="charts-grid" style="margin-bottom: 40px;">
+            <div class="chart-box">
+                <h4>Top Defeitos por Frequência</h4>
+                <div id="chart-defeitos"></div>
+            </div>
+            <div class="chart-box">
+                <h4>Garantia vs Cobrado</h4>
+                <div id="chart-warranty"></div>
+            </div>
+        </div>
+
+        <!-- ======== SEÇÃO 3: PERFORMANCE DOS TÉCNICOS ======== -->
+        <div class="table-header">
+            <h2 class="heading-font"><i class="ri-team-line" style="color:var(--piccinin-green)"></i> Performance dos Técnicos</h2>
+        </div>
+        <div class="charts-grid" style="margin-bottom: 40px;">
+            <div class="chart-box">
+                <h4>OS por Técnico</h4>
+                <div id="chart-tecnico-os"></div>
+            </div>
+            <div class="chart-box">
+                <h4>Taxa de Garantia por Técnico (%)</h4>
+                <div id="chart-tecnico-garantia"></div>
+            </div>
+        </div>
+
+        <!-- ======== SEÇÃO 4: ALERTA DE RUPTURA / EQUIPAMENTOS ======== -->
+        <div class="table-header">
+            <h2 class="heading-font"><i class="ri-radar-line" style="color:var(--piccinin-green)"></i> Equipamentos & Risco Operacional</h2>
+        </div>
+        <div class="charts-grid" style="margin-bottom: 40px; grid-template-columns: 1fr 1fr;">
+            <div class="chart-box" style="grid-column: span 1;">
+                <h4>Equipamentos com Mais Falhas</h4>
+                <div id="chart-equipamentos"></div>
+            </div>
+            <div class="chart-box" style="grid-column: span 1;">
+                <h4>Radar de Risco por Categoria de Defeito</h4>
+                <div id="chart-risk"></div>
+            </div>
+        </div>
+
+        <!-- ======== SEÇÃO 5: EVOLUÇÃO TEMPORAL ======== -->
+        <div class="table-header">
+            <h2 class="heading-font"><i class="ri-line-chart-line" style="color:var(--piccinin-green)"></i> Evolução Temporal</h2>
+        </div>
+        <div class="charts-grid" style="margin-bottom: 40px; grid-template-columns: 2fr 1fr;">
+            <div class="chart-box">
+                <h4>Volume de OS por Dia (Últimos 30 Dias)</h4>
+                <div id="chart-volume-diario"></div>
+            </div>
+            <div class="chart-box">
+                <h4>Heatmap: Picos de Incidentes</h4>
+                <div id="chart-heatmap" style="min-height:250px;"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer" style="padding: 40px 20px; text-align: center; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(0,255,136,0.1); background: rgba(0,0,0,0.6); margin-top: 60px;">
+        <div class="footer-content" style="display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 400px;">
+            <span class="developer-text" style="font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 500;">Arquitetura & Engenharia</span>
+            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link" style="transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: inline-block;">
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo" style="height: 65px; opacity: 0.9; filter: drop-shadow(0 0 15px rgba(0,255,136,0.3)); transition: all 0.4s ease;" onmouseover="this.style.opacity='1'; this.style.filter='drop-shadow(0 0 20px rgba(0,255,136,0.6))'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.9'; this.style.filter='drop-shadow(0 0 15px rgba(0,255,136,0.3))'; this.style.transform='scale(1)'">
+            </a>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="js/api.js"></script>
+    <script src="js/relatorios.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) { registration.unregister(); }
+            });
+        }
+    </script>
+</body>
+</html>

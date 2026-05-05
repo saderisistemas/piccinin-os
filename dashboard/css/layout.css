@@ -1,0 +1,453 @@
+/* =========================================
+   PICCININ SECURITY OS — LAYOUT.CSS
+   Clean, single-source-of-truth. No duplicate rules.
+   ========================================= */
+
+/* ── DESIGN TOKENS ─────────────────────── */
+:root {
+    --nav-height-desktop: 80px;
+    --nav-height-mobile: auto;
+    --logo-piccinin-desktop: 64px;
+    --logo-piccinin-mobile: 52px;
+    --logo-saderi-desktop: 28px;
+    --logo-saderi-mobile: 22px;
+}
+
+/* ── NAVBAR — BASE (Desktop) ────────────── */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    height: var(--nav-height-desktop);
+    background: rgba(4, 6, 4, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0, 255, 136, 0.12);
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.9);
+}
+
+/* ── BRAND GROUP ────────────────────────── */
+.brand-group {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* ── PICCININ LOGO ──────────────────────── */
+.logo {
+    height: var(--logo-piccinin-desktop);
+    filter: drop-shadow(0 0 12px rgba(0, 255, 100, 0.35));
+    transition: transform 0.3s ease, filter 0.3s ease;
+    display: block;
+}
+.logo:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 18px rgba(0, 255, 100, 0.6));
+}
+
+/* ── SADERI WATERMARK ───────────────────── */
+.saderi-header-watermark {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 1;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 14px;
+    position: static;
+    transform: none;
+}
+.saderi-header-watermark span {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.42rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+/* logo-dark.png has text, cap by height */
+.saderi-logo {
+    height: 28px;
+    max-height: 28px;
+    width: auto;
+    filter: none;
+}
+
+/* ── NAV LINKS ──────────────────────────── */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+}
+.nav-link {
+    color: var(--text-grey, #888);
+    text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+    position: relative;
+    white-space: nowrap;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: var(--piccinin-green, #00ff88);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+.nav-link.active {
+    color: var(--piccinin-green, #00ff88);
+    text-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+}
+.nav-link.active::after,
+.nav-link:hover::after {
+    width: 100%;
+}
+.nav-link:hover {
+    color: #fff;
+}
+
+/* ── HERO SECTION ───────────────────────── */
+.hero-dashboard {
+    position: relative;
+    padding: 5rem 5% 3.5rem;
+    overflow: hidden;
+}
+.hero-dashboard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100vw; height: 100%;
+    background: radial-gradient(ellipse at top, rgba(0,255,136,0.08) 0%, transparent 65%);
+    z-index: 0;
+    pointer-events: none;
+}
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── DASHBOARD TITLE ────────────────────── */
+.dashboard-title {
+    font-size: 3.8rem;
+    font-weight: 800;
+    margin-bottom: 0.6rem;
+    color: var(--text-white, #fff);
+    text-shadow: 0 8px 28px rgba(0, 255, 136, 0.2);
+    line-height: 1.05;
+}
+.dashboard-subtitle {
+    font-size: 1rem;
+    color: var(--text-grey, #888);
+    margin-bottom: 3.5rem;
+    max-width: 650px;
+    line-height: 1.7;
+    border-left: 2px solid var(--piccinin-green, #00ff88);
+    padding-left: 14px;
+}
+
+/* ── KPI GRID ───────────────────────────── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+.kpi-grid .kpi-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.kpi-grid .kpi-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 12px;
+}
+.kpi-grid .kpi-value {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* ── CYBER CARD ─────────────────────────── */
+.cyber-card {
+    background: linear-gradient(145deg, rgba(10,15,10,0.8) 0%, rgba(5,5,5,0.95) 100%);
+    border: 1px solid rgba(0, 255, 136, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 136, 0.04);
+    border-radius: 8px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.cyber-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 15px 45px rgba(0, 255, 136, 0.12), inset 0 0 30px rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.4);
+}
+.cyber-accent {
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--piccinin-green, #00ff88);
+    box-shadow: 0 0 12px var(--piccinin-green, #00ff88);
+}
+@keyframes cyberSweep {
+    0% { transform: translateX(-100%) skewX(-20deg); }
+    100% { transform: translateX(260%) skewX(-20deg); }
+}
+.cyber-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -50%;
+    width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.06), transparent);
+    animation: cyberSweep 8s infinite;
+    pointer-events: none;
+}
+
+/* ── GLOW TEXT ──────────────────────────── */
+.glow-text {
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.35), 0 0 40px rgba(0, 255, 136, 0.15);
+    letter-spacing: -0.5px;
+}
+.dashboard-title.glow-text {
+    font-weight: 800;
+}
+
+/* ── ANALYTICS / CHARTS ─────────────────── */
+.analytics-section {
+    position: relative;
+    z-index: 10;
+    margin-top: 2rem;
+}
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 28px;
+    padding: 0 5%;
+}
+.chart-box {
+    background: var(--glass-bg, rgba(10,15,10,0.6));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--piccinin-border, rgba(0,255,136,0.12));
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    position: relative;
+    overflow: hidden;
+}
+.chart-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--piccinin-green, #00ff88), transparent);
+    opacity: 0.4;
+}
+.chart-box h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text-white, #fff);
+    margin-bottom: 22px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.chart-box h4::before {
+    content: '';
+    display: block;
+    width: 7px; height: 7px;
+    background: var(--piccinin-green, #00ff88);
+    box-shadow: 0 0 10px rgba(0,255,136,0.8);
+    border-radius: 50%;
+}
+
+/* =========================================
+   RESPONSIVE BREAKPOINTS
+   ========================================= */
+
+/* ── TABLET (≤1024px) ───────────────────── */
+@media (max-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .dashboard-title { font-size: 2.8rem; }
+}
+
+/* ── MOBILE (≤768px) — PREMIUM STACK ───── */
+@media (max-width: 768px) {
+    /* === NAVBAR === */
+    .navbar {
+        flex-direction: column;
+        height: auto;
+        padding: 1rem 5% 0.9rem;
+        gap: 0;
+        background: linear-gradient(180deg, rgba(4,6,4,0.98) 0%, rgba(8,12,8,0.95) 100%);
+        border-bottom: 1px solid rgba(0, 255, 136, 0.18);
+    }
+
+    /* Top row: Piccinin logo + Saderi watermark inline */
+    .brand-group {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        width: 100%;
+        padding-bottom: 10px;
+    }
+
+    .logo {
+        height: var(--logo-piccinin-mobile);
+        filter: drop-shadow(0 0 10px rgba(0, 255, 100, 0.4));
+    }
+
+    /* Saderi: tiny inline badge, not stacked */
+    .saderi-header-watermark {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        opacity: 1;
+        border-left: 1px solid rgba(255, 255, 255, 0.15);
+        padding-left: 10px;
+    }
+    .saderi-header-watermark span {
+        display: none; /* Hide text on mobile — icon badge only */
+    }
+    .saderi-logo {
+        height: 22px;
+        max-height: 22px;
+        width: auto;
+        filter: none;
+    }
+
+    /* Nav links: pill-style row, full width, centered */
+    .nav-links {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 6px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .nav-link {
+        font-size: 0.62rem;
+        letter-spacing: 0.8px;
+        padding: 7px 12px;
+        border-radius: 50px;
+        background: rgba(0, 255, 136, 0.03);
+        border: 1px solid rgba(0, 255, 136, 0.08);
+        color: rgba(255, 255, 255, 0.65);
+        white-space: nowrap;
+    }
+    .nav-link::after { display: none; }
+    .nav-link.active {
+        background: rgba(0, 255, 136, 0.12);
+        border-color: rgba(0, 255, 136, 0.5);
+        color: #fff;
+        box-shadow: 0 0 14px rgba(0, 255, 136, 0.2);
+        font-weight: 700;
+    }
+
+    /* === HERO === */
+    .hero-dashboard { padding: 2.5rem 5% 2rem; }
+    .dashboard-title {
+        font-size: 2rem;
+        text-align: center;
+    }
+    .dashboard-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        border-left: none;
+        border-top: 2px solid var(--piccinin-green, #00ff88);
+        padding-top: 10px;
+        padding-left: 0;
+        max-width: 100%;
+    }
+
+    /* === KPI GRID === */
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .kpi-grid .kpi-value { font-size: 2.6rem; }
+    .kpi-grid .kpi-label { font-size: 0.7rem; letter-spacing: 1.5px; margin-bottom: 8px; }
+
+    /* === VANDA MATRIX === */
+    .matrix-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .matrix-card { padding: 14px; }
+    .matrix-number { font-size: 1.8rem; }
+    .matrix-title { white-space: normal; }
+
+    /* === OS ROW (TABLE) === */
+    .os-row {
+        grid-template-columns: 1fr;
+        padding: 14px;
+        gap: 8px;
+        flex-direction: column;
+    }
+    .os-col {
+        width: 100%;
+        align-items: flex-start;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding-bottom: 7px;
+    }
+    .os-col:last-child {
+        border-bottom: none;
+        align-items: center;
+        margin-top: 4px;
+    }
+    .os-col-title { display: block; font-size: 0.6rem; opacity: 0.55; margin-bottom: 3px; }
+    .os-col-value { font-size: 0.9rem; white-space: normal; }
+
+    /* === MODAL === */
+    .modal-content {
+        width: 97%;
+        padding: 14px;
+        margin: 8px auto;
+        border-radius: 12px;
+    }
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .evidence-thumb { height: 95px; }
+
+    /* === FOOTER === */
+    .app-footer { padding: 28px 15px; }
+    .saderi-logo { height: 48px; }
+}
+
+/* ── SMALL MOBILE (≤480px) ──────────────── */
+@media (max-width: 480px) {
+    .dashboard-title { font-size: 1.7rem; }
+    .kpi-grid .kpi-value { font-size: 2.2rem; }
+
+    /* Keep nav links on one line, shrink further if needed */
+    .nav-link {
+        font-size: 0.55rem;
+        padding: 6px 10px;
+    }
+}
