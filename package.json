@@ -1,0 +1,10 @@
+{
+  "name": "piccinin-os-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard Estático - Protek OS",
+  "private": true,
+  "scripts": {
+    "build": "echo \"Site estático - Nenhum build necessário.\""
+  },
+  "dependencies": {}
+}
