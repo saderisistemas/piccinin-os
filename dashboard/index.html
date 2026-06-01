@@ -175,14 +175,6 @@
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
     <script src="js/help.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('[PWA] SW registrado:', reg.scope))
-            .catch(err => console.warn('[PWA] SW falhou:', err));
-        });
-      }
-    </script>
+
 </body>
 </html>
