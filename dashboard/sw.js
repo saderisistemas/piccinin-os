@@ -3,8 +3,8 @@
 //  Estratégia: Network-first para dados (Supabase),
 //              Cache-first para assets estáticos
 // ════════════════════════════════════════════════════
-const CACHE_VERSION = 'piccinin-os-v3';
-const CACHE_STATIC  = 'piccinin-static-v3';
+const CACHE_VERSION = 'piccinin-os-v4';
+const CACHE_STATIC  = 'piccinin-static-v4';
 
 // Assets que ficam em cache permanente (raramente mudam)
 const STATIC_ASSETS = [
@@ -69,12 +69,8 @@ self.addEventListener('fetch', event => {
     caches.match(request).then(cached => {
       if (cached) return cached;
       return fetch(request).then(response => {
-        // Se a resposta foi redirecionada, trata para evitar o erro de redirecionamento no Service Worker
+        // Se a resposta foi redirecionada, cria uma resposta limpa sem a flag redirected para evitar erros de segurança e loops de redirecionamento
         if (response.redirected) {
-          if (request.mode === 'navigate') {
-            return Response.redirect(response.url, 302);
-          }
-          // Limpa a flag redirected para sub-recursos (imagens, scripts, CSS) para evitar erro no browser
           return new Response(response.body, {
             headers: response.headers,
             status: response.status,
