@@ -3,8 +3,8 @@
 //  Estratégia: Network-first para dados (Supabase),
 //              Cache-first para assets estáticos
 // ════════════════════════════════════════════════════
-const CACHE_VERSION = 'piccinin-os-v2';
-const CACHE_STATIC  = 'piccinin-static-v2';
+const CACHE_VERSION = 'piccinin-os-v3';
+const CACHE_STATIC  = 'piccinin-static-v3';
 
 // Assets que ficam em cache permanente (raramente mudam)
 const STATIC_ASSETS = [
@@ -69,6 +69,19 @@ self.addEventListener('fetch', event => {
     caches.match(request).then(cached => {
       if (cached) return cached;
       return fetch(request).then(response => {
+        // Se a resposta foi redirecionada, trata para evitar o erro de redirecionamento no Service Worker
+        if (response.redirected) {
+          if (request.mode === 'navigate') {
+            return Response.redirect(response.url, 302);
+          }
+          // Limpa a flag redirected para sub-recursos (imagens, scripts, CSS) para evitar erro no browser
+          return new Response(response.body, {
+            headers: response.headers,
+            status: response.status,
+            statusText: response.statusText
+          });
+        }
+
         // Guardar no cache se for resposta válida
         if (response && response.status === 200 && response.type !== 'opaque') {
           const clone = response.clone();
