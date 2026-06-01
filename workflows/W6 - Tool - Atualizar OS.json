@@ -1,5 +1,5 @@
 {
-  "name": "W6 - Tool - Atualizar OS Bom Saldo",
+  "name": "[PROD][PICCININ OS] W6 - Atualizar Fechar OS Bom Saldo",
   "nodes": [
     {
       "parameters": {
@@ -67,6 +67,9 @@
             },
             {
               "name": "servicos_json"
+            },
+            {
+              "name": "motivo_cancelamento"
             }
           ]
         }
@@ -74,7 +77,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -600,
+        -608,
         400
       ],
       "id": "b7869f15-a853-45df-b9ea-8f74d8661c8c",
@@ -96,7 +99,7 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -380,
+        -384,
         400
       ],
       "id": "3ceed841-a0ee-4584-b1d1-f7920f1e516c",
@@ -111,7 +114,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Resolver o os_id real (interno Bom Saldo = 7+ dígitos)\nconst trigger = $('Trigger').first().json;\nconst supabase = $input.first().json;\n\n// Prioridade: os_id_bomsaldo do Supabase > os_id do trigger\nconst osIdSupa = String(supabase.os_id_bomsaldo || '').replace(/[^0-9]/g, '');\nconst osIdTrigger = String(trigger.os_id || '').replace(/[^0-9]/g, '');\n\nlet osIdReal;\nif (osIdSupa.length >= 7) {\n  osIdReal = osIdSupa;\n} else if (osIdTrigger.length >= 7) {\n  osIdReal = osIdTrigger;\n} else {\n  return [{ json: { error: `VANDA: os_id '${trigger.os_id}' parece ser o código visível da OS, não o ID interno. O ID interno tem 7+ dígitos. Chame 'buscarContexto' para recuperar o os_id correto.` } }];\n}\n\n// Pegar hora_entrada/saida do Supabase se não vieram no trigger\nconst horaEntrada = trigger.hora_entrada || supabase.hora_entrada || null;\nconst horaSaida = trigger.hora_saida || supabase.hora_saida || null;\n\nreturn [{ json: {\n  ...trigger,\n  os_id: osIdReal,\n  os_codigo: trigger.os_codigo || supabase.os_codigo,\n  hora_entrada: horaEntrada,\n  hora_saida: horaSaida,\n  produtos_json_supabase: supabase.produtos_json,\n  servicos_json_supabase: supabase.servicos_json\n} }];"
+        "jsCode": "// Resolver o os_id real (interno Bom Saldo = 7+ dígitos)\nconst trigger = $('Trigger').first().json;\nconst supabase = $input.first().json;\n\n// Prioridade: os_id_bomsaldo do Supabase > os_id do trigger\nconst osIdSupa = String(supabase.os_id_bomsaldo || '').replace(/[^0-9]/g, '');\nconst osIdTrigger = String(trigger.os_id || '').replace(/[^0-9]/g, '');\n\nlet osIdReal;\nif (osIdSupa.length >= 7) {\n  osIdReal = osIdSupa;\n} else if (osIdTrigger.length >= 7) {\n  osIdReal = osIdTrigger;\n} else {\n  return [{ json: { error: `VANDA: os_id '${trigger.os_id}' parece ser o código visível da OS, não o ID interno. O ID interno tem 7+ dígitos. Chame 'buscarContexto' para recuperar o os_id correto.` } }];\n}\n\n// Pegar hora_entrada/saida do Supabase se não vieram no trigger\nconst horaEntrada = trigger.hora_entrada || supabase.hora_entrada || null;\nconst horaSaida = trigger.hora_saida || supabase.hora_saida || null;\n\nconst emGarantia = (trigger.em_garantia !== undefined && trigger.em_garantia !== null && trigger.em_garantia !== '') \n  ? (trigger.em_garantia === 'true' || trigger.em_garantia === true)\n  : (supabase.em_garantia === true);\n\nconst tipoServico = trigger.tipo_servico || supabase.tipo_servico || null;\n\nconst equipamento = trigger.equipamento || supabase.equipamento || null;\nconst marca = trigger.marca || supabase.marca || null;\nconst modelo = trigger.modelo || supabase.modelo || null;\nconst defeito = trigger.defeito || supabase.defeito || null;\nconst solucao = trigger.solucao || supabase.solucao || null;\n\n// Laudo / Relatório técnico: se não vier no trigger, tentar ler do Supabase ou montar\nlet relatorioTecnico = trigger.relatorio_tecnico || trigger.laudo || supabase.relatorio_tecnico || null;\nif (!relatorioTecnico && defeito && solucao) {\n  relatorioTecnico = `Equipamento: ${equipamento || 'Não informado'}. Defeito: ${defeito}. Solução: ${solucao}.`;\n}\n\nreturn [{ json: {\n  ...trigger,\n  os_id: osIdReal,\n  os_codigo: trigger.os_codigo || supabase.os_codigo,\n  hora_entrada: horaEntrada,\n  hora_saida: horaSaida,\n  em_garantia: emGarantia,\n  tipo_servico: tipoServico,\n  equipamento: equipamento,\n  marca: marca,\n  modelo: modelo,\n  defeito: defeito,\n  solucao: solucao,\n  relatorio_tecnico: relatorioTecnico,\n  laudo: relatorioTecnico,\n  produtos_json_supabase: supabase.produtos_json,\n  servicos_json_supabase: supabase.servicos_json\n} }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -138,14 +141,12 @@
             }
           ]
         },
-        "options": {
-          "ignoreResponseCode": true
-        }
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        60,
+        64,
         400
       ],
       "id": "3bac52a0-d2a8-4aa2-b79e-7a2d86e5d75b",
@@ -153,12 +154,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const triggerParams = $('Resolver OS ID').first().json;\nconst osResp = $input.first().json;\n\nif (triggerParams.error) {\n  return [{ json: { error: triggerParams.error } }];\n}\n\nif (!osResp || osResp.status === 'error' || !osResp.data) {\n  const dt = osResp ? (osResp.message || JSON.stringify(osResp)) : 'erro desconhecido';\n  return [{ json: { error: 'FALHA GRAVE AO BUSCAR OS. Erro API: ' + dt } }];\n}\n\nconst osAtual = osResp.data;\n\nlet produtos = [];\nlet servicos = [];\n// Pegar JSON do trigger ou tentar fallback do Supabase\ntry { produtos = typeof triggerParams.produtos_json === 'string' ? JSON.parse(triggerParams.produtos_json) : (triggerParams.produtos_json || []); } catch(e) {}\nif (produtos.length === 0 && triggerParams.produtos_json_supabase) {\n  try { produtos = typeof triggerParams.produtos_json_supabase === 'string' ? JSON.parse(triggerParams.produtos_json_supabase) : triggerParams.produtos_json_supabase; } catch(e) {}\n}\n\ntry { servicos = typeof triggerParams.servicos_json === 'string' ? JSON.parse(triggerParams.servicos_json) : (triggerParams.servicos_json || []); } catch(e) {}\nif (servicos.length === 0 && triggerParams.servicos_json_supabase) {\n  try { servicos = typeof triggerParams.servicos_json_supabase === 'string' ? JSON.parse(triggerParams.servicos_json_supabase) : triggerParams.servicos_json_supabase; } catch(e) {}\n}\n\nconst emGarantia = triggerParams.em_garantia === 'true' || triggerParams.em_garantia === true;\n\n// ── Timestamps de chegada e saída ──\nconst formatBR = (ts) => {\n  if (!ts) return null;\n  try {\n    const d = new Date(ts);\n    if (isNaN(d.getTime())) return null;\n    return d.toLocaleString('pt-BR', {\n      timeZone: 'America/Sao_Paulo',\n      day: '2-digit', month: '2-digit', year: 'numeric',\n      hour: '2-digit', minute: '2-digit'\n    });\n  } catch { return null; }\n};\n\nconst checkinBR = formatBR(triggerParams.hora_entrada);\nconst checkoutBR = formatBR(triggerParams.hora_saida);\n\n// Calcular tempo de atendimento em minutos\nlet tempoMin = null;\nif (triggerParams.hora_entrada && triggerParams.hora_saida) {\n  try {\n    const d1 = new Date(triggerParams.hora_entrada);\n    const d2 = new Date(triggerParams.hora_saida);\n    tempoMin = Math.round((d2 - d1) / 60000);\n  } catch {}\n}\n\n// Relatório técnico + timestamps\nlet obsInterna = triggerParams.relatorio_tecnico || triggerParams.laudo || osAtual.observacoes_interna || '';\n\nconst tsLinhas = [];\nif (checkinBR && !obsInterna.includes('[CHEGADA:')) tsLinhas.push(`[CHEGADA: ${checkinBR}]`);\nif (checkoutBR && !obsInterna.includes('[SAÍDA:') && !obsInterna.includes('[SAIDA:')) tsLinhas.push(`[SAÍDA: ${checkoutBR}]`);\nif (tempoMin !== null && !obsInterna.includes('[TEMPO:')) tsLinhas.push(`[TEMPO: ${tempoMin} min]`);\nif (tsLinhas.length > 0) {\n  obsInterna = (obsInterna ? obsInterna + '\\n' : '') + tsLinhas.join('\\n');\n}\n\nconst payload = {\n  codigo: osAtual.codigo,\n  cliente_id: osAtual.cliente_id,\n  data: osAtual.data || new Date().toISOString().split('T')[0],\n  observacoes: triggerParams.observacoes_orientacao || osAtual.observacoes || '',\n  observacoes_interna: obsInterna.trim(),\n  situacao_id: String(triggerParams.situacao_id || '6237499')\n};\n\n// Equipamentos\nlet equipamentosArray = osAtual.equipamentos || [];\nif (triggerParams.equipamento) {\n  equipamentosArray = [{\n    equipamento: {\n      equipamento: triggerParams.equipamento || '',\n      marca: triggerParams.marca || '',\n      modelo: triggerParams.modelo || '',\n      defeitos: triggerParams.defeito || '',\n      solucao: triggerParams.solucao || '',\n      laudo: triggerParams.relatorio_tecnico || triggerParams.laudo || ''\n    }\n  }];\n}\nif (equipamentosArray.length > 0) payload.equipamentos = equipamentosArray;\n\n// Produtos (manter existentes + novos)\nlet produtosArray = [];\nif (osAtual.produtos) {\n  osAtual.produtos\n    .filter(p => p.produto.produto_id && p.produto.produto_id !== '')\n    .forEach(p => {\n      produtosArray.push({ produto: {\n        produto_id: p.produto.produto_id,\n        variacao_id: p.produto.variacao_id,\n        quantidade: String(p.produto.quantidade),\n        valor_venda: emGarantia ? '0' : String(p.produto.valor_venda),\n        tipo_desconto: p.produto.tipo_desconto || 'R$',\n        desconto_valor: String(p.produto.desconto_valor || '0'),\n        desconto_porcentagem: String(p.produto.desconto_porcentagem || '0')\n      }});\n    });\n}\nprodutos.forEach(p => {\n  const pid = p.produto_id || p.id;\n  if (!pid || pid === '') return;\n  produtosArray.push({ produto: {\n    produto_id: pid,\n    variacao_id: p.variacao_id || '',\n    quantidade: String(p.quantidade || '1'),\n    valor_venda: emGarantia ? '0' : String(p.valor_venda ?? '0'),\n    tipo_desconto: 'R$', desconto_valor: '0', desconto_porcentagem: '0'\n  }});\n});\nif (produtosArray.length > 0) payload.produtos = produtosArray;\n\n// Serviços (manter existentes + novos)\nlet servicosArray = [];\nif (osAtual.servicos) {\n  osAtual.servicos\n    .filter(s => s.servico.servico_id && s.servico.servico_id !== '')\n    .forEach(s => {\n      servicosArray.push({ servico: {\n        servico_id: s.servico.servico_id,\n        quantidade: String(s.servico.quantidade),\n        valor_venda: emGarantia ? '0' : String(s.servico.valor_venda),\n        tipo_desconto: s.servico.tipo_desconto || 'R$',\n        desconto_valor: String(s.servico.desconto_valor || '0'),\n        desconto_porcentagem: String(s.servico.desconto_porcentagem || '0')\n      }});\n    });\n}\nservicos.forEach(s => {\n  const sid = s.servico_id || s.id;\n  if (!sid || sid === '') return;\n  servicosArray.push({ servico: {\n    servico_id: sid,\n    quantidade: String(s.quantidade || '1'),\n    valor_venda: emGarantia ? '0' : String(s.valor_venda ?? '0'),\n    tipo_desconto: 'R$', desconto_valor: '0', desconto_porcentagem: '0'\n  }});\n});\nif (servicosArray.length > 0) payload.servicos = servicosArray;\n\n// Atributos OS\nconst camposExtras = [];\nif (triggerParams.observacoes_orientacao) {\n  camposExtras.push({ atributo_os: { atributo_id: '58530', valor: triggerParams.observacoes_orientacao } });\n}\nif (triggerParams.relatorio_tecnico || triggerParams.laudo) {\n  camposExtras.push({ atributo_os: { atributo_id: '58528', valor: triggerParams.relatorio_tecnico || triggerParams.laudo } });\n}\nconst tipoServico = emGarantia ? 'Garantia' : (triggerParams.tipo_servico || '');\nif (tipoServico) {\n  camposExtras.push({ atributo_os: { atributo_id: '58529', valor: tipoServico } });\n}\nif (camposExtras.length > 0) payload.atributos_os = camposExtras;\n\n// Garantia — pagamento zerado\nif (emGarantia) {\n  payload.pagamentos = [{ pagamento: { data_vencimento: new Date().toISOString().split('T')[0], valor: '0.00', forma_pagamento_id: '4366641' } }];\n  return [{ json: { os_id: triggerParams.os_id, os_codigo: triggerParams.os_codigo, payload, tempo_atendimento_min: tempoMin } }];\n}\n\n// Calcular total\nlet sumTotal = 0;\nprodutosArray.forEach(p => {\n  sumTotal += parseFloat(p.produto.quantidade || 0) * parseFloat(p.produto.valor_venda || 0);\n});\nservicosArray.forEach(s => {\n  sumTotal += parseFloat(s.servico.quantidade || 0) * parseFloat(s.servico.valor_venda || 0);\n});\n\n// Forma de pagamento\nlet formaId = '4366641';\nconst tp = (triggerParams.tipo_pagamento || '').toLowerCase();\nif (tp.includes('pix') && (tp.includes('nubank') || (!tp.includes('inter') && !tp.includes('cora')))) formaId = '4366643';\nelse if (tp.includes('pix') && tp.includes('inter')) formaId = '4377571';\nelse if (tp.includes('pix') && tp.includes('cora')) formaId = '4384234';\nelse if (tp.includes('dinheiro') || tp.includes('especie') || tp.includes('espécie')) formaId = '4354377';\nelse if (tp.includes('boleto') || tp.includes('faturad') || tp.includes('escritorio')) formaId = '4366641';\nelse if (osAtual.pagamentos?.length > 0) formaId = osAtual.pagamentos[0].pagamento.forma_pagamento_id || formaId;\n\npayload.pagamentos = [{ pagamento: {\n  data_vencimento: new Date().toISOString().split('T')[0],\n  valor: String(Math.max(sumTotal, 0).toFixed(2)),\n  forma_pagamento_id: formaId\n}}];\n\nreturn [{ json: { os_id: triggerParams.os_id, os_codigo: triggerParams.os_codigo, payload, tempo_atendimento_min: tempoMin } }];"
+        "jsCode": "const triggerParams = $('Resolver OS ID').first().json;\nconst osResp = $input.first().json;\n\nif (triggerParams.error) {\n  return [{ json: { error: triggerParams.error } }];\n}\n\nif (!osResp || osResp.status === 'error' || !osResp.data) {\n  const dt = osResp ? (osResp.message || JSON.stringify(osResp)) : 'erro desconhecido';\n  return [{ json: { error: 'FALHA GRAVE AO BUSCAR OS. Erro API: ' + dt } }];\n}\n\nconst osAtual = osResp.data;\n\nlet produtos = [];\nlet servicos = [];\n// Pegar JSON do trigger ou tentar fallback do Supabase\ntry { produtos = typeof triggerParams.produtos_json === 'string' ? JSON.parse(triggerParams.produtos_json) : (triggerParams.produtos_json || []); } catch(e) {}\nif (produtos.length === 0 && triggerParams.produtos_json_supabase) {\n  try { produtos = typeof triggerParams.produtos_json_supabase === 'string' ? JSON.parse(triggerParams.produtos_json_supabase) : triggerParams.produtos_json_supabase; } catch(e) {}\n}\n\ntry { servicos = typeof triggerParams.servicos_json === 'string' ? JSON.parse(triggerParams.servicos_json) : (triggerParams.servicos_json || []); } catch(e) {}\nif (servicos.length === 0 && triggerParams.servicos_json_supabase) {\n  try { servicos = typeof triggerParams.servicos_json_supabase === 'string' ? JSON.parse(triggerParams.servicos_json_supabase) : triggerParams.servicos_json_supabase; } catch(e) {}\n}\n\nconst emGarantia = triggerParams.em_garantia === 'true' || triggerParams.em_garantia === true;\n\n// Propriedades extras para o Supabase\nconst sitId = String(triggerParams.situacao_id || osAtual.situacao_id || '6237497');\nconst isCancelada = sitId === '6237500';\nconst isFechada = sitId === '6237499';\nconst isFechamento = isCancelada || isFechada;\n\nconst extraOutput = {\n  is_fechamento: isFechamento,\n  supabase_status_os: isCancelada ? 'cancelada' : (isFechada ? 'concluida' : 'aberta'),\n  supabase_fase_ia: isFechamento ? 'fechado' : 'coleta_tecnica',\n  motivo_cancelamento: triggerParams.motivo_cancelamento || null\n};\n\n\n// ── Timestamps de chegada e saída ──\nconst parseTimeStr = (ts) => {\n  if (!ts) return null;\n  if (ts.includes('T')) {\n    const d = new Date(ts);\n    if (!isNaN(d.getTime())) return { h: d.getHours(), m: d.getMinutes(), d };\n  }\n  let clean = ts.toLowerCase().replace(/[^0-9h:]/g, '');\n  if (clean.includes(':')) {\n    const parts = clean.split(':');\n    return { h: parseInt(parts[0], 10), m: parseInt(parts[1], 10) };\n  } else if (clean.includes('h')) {\n    const parts = clean.split('h');\n    return { h: parseInt(parts[0], 10), m: parseInt(parts[1] || '0', 10) };\n  } else if (clean.length === 4) {\n    return { h: parseInt(clean.substring(0,2), 10), m: parseInt(clean.substring(2,4), 10) };\n  }\n  return null;\n};\n\nconst formatBR = (ts) => {\n  if (!ts) return null;\n  const t = parseTimeStr(ts);\n  if (!t || isNaN(t.h)) return ts;\n  if (t.d) {\n    return t.d.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });\n  }\n  return `${String(t.h).padStart(2,'0')}:${String(t.m).padStart(2,'0')}`;\n};\n\nconst checkinBR = formatBR(triggerParams.hora_entrada);\nconst checkoutBR = formatBR(triggerParams.hora_saida);\n\nlet tempoMin = null;\nlet tempoFormatado = '';\nconst tIn = parseTimeStr(triggerParams.hora_entrada);\nconst tOut = parseTimeStr(triggerParams.hora_saida);\n\nif (tIn && tOut && !isNaN(tIn.h) && !isNaN(tOut.h)) {\n  let inMins = tIn.h * 60 + tIn.m;\n  let outMins = tOut.h * 60 + tOut.m;\n  if (outMins < inMins) outMins += 24 * 60; // virou o dia\n  tempoMin = outMins - inMins;\n  \n  if (!isNaN(tempoMin)) {\n    const h = Math.floor(tempoMin / 60);\n    const m = tempoMin % 60;\n    if (h > 0 && m > 0) tempoFormatado = `${h}h${m} / ${tempoMin} min`;\n    else if (h > 0) tempoFormatado = `${h}h / ${tempoMin} min`;\n    else tempoFormatado = `${tempoMin} min`;\n  } else {\n    tempoMin = null;\n  }\n}\n\n// Relatório técnico + timestamps\nlet obsInterna = triggerParams.relatorio_tecnico || triggerParams.laudo || osAtual.observacoes_interna || '';\n\nconst tsLinhas = [];\nif (checkinBR && !obsInterna.includes('[CHEGADA:')) tsLinhas.push(`[CHEGADA: ${checkinBR}]`);\nif (checkoutBR && !obsInterna.includes('[SAÍDA:') && !obsInterna.includes('[SAIDA:')) tsLinhas.push(`[SAÍDA: ${checkoutBR}]`);\nif (tempoFormatado && !obsInterna.includes('[TEMPO:')) tsLinhas.push(`[TEMPO: ${tempoFormatado}]`);\n\nif (tsLinhas.length > 0) {\n  obsInterna = (obsInterna ? obsInterna + '\\n' : '') + tsLinhas.join('\\n');\n}\n\n// Injetar motivo de cancelamento se for uma OS cancelada\nif (String(triggerParams.situacao_id || '') === '6237500' && triggerParams.motivo_cancelamento) {\n  const tagMotivo = `[MOTIVO CANCELAMENTO: ${triggerParams.motivo_cancelamento}]`;\n  if (!obsInterna.includes('[MOTIVO CANCELAMENTO:')) {\n    obsInterna = tagMotivo + '\\n' + obsInterna;\n  }\n}\n\n// Injetar motivo de cancelamento se for uma OS cancelada\nif (String(triggerParams.situacao_id || '') === '6237500' && triggerParams.motivo_cancelamento) {\n  const tagMotivo = `[MOTIVO CANCELAMENTO: ${triggerParams.motivo_cancelamento}]`;\n  if (!obsInterna.includes('[MOTIVO CANCELAMENTO:')) {\n    obsInterna = tagMotivo + '\\n' + obsInterna;\n  }\n}\n\n// Injetar motivo de cancelamento se for uma OS cancelada\nif (String(triggerParams.situacao_id || '') === '6237500' && triggerParams.motivo_cancelamento) {\n  const tagMotivo = `[MOTIVO CANCELAMENTO: ${triggerParams.motivo_cancelamento}]`;\n  if (!obsInterna.includes('[MOTIVO CANCELAMENTO:')) {\n    obsInterna = tagMotivo + '\\n' + obsInterna;\n  }\n}\n\nconst payload = {\n  codigo: osAtual.codigo,\n  cliente_id: osAtual.cliente_id,\n  data: osAtual.data || new Date().toISOString().split('T')[0],\n  observacoes: triggerParams.observacoes_orientacao || osAtual.observacoes || '',\n  observacoes_interna: obsInterna.trim(),\n  situacao_id: sitId\n};\n\n// Equipamentos\nlet equipamentosArray = osAtual.equipamentos || [];\nif (triggerParams.equipamento) {\n  equipamentosArray = [{\n    equipamento: {\n      equipamento: triggerParams.equipamento || '',\n      marca: triggerParams.marca || '',\n      modelo: triggerParams.modelo || '',\n      defeitos: triggerParams.defeito || '',\n      solucao: triggerParams.solucao || '',\n      laudo: triggerParams.relatorio_tecnico || triggerParams.laudo || ''\n    }\n  }];\n}\nif (equipamentosArray.length > 0) payload.equipamentos = equipamentosArray;\n\n// Produtos (manter existentes + novos)\nlet produtosArray = [];\nif (osAtual.produtos) {\n  osAtual.produtos\n    .filter(p => p.produto.produto_id && p.produto.produto_id !== '')\n    .forEach(p => {\n      produtosArray.push({ produto: {\n        produto_id: p.produto.produto_id,\n        variacao_id: p.produto.variacao_id,\n        quantidade: String(p.produto.quantidade),\n        valor_venda: emGarantia ? '0' : String(p.produto.valor_venda),\n        tipo_desconto: p.produto.tipo_desconto || 'R$',\n        desconto_valor: String(p.produto.desconto_valor || '0'),\n        desconto_porcentagem: String(p.produto.desconto_porcentagem || '0')\n      }});\n    });\n}\nprodutos.forEach(p => {\n  const pid = p.produto_id || p.id;\n  if (!pid || pid === '') return;\n  produtosArray.push({ produto: {\n    produto_id: pid,\n    variacao_id: p.variacao_id || '',\n    quantidade: String(p.quantidade || '1'),\n    valor_venda: emGarantia ? '0' : String(p.valor_venda ?? '0'),\n    tipo_desconto: 'R$', desconto_valor: '0', desconto_porcentagem: '0'\n  }});\n});\nif (produtosArray.length > 0) payload.produtos = produtosArray;\n\n// Serviços (manter existentes + novos)\nlet servicosArray = [];\nif (osAtual.servicos) {\n  osAtual.servicos\n    .filter(s => s.servico.servico_id && s.servico.servico_id !== '')\n    .forEach(s => {\n      servicosArray.push({ servico: {\n        servico_id: s.servico.servico_id,\n        quantidade: String(s.servico.quantidade),\n        valor_venda: emGarantia ? '0' : String(s.servico.valor_venda),\n        tipo_desconto: s.servico.tipo_desconto || 'R$',\n        desconto_valor: String(s.servico.desconto_valor || '0'),\n        desconto_porcentagem: String(s.servico.desconto_porcentagem || '0')\n      }});\n    });\n}\nservicos.forEach(s => {\n  const sid = s.servico_id || s.id;\n  if (!sid || sid === '') return;\n  servicosArray.push({ servico: {\n    servico_id: sid,\n    quantidade: String(s.quantidade || '1'),\n    valor_venda: emGarantia ? '0' : String(s.valor_venda ?? '0'),\n    tipo_desconto: 'R$', desconto_valor: '0', desconto_porcentagem: '0'\n  }});\n});\nif (servicosArray.length > 0) payload.servicos = servicosArray;\n\n// Atributos OS\nconst camposExtras = [];\nif (triggerParams.observacoes_orientacao) {\n  camposExtras.push({ atributo_os: { atributo_id: '58530', valor: triggerParams.observacoes_orientacao } });\n}\nif (triggerParams.relatorio_tecnico || triggerParams.laudo) {\n  camposExtras.push({ atributo_os: { atributo_id: '58528', valor: triggerParams.relatorio_tecnico || triggerParams.laudo } });\n}\nconst tipoServico = emGarantia ? 'Garantia' : (triggerParams.tipo_servico || '');\nif (tipoServico) {\n  camposExtras.push({ atributo_os: { atributo_id: '58529', valor: tipoServico } });\n}\nif (camposExtras.length > 0) payload.atributos_os = camposExtras;\n\n\n// ── Validação de integridade: bloquear se contexto tinha itens mas array ficou vazio ──\nconst contextoTinhaProdutos = Array.isArray(produtos) && produtos.some(p => p.produto_id || p.id);\nconst contextoTinhaServicos = Array.isArray(servicos) && servicos.some(s => s.servico_id || s.id);\nconst supabaseTinhaProdutos = Array.isArray(triggerParams.produtos_json_supabase) && triggerParams.produtos_json_supabase.length > 0;\nconst supabaseTinhaServicos = Array.isArray(triggerParams.servicos_json_supabase) && triggerParams.servicos_json_supabase.length > 0;\n\nif ((contextoTinhaProdutos || supabaseTinhaProdutos) && produtosArray.length === 0) {\n  return [{ json: {\n    error: 'ERRO_INTEGRIDADE: Contexto tinha produtos salvos mas nenhum com produto_id válido chegou ao payload. Verifique produtos_json no Supabase.',\n    error_code: 'PRODUTOS_SEM_ID',\n    sucesso: false\n  }}];\n}\nif ((contextoTinhaServicos || supabaseTinhaServicos) && servicosArray.length === 0) {\n  return [{ json: {\n    error: 'ERRO_INTEGRIDADE: Contexto tinha serviços salvos mas nenhum com servico_id válido chegou ao payload. Verifique servicos_json no Supabase.',\n    error_code: 'SERVICOS_SEM_ID',\n    sucesso: false\n  }}];\n}\n\n// Garantia — pagamento zerado\nif (emGarantia) {\n  payload.pagamentos = [{ pagamento: { data_vencimento: new Date().toISOString().split('T')[0], valor: '0.00', forma_pagamento_id: '4366641' } }];\n  return [{ json: { os_id: triggerParams.os_id, os_codigo: triggerParams.os_codigo, payload, tempo_atendimento_min: tempoMin, ...extraOutput } }];\n}\n\n// Calcular total\nlet sumTotal = 0;\nprodutosArray.forEach(p => {\n  sumTotal += parseFloat(p.produto.quantidade || 0) * parseFloat(p.produto.valor_venda || 0);\n});\nservicosArray.forEach(s => {\n  sumTotal += parseFloat(s.servico.quantidade || 0) * parseFloat(s.servico.valor_venda || 0);\n});\n\n// Forma de pagamento\nlet formaId = '4366641';\nconst tp = (triggerParams.tipo_pagamento || '').toLowerCase();\nif (tp.includes('pix') && (tp.includes('nubank') || (!tp.includes('inter') && !tp.includes('cora')))) formaId = '4354384';\nelse if (tp.includes('pix') && tp.includes('inter')) formaId = '4377571';\nelse if (tp.includes('pix') && tp.includes('cora')) formaId = '5108978';\nelse if (tp.includes('dinheiro') || tp.includes('especie') || tp.includes('espécie')) formaId = '4354377';\nelse if (tp.includes('boleto') || tp.includes('faturad') || tp.includes('escritorio')) formaId = '4366641';\nelse if (osAtual.pagamentos?.length > 0) formaId = osAtual.pagamentos[0].pagamento.forma_pagamento_id || formaId;\n\npayload.pagamentos = [{ pagamento: {\n  data_vencimento: new Date().toISOString().split('T')[0],\n  valor: String(Math.max(sumTotal, 0).toFixed(2)),\n  forma_pagamento_id: formaId\n}}];\n\nreturn [{ json: { os_id: triggerParams.os_id, os_codigo: triggerParams.os_codigo, payload, tempo_atendimento_min: tempoMin, ...extraOutput } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        300,
+        304,
         400
       ],
       "id": "e3a18490-1d40-4b73-a8a4-c213cbe2d512",
@@ -191,21 +192,18 @@
         "options": {
           "redirect": {
             "redirect": {
-              "followRedirects": true,
               "maxRedirects": 5
             }
           },
           "response": {
-            "response": {
-              "ignoreResponseCode": true
-            }
+            "response": {}
           }
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        540,
+        544,
         400
       ],
       "id": "9afb00f5-a4a3-4e58-9ad0-e54cbf6b250e",
@@ -219,6 +217,7 @@
           "conditions": [
             {
               "keyName": "os_codigo",
+              "condition": "eq",
               "keyValue": "={{ $('Montar Payload').first().json.os_codigo }}"
             }
           ]
@@ -227,11 +226,11 @@
           "fieldValues": [
             {
               "fieldId": "status_os",
-              "fieldValue": "concluida"
+              "fieldValue": "={{ $('Montar Payload').first().json.supabase_status_os }}"
             },
             {
               "fieldId": "fase_ia",
-              "fieldValue": "fechado"
+              "fieldValue": "={{ $('Montar Payload').first().json.supabase_fase_ia }}"
             },
             {
               "fieldId": "checkout_registrado",
@@ -248,6 +247,10 @@
             {
               "fieldId": "atualizado_em",
               "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "motivo_cancelamento",
+              "fieldValue": "={{ $('Montar Payload').first().json.motivo_cancelamento }}"
             }
           ]
         }
@@ -255,8 +258,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        780,
-        540
+        784,
+        528
       ],
       "id": "4250e389-ebb6-4fca-9d12-28638bb8efa2",
       "name": "Fechar OS Supabase",
@@ -270,16 +273,79 @@
     },
     {
       "parameters": {
-        "jsCode": "const payloadJson = $('Montar Payload').first().json;\nif (payloadJson.error) {\n  return [{ json: { sucesso: false, resultado: payloadJson.error } }];\n}\n\nconst data = $('PUT Atualizar OS').first().json;\nif (data.status === 'error' || data.error || data.message || (data.statusCode && data.statusCode >= 400)) {\n  const detalheErro = data.message || data.error || JSON.stringify(data);\n  return [{ json: { sucesso: false, resultado: 'Erro fatal ao SALVAR a OS. Detalhes: ' + detalheErro } }];\n}\nreturn [{ json: { sucesso: true, resultado: 'OS #' + (payloadJson.os_codigo || '') + ' Atualizada/Fechada com SUCESSO!', dados: data.data || data } }];"
+        "jsCode": "\nconst payloadJson = $('Montar Payload').first().json;\nif (payloadJson.error) {\n  return [{ json: { sucesso: false, resultado: payloadJson.error } }];\n}\n\n// Se não for fechamento, retornar sucesso imediatamente sem fazer GET de validação\nif (!payloadJson.is_fechamento) {\n  return [{ json: {\n    sucesso: true,\n    resultado: `OS ${payloadJson.os_codigo} atualizada parcialmente com sucesso.`,\n    os_codigo: payloadJson.os_codigo,\n    os_id: payloadJson.os_id,\n    is_fechamento: false\n  } }];\n}\n\nconst putData = $('PUT Atualizar OS').first().json;\nif (putData.status === 'error' || putData.error || (putData.statusCode && putData.statusCode >= 400)) {\n  const detalheErro = putData.message || putData.error || JSON.stringify(putData);\n  return [{ json: {\n    sucesso: false,\n    resultado: 'Erro fatal ao SALVAR a OS no Bom Saldo. Detalhes: ' + detalheErro,\n    erro_put: true\n  } }];\n}\n\nconst codigo = payloadJson.os_codigo;\nconst osId = payloadJson.os_id;\nconst payloadEnviado = payloadJson.payload;\n\n// Extrair IDs esperados para confirmacao\nconst produtosEnviados = payloadEnviado.produtos || [];\nconst servicosEnviados = payloadEnviado.servicos || [];\nconst prodIdEsperados = produtosEnviados.map(p => String(p.produto.produto_id)).filter(Boolean);\nconst svcIdEsperados = servicosEnviados.map(s => String(s.servico.servico_id)).filter(Boolean);\n\n// -- GET autenticado de confirmacao pos-PUT --\nlet sucesso_confirmacao = false;\nlet confirmacao_produtos = true;\nlet confirmacao_servicos = true;\nlet erro_confirmacao = null;\nlet getOsData = null;\n\ntry {\n  const getResp = await $helpers.httpRequest({\n    method: 'GET',\n    url: `https://bomsaldo.com/api/ordens_servicos/${osId}/`,\n    headers: {\n      'access-token': '698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8',\n      'secret-access-token': '874ac39b56dcf8a7b87e9bdafe88f833d0155c7a',\n      'Accept': 'application/json'\n    }\n  });\n\n  getOsData = getResp.data || null;\n\n  if (getOsData) {\n    // Validar produto_id especifico, nao apenas length\n    if (prodIdEsperados.length > 0) {\n      const produtosConfirmados = (getOsData.produtos || []).map(p => String(p.produto && p.produto.produto_id || ''));\n      const todosPresentes = prodIdEsperados.every(pid => produtosConfirmados.includes(pid));\n      confirmacao_produtos = todosPresentes;\n    }\n    // Validar servico_id especifico\n    if (svcIdEsperados.length > 0) {\n      const servicosConfirmados = (getOsData.servicos || []).map(s => String(s.servico && s.servico.servico_id || ''));\n      const todosPresentes = svcIdEsperados.every(sid => servicosConfirmados.includes(sid));\n      confirmacao_servicos = todosPresentes;\n    }\n    sucesso_confirmacao = confirmacao_produtos && confirmacao_servicos;\n  } else {\n    // GET retornou sem data: nao assumir sucesso\n    erro_confirmacao = 'GET pos-PUT retornou sem data';\n    sucesso_confirmacao = false;\n  }\n} catch(e) {\n  // Falha no GET: NENHUMA ASSUMPCAO DE SUCESSO\n  erro_confirmacao = e.message || String(e);\n  sucesso_confirmacao = false;\n}\n\n// -- PATCH Supabase: laudo --\nlet supabase_laudo_sync = false;\nlet erro_supabase_laudo = null;\nconst obs = payloadEnviado.observacoes_interna;\n\nif (obs && codigo) {\n  try {\n    await $helpers.httpRequest({\n      method: 'PATCH',\n      url: 'https://bnghvmromtukmflzeojd.supabase.co/rest/v1/ordens_servico',\n      headers: {\n        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo',\n        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo',\n        'Content-Type': 'application/json'\n      },\n      qs: { 'os_codigo': 'eq.' + codigo },\n      body: { 'relatorio_tecnico': obs }\n    });\n    supabase_laudo_sync = true;\n  } catch(e) {\n    erro_supabase_laudo = e.message || String(e);\n  }\n}\n\n// -- Resultado final --\nif (!sucesso_confirmacao) {\n  const motivo = erro_confirmacao\n    ? `Erro no GET de confirmacao: ${erro_confirmacao}`\n    : `Itens esperados nao encontrados. Produtos OK: ${confirmacao_produtos}, Servicos OK: ${confirmacao_servicos}`;\n\n  return [{ json: {\n    sucesso: false,\n    resultado: `OS ${codigo} atualizada no Bom Saldo, mas nao foi possivel confirmar que produtos/servicos foram registrados. NAO declarar OS concluida. Motivo: ${motivo}`,\n    os_codigo: codigo,\n    os_id: osId,\n    erro_confirmacao_get: !sucesso_confirmacao,\n    confirmacao_produtos,\n    confirmacao_servicos,\n    produtos_id_esperados: prodIdEsperados,\n    servicos_id_esperados: svcIdEsperados,\n    erro_confirmacao,\n    supabase_laudo_sync,\n    erro_supabase_laudo\n  } }];\n}\n\nreturn [{ json: {\n  sucesso: true,\n  resultado: `OS ${codigo} finalizada e confirmada com sucesso no Bom Saldo. Produtos e servicos verificados.`,\n  os_codigo: codigo,\n  os_id: osId,\n  tempo_atendimento_min: payloadJson.tempo_atendimento_min,\n  confirmacao_produtos,\n  confirmacao_servicos,\n  sucesso_confirmacao,\n  supabase_laudo_sync,\n  erro_supabase_laudo\n} }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        780,
-        260
+        784,
+        272
       ],
       "id": "54f5a84e-9ada-4966-ace5-b8349aab47a9",
       "name": "Formatar Resposta"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://bnghvmromtukmflzeojd.supabase.co/rest/v1/vanda_sessao?tecnico_id=eq.{{ $(\"Trigger\").first().json.tecnico_id || $(\"Resolver OS ID\").first().json.tecnico_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            }
+          ]
+        },
+        "options": {
+          "neverError": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        600
+      ],
+      "id": "limpar-sessao-tecnico-w6",
+      "name": "Limpar Sessao Tecnico"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fechamento-check",
+              "leftValue": "={{ $('Montar Payload').first().json.is_fechamento }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        780,
+        420
+      ],
+      "id": "fechamento-if-node-001",
+      "name": "É Fechamento?"
     }
   ],
   "connections": {
@@ -345,8 +411,29 @@
             "node": "Formatar Resposta",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "É Fechamento?",
+            "type": "main",
+            "index": 0
           }
         ],
+        []
+      ]
+    },
+    "Fechar OS Supabase": {
+      "main": [
+        [
+          {
+            "node": "Limpar Sessao Tecnico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Fechamento?": {
+      "main": [
         [
           {
             "node": "Fechar OS Supabase",
@@ -358,10 +445,9 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Sao_Paulo"
   },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "pinData": {}
+  "staticData": null
 }

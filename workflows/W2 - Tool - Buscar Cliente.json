@@ -176,32 +176,38 @@
       }
     },
     {
-      "id": "w2-prod-state-clear",
-      "name": "Limpar Estado Nova OS",
-      "type": "n8n-nodes-base.redis",
-      "typeVersion": 1,
+      "id": "w2-prod-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        1040,
-        240
+        1840,
+        320
       ],
-      "credentials": {
-        "redis": {
-          "id": "98R4aY8TyXokRqi4",
-          "name": "redis_cloudfy"
-        }
-      },
       "parameters": {
-        "operation": "delete",
-        "key": "={{ $json.state_key }}"
+        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
       }
     },
     {
-      "id": "w2-prod-state-save",
-      "name": "Salvar Estado Nova OS",
+      "id": "w2-prod-gravar-supabase-code-id",
+      "name": "Gravar Estado Supabase W2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        240
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst trigger = $('Trigger').first().json;\nconst tecnicoId = String(trigger.tecnico_id || '');\n\nconst SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo';\nconst SUPABASE_URL = 'https://bnghvmromtukmflzeojd.supabase.co/rest/v1/vanda_sessao';\n\nconst headers = {\n  'apikey': SUPABASE_KEY,\n  'Authorization': 'Bearer ' + SUPABASE_KEY,\n  'Content-Type': 'application/json'\n};\n\nconst cleanPayload = {\n  etapa_atual: 'aguardando_defeito_ou_chegada',\n  option_map: {},\n  lista_texto: '',\n  fluxo_nova_os: false,\n  atualizado_em: new Date().toISOString()\n};\n\nlet patchResult = null;\nlet postResult = null;\n\nif (tecnicoId) {\n  // 1. Limpar Estado Nova OS (PATCH)\n  try {\n    patchResult = await this.helpers.httpRequest({\n      method: 'PATCH',\n      url: `${SUPABASE_URL}?tecnico_id=eq.${encodeURIComponent(tecnicoId)}`,\n      headers: headers,\n      body: cleanPayload\n    });\n  } catch (err) {\n    console.error('Erro ao limpar estado Supabase:', err);\n    patchResult = { error: err.message || String(err) };\n  }\n\n  // 2. Salvar Estado Nova OS (POST com upsert)\n  if (input.should_persist_state) {\n    const state = JSON.parse(input.state_json);\n    const savePayload = {\n      tecnico_id: tecnicoId,\n      etapa_atual: state.estado,\n      option_map: state.option_map,\n      lista_texto: state.lista_texto,\n      fluxo_nova_os: true,\n      atualizado_em: new Date().toISOString()\n    };\n\n    try {\n      postResult = await this.helpers.httpRequest({\n        method: 'POST',\n        url: `${SUPABASE_URL}?on_conflict=tecnico_id`,\n        headers: {\n          ...headers,\n          'Prefer': 'resolution=merge-duplicates'\n        },\n        body: savePayload\n      });\n    } catch (err) {\n      console.error('Erro ao salvar estado Supabase:', err);\n      postResult = { error: err.message || String(err) };\n    }\n  }\n}\n\nreturn [{\n  json: {\n    ...input,\n    tecnico_id: tecnicoId,\n    supabase_patch_result: patchResult,\n    supabase_post_result: postResult\n  }\n}];"
+      }
+    },
+    {
+      "id": "w2-redis-state-save-id",
+      "name": "Salvar Estado Nova OS Redis",
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        1240,
+        1640,
         240
       ],
       "credentials": {
@@ -212,22 +218,9 @@
       },
       "parameters": {
         "operation": "push",
-        "list": "={{ $json.state_key }}",
-        "messageData": "={{ $json.state_json }}",
+        "list": "={{ $('Preparar Estado Vanda').first().json.state_key }}",
+        "messageData": "={{ $('Preparar Estado Vanda').first().json.state_json }}",
         "tail": true
-      }
-    },
-    {
-      "id": "w2-prod-return",
-      "name": "Retornar Resultado",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1440,
-        320
-      ],
-      "parameters": {
-        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
       }
     }
   ],
@@ -307,7 +300,7 @@
       "main": [
         [
           {
-            "node": "Limpar Estado Nova OS",
+            "node": "Gravar Estado Supabase W2",
             "type": "main",
             "index": 0
           }
@@ -321,18 +314,23 @@
         ]
       ]
     },
-    "Limpar Estado Nova OS": {
+    "Retornar Resultado": {
+      "main": [
+        []
+      ]
+    },
+    "Preparar Estado Vanda": {
       "main": [
         [
           {
-            "node": "Salvar Estado Nova OS",
+            "node": "Salvar Estado Nova OS?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Salvar Estado Nova OS": {
+    "Salvar Estado Nova OS Redis": {
       "main": [
         [
           {
@@ -343,9 +341,15 @@
         ]
       ]
     },
-    "Retornar Resultado": {
+    "Gravar Estado Supabase W2": {
       "main": [
-        []
+        [
+          {
+            "node": "Salvar Estado Nova OS Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },

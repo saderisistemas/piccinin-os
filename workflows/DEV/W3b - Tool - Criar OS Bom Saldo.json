@@ -1,0 +1,411 @@
+{
+  "name": "W3b DEV - Tool - Criar OS Bom Saldo",
+  "active": false,
+  "nodes": [
+    {
+      "id": "w3b-dev-trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -760,
+        400
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "cliente_id"
+            },
+            {
+              "name": "tecnico_id"
+            },
+            {
+              "name": "tecnico_nome"
+            },
+            {
+              "name": "tecnico_whatsapp"
+            },
+            {
+              "name": "situacao_id"
+            },
+            {
+              "name": "observacoes"
+            },
+            {
+              "name": "cliente_nome"
+            },
+            {
+              "name": "conversa_id"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "w3b-dev-validate",
+      "name": "Validar Parametros",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst clienteIdRaw = String(input.cliente_id ?? '').trim();\nconst tecnicoId = String(input.tecnico_id ?? '').trim() || null;\nconst tecnicoNome = String(input.tecnico_nome ?? '').trim() || null;\nconst tecnicoWhatsapp = String(input.tecnico_whatsapp ?? '').trim() || null;\nconst conversaId = String(input.conversa_id ?? '').trim() || null;\nconst clienteNome = String(input.cliente_nome ?? '').trim() || null;\nconst observacoes = String(input.observacoes ?? '').trim() || null;\nconst situacaoIdRaw = String(input.situacao_id ?? '').trim();\n\nif (!/^[0-9]+$/.test(clienteIdRaw)) {\n  return [{\n    json: {\n      sucesso: false,\n      erro: 'cliente_id validado e obrigatório e deve ser numérico. W3b nao pode seguir sem cliente confirmado.',\n      cliente_id: null,\n      cliente_nome: clienteNome,\n      tecnico_id: tecnicoId,\n      tecnico_nome: tecnicoNome,\n      tecnico_whatsapp: tecnicoWhatsapp,\n      conversa_id: conversaId\n    }\n  }];\n}\n\nconst situacaoId = /^[0-9]+$/.test(situacaoIdRaw) ? parseInt(situacaoIdRaw, 10) : 6237497;\n\nreturn [{\n  json: {\n    sucesso: true,\n    cliente_id: clienteIdRaw,\n    cliente_nome: clienteNome,\n    tecnico_id: tecnicoId,\n    tecnico_nome: tecnicoNome,\n    tecnico_whatsapp: tecnicoWhatsapp,\n    conversa_id: conversaId,\n    observacoes,\n    situacao_id: situacaoId,\n    payload_criar_os: {\n      cliente_id: parseInt(clienteIdRaw, 10),\n      situacao_id: situacaoId,\n      data: new Date().toISOString().slice(0, 10),\n      observacoes: observacoes || 'OS aberta via Assistente Vanda - Piccinin Security',\n      vendedor_id: 906858\n    }\n  }\n}];"
+      }
+    },
+    {
+      "id": "w3b-dev-build",
+      "name": "Montar Payload Criar OS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const p = $input.first().json || {};\nif (p.sucesso === false || p.erro) return [{ json: p }];\nreturn [{ json: { ...p, payload_criar_os: p.payload_criar_os } }];"
+      }
+    },
+    {
+      "id": "w3b-dev-post",
+      "name": "POST Criar OS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -20,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://bomsaldo.com/api/ordens_servicos/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload_criar_os) }}",
+        "options": {
+          "ignoreResponseCode": true
+        }
+      }
+    },
+    {
+      "id": "w3b-dev-format",
+      "name": "Formatar Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const base = $('Montar Payload Criar OS').first().json || {};\nconst resp = $input.first().json || {};\n\nif (base.sucesso === false || base.erro) {\n  return [{\n    json: {\n      sucesso: false,\n      erro: base.erro || 'cliente_id invalido ou ausente.',\n      os_id: null,\n      os_codigo: null,\n      cliente_id: base.cliente_id || null,\n      cliente_nome: base.cliente_nome || null,\n      tecnico_id: base.tecnico_id || null,\n      tecnico_nome: base.tecnico_nome || null,\n      tecnico_whatsapp: base.tecnico_whatsapp || null,\n      conversa_id: base.conversa_id || null\n    }\n  }];\n}\n\nconst statusCode = Number(resp.statusCode || resp.status || resp.code || 0);\nconst body = resp.data || resp;\nconst erroMsg = resp.message || resp.error || resp.detail || null;\n\nif ((statusCode && statusCode >= 400) || resp.status === 'error' || erroMsg) {\n  return [{\n    json: {\n      sucesso: false,\n      erro: erroMsg || ('Falha ao criar a OS no Bom Saldo (status ' + (statusCode || 'desconhecido') + ').'),\n      os_id: null,\n      os_codigo: null,\n      cliente_id: base.cliente_id,\n      cliente_nome: base.cliente_nome || null,\n      tecnico_id: base.tecnico_id || null,\n      tecnico_nome: base.tecnico_nome || null,\n      tecnico_whatsapp: base.tecnico_whatsapp || null,\n      conversa_id: base.conversa_id || null,\n      payload_criar_os: base.payload_criar_os\n    }\n  }];\n}\n\nconst osId = body.id || body.os_id || body.osId || null;\nconst osCodigo = body.codigo || body.os_codigo || null;\n\nif (!osId || !osCodigo) {\n  return [{\n    json: {\n      sucesso: false,\n      erro: 'Resposta do Bom Saldo nao trouxe os campos esperados (id/codigo).',\n      os_id: null,\n      os_codigo: null,\n      cliente_id: base.cliente_id,\n      cliente_nome: base.cliente_nome || null,\n      tecnico_id: base.tecnico_id || null,\n      tecnico_nome: base.tecnico_nome || null,\n      tecnico_whatsapp: base.tecnico_whatsapp || null,\n      conversa_id: base.conversa_id || null,\n      payload_criar_os: base.payload_criar_os\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    sucesso: true,\n    resultado: 'OS #' + osCodigo + ' aberta com sucesso. ID interno: ' + osId + '.',\n    os_id: String(osId),\n    os_codigo: String(osCodigo),\n    cliente_id: base.cliente_id,\n    cliente_nome: base.cliente_nome || null,\n    tecnico_id: base.tecnico_id || null,\n    tecnico_nome: base.tecnico_nome || null,\n    tecnico_whatsapp: base.tecnico_whatsapp || null,\n    conversa_id: base.conversa_id || null,\n    payload_criar_os: base.payload_criar_os\n  }\n}];"
+      }
+    },
+    {
+      "id": "w3b-dev-if",
+      "name": "OS Criada OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        460,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c-ok",
+              "leftValue": "={{ $json.sucesso }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "w3b-dev-prepare-w8",
+      "name": "Preparar Estado W8 DEV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Formatar Resposta').first().json || {};\nreturn [{\n  json: {\n    os_codigo: p.os_codigo,\n    os_id_bomsaldo: p.os_id,\n    cliente_codigo: p.cliente_id,\n    cliente_nome: p.cliente_nome || null,\n    tecnico_id: p.tecnico_id || null,\n    tecnico_nome: p.tecnico_nome || null,\n    tecnico_whatsapp: p.tecnico_whatsapp || null,\n    conversa_id: p.conversa_id || null,\n    status_os: 'aberta',\n    fase_ia: 'coleta_tecnica',\n    qtd_evidencias: 0,\n    produtos_json: '[]',\n    servicos_json: '[]'\n  }\n}];"
+      }
+    },
+    {
+      "id": "w3b-dev-call-w8",
+      "name": "Salvar Contexto Supabase HTTP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://bnghvmromtukmflzeojd.supabase.co/rest/v1/ordens_servico?on_conflict=os_codigo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ os_codigo: $json.os_codigo, os_id_bomsaldo: $json.os_id_bomsaldo, conversa_id: $json.conversa_id, tecnico_id: $json.tecnico_id, tecnico_nome: $json.tecnico_nome, tecnico_whatsapp: $json.tecnico_whatsapp, cliente_nome: $json.cliente_nome || '', cliente_codigo: $json.cliente_codigo || '', status_os: $json.status_os || 'aberta', fase_ia: $json.fase_ia || 'coleta_tecnica', qtd_evidencias: 0, produtos_json: [], servicos_json: [], criado_em: new Date().toISOString(), atualizado_em: new Date().toISOString() }) }}",
+        "options": {
+          "ignoreResponseCode": true
+        }
+      }
+    },
+    {
+      "id": "w3b-dev-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const resp = $('Formatar Resposta').first().json || {};\nlet persisted = null;\ntry { persisted = $('Salvar Contexto Supabase HTTP').first().json || null; } catch {}\nconst persistedRow = Array.isArray(persisted) ? persisted[0] : persisted;\nreturn [{\n  json: {\n    resultado: resp.resultado || resp.erro || 'Resultado indisponivel.',\n    sucesso: !!resp.sucesso,\n    os_id: resp.os_id || null,\n    os_codigo: resp.os_codigo || null,\n    cliente_id: resp.cliente_id || null,\n    cliente_nome: resp.cliente_nome || null,\n    persistido_no_w8: !!persistedRow,\n    persistido_em_supabase: !!persistedRow,\n    supabase_http: persistedRow || null\n  }\n}];"
+      }
+    },
+    {
+      "id": "w3b-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        300
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        300
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        300
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        560,
+        300
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validar Parametros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Parametros": {
+      "main": [
+        [
+          {
+            "node": "Montar Payload Criar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Payload Criar OS": {
+      "main": [
+        [
+          {
+            "node": "POST Criar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Criar OS": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resposta": {
+      "main": [
+        [
+          {
+            "node": "OS Criada OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OS Criada OK?": {
+      "main": [
+        [
+          {
+            "node": "Limpar Estado Nova OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Estado W8 DEV": {
+      "main": [
+        [
+          {
+            "node": "Salvar Contexto Supabase HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Contexto Supabase HTTP": {
+      "main": [
+        [
+          {
+            "node": "Retornar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpar Estado Nova OS": {
+      "main": [
+        [
+          {
+            "node": "Preparar Estado W8 DEV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timezone": "America/Sao_Paulo"
+  },
+  "staticData": null,
+  "pinData": {}
+}

@@ -76,28 +76,28 @@ function renderOSList(data) {
         row.innerHTML = `
             <div class="os-col">
                 <span class="os-col-title">Código</span>
-                <span class="os-col-value" style="color:var(--piccinin-green); font-weight:700;">${os.os_codigo || '---'}</span>
+                <span class="os-col-value os-col-code">${os.os_codigo || '---'}</span>
             </div>
             <div class="os-col">
                 <span class="os-col-title">Cliente</span>
                 <span class="os-col-value">${os.cliente_nome || 'Consumidor Final'}</span>
-                <span style="font-size:0.6rem; color:var(--text-muted);">${os.cliente_endereco || ''}</span>
+                <span class="os-col-subtext">${os.cliente_endereco || ''}</span>
             </div>
             <div class="os-col">
                 <span class="os-col-title">Equipamento</span>
                 <span class="os-col-value">${os.equipamento || '---'}</span>
-                <span style="font-size:0.6rem; color:var(--text-muted);">${os.marca || ''} ${os.modelo || ''}</span>
+                <span class="os-col-subtext">${os.marca || ''} ${os.modelo || ''}</span>
             </div>
             <div class="os-col">
                 <span class="os-col-title">Técnico</span>
                 <span class="os-col-value">${os.tecnico_nome || '---'}</span>
-                <span style="font-size:0.7rem; color:var(--text-muted); margin-top:3px;"><i class="ri-login-circle-line"></i> In: ${entradaText} <br> <i class="ri-logout-circle-line"></i> Out: ${saidaText}</span>
+                <span class="os-col-subtext-tech"><i class="ri-login-circle-line"></i> In: ${entradaText} <br> <i class="ri-logout-circle-line"></i> Out: ${saidaText}</span>
             </div>
             <div class="os-col">
                 <span class="os-col-title">TMA</span>
                 <span class="os-col-value">${tma}</span>
             </div>
-            <div class="os-col" style="align-items: flex-end;">
+            <div class="os-col os-col-end">
                 <span class="tag tag-${status.replace(' ', '-')}">${status.toUpperCase()}</span>
             </div>
         `;
@@ -118,7 +118,7 @@ async function openModal(os, entradaText, saidaText) {
     let baseStatus = os.status_os ? os.status_os.toUpperCase() : 'DESCONHECIDO';
     document.getElementById('m-id').textContent = `BS-ID: ${os.os_id_bomsaldo || '-'} | Status: ${baseStatus}`;
     
-    body.innerHTML = '<div style="text-align:center; padding:50px; color:var(--piccinin-green);"><i class="ri-loader-4-line ri-spin" style="font-size:2rem;"></i><p>Acessando Dossiê Forense...</p></div>';
+    body.innerHTML = '<div class="loader-container" aria-live="polite" role="status"><i class="ri-loader-4-line ri-spin loader-icon"></i><p class="loader-text">Acessando Dossiê Forense...</p></div>';
     modal.classList.add('active');
 
     // Busca evidências reais da tabela associada no Supabase
@@ -130,6 +130,7 @@ async function openModal(os, entradaText, saidaText) {
         }
     } catch (e) {
         console.error('Erro ao carregar evidências:', e);
+        evidences = null;
     }
 
     const marcaModelo = (os.marca || '') + ' ' + (os.modelo || '');
@@ -153,16 +154,16 @@ async function openModal(os, entradaText, saidaText) {
             thumbsHtml += `
                 <div class="evidence-thumb" onclick="window.open('${fileUrl}', '_blank')" title="Abrir imagem individual">
                     ${isImage ? `<img src="${fileUrl}" alt="Evidência" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
-                    <i class="ri-image-line" style="display:none; font-size: 2rem; color: rgba(0,255,136,0.4);"></i>
+                    <i class="ri-image-line modal-gallery-icon-fallback"></i>
                     <div class="evidence-overlay"><i class="ri-external-link-line"></i></div>
                 </div>`;
         });
-
+ 
         if (evidences.length > 4) {
             thumbsHtml += `
                 <div class="evidence-thumb more-evidences" onclick="window.open('${os.link_pasta_drive}', '_blank')">
                     <span>+${evidences.length - 4}</span>
-                    <div style="font-size:0.6rem; text-transform:uppercase; margin-top:5px;">Ver Todas</div>
+                    <div class="modal-gallery-badge-more">Ver Todas</div>
                 </div>`;
         }
     } else if (qtdEvidenciasTotal > 0) {
@@ -170,14 +171,20 @@ async function openModal(os, entradaText, saidaText) {
         for(let i=0; i<Math.min(qtdEvidenciasTotal, 4); i++) {
             thumbsHtml += `
                 <div class="evidence-thumb" onclick="window.open('${os.link_pasta_drive}', '_blank')">
-                    <i class="ri-folder-image-line" style="font-size: 2rem; color: rgba(0,255,136,0.4);"></i>
+                    <i class="ri-folder-image-line modal-gallery-icon-fallback" style="display:block;"></i>
                     <div class="evidence-overlay"><i class="ri-external-link-line"></i></div>
                 </div>`;
         }
     }
 
     let evidencesHtml = '';
-    if (qtdEvidenciasTotal > 0) {
+    if (evidences === null) {
+        evidencesHtml = `
+            <div class="evidence-gallery empty-gallery" style="border-color: rgba(255,100,100,0.3);">
+                <i class="ri-error-warning-line" style="color: rgba(255,100,100,0.8); opacity: 1;"></i>
+                <p style="color: var(--text-grey);">Falha ao carregar evidências no Supabase.</p>
+            </div>`;
+    } else if (qtdEvidenciasTotal > 0) {
         evidencesHtml = `
             <div class="evidence-gallery">
                 <h4 class="gallery-title"><i class="ri-focus-3-line"></i> Investigação Forense (Visual)</h4>
@@ -192,48 +199,190 @@ async function openModal(os, entradaText, saidaText) {
             </div>`;
     }
 
-    body.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap: 20px;">
-            <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:20px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                    <h3 style="font-family:'Space Grotesk', sans-serif; color:var(--text-grey); font-size:0.9rem; letter-spacing:1px; text-transform:uppercase;">Contexto Operacional</h3>
-                    <span class="tag tag-${os.fase_ia ? 'aberta' : ''}">Fase IA: ${os.fase_ia ? os.fase_ia.toUpperCase() : '-'}</span>
+    // Alerta de erro de integração com a API do BomSaldo
+    let errorApiHtml = '';
+    if (os.erro_integracao_api) {
+        errorApiHtml = `
+            <div class="error-container" style="padding:1.5rem; margin-bottom:1.5rem; border-color:rgba(255,100,100,0.3); background:rgba(255,50,50,0.03); text-align:left; align-items:flex-start; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="ri-error-warning-line" style="color:rgba(255,100,100,0.9); font-size:1.3rem;"></i>
+                    <strong style="color:#fff; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; font-size:0.85rem; letter-spacing:1px; display:inline; margin:0;">Erro de Integração BomSaldo</strong>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                    <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Local Protegido</span><strong style="color:#fff;">${os.cliente_nome || '-'}</strong></div>
-                    <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Equipamento</span><strong style="color:#fff;">${marcaModelo.trim() ? marcaModelo : '-'}</strong></div>
-                    <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Especialista</span><strong style="color:#fff;">${os.tecnico_nome || '-'}</strong></div>
-                    <div><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Garantia</span><strong style="color:${numGarantia};">${garantiaStr}</strong></div>
-                    <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px;"><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Check-in</span><strong style="color:#fff;">${entradaText}</strong></div>
-                    <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px;"><span style="display:block; font-size:0.75rem; color:var(--text-muted);">Check-out</span><strong style="color:#fff;">${saidaText}</strong></div>
+                <p style="color:var(--text-grey); font-size:0.85rem; margin:0; line-height:1.4;">${os.mensagem_erro_api || 'Falha desconhecida no sincronismo do faturamento com o BomSaldo.'}</p>
+            </div>
+        `;
+    }
+
+    // Tags de Auditoria/Revisão e Fase IA
+    let tagsHtml = '';
+    if (os.houve_revisao_manual) {
+        tagsHtml += `<span class="tag" style="background:rgba(240,192,64,0.1); color:#f0c040; border:1px solid rgba(240,192,64,0.2); box-shadow: inset 0 0 10px rgba(240,192,64,0.05); margin-right:8px;">Revisão Manual</span>`;
+    }
+    tagsHtml += `<span class="tag tag-${os.fase_ia ? 'aberta' : ''}">Fase IA: ${os.fase_ia ? os.fase_ia.toUpperCase() : '-'}</span>`;
+
+    // Metadados adicionais do Grid
+    const checkinIcon = os.checkin_registrado ? '<i class="ri-checkbox-circle-fill" style="color:var(--piccinin-green); font-size:0.95rem; vertical-align:middle; margin-left:4px;" title="Registrado via GPS/Sistema"></i>' : '';
+    const checkoutIcon = os.checkout_registrado ? '<i class="ri-checkbox-circle-fill" style="color:var(--piccinin-green); font-size:0.95rem; vertical-align:middle; margin-left:4px;" title="Registrado via GPS/Sistema"></i>' : '';
+    const duracaoText = os.tempo_atendimento_min ? `${Math.round(os.tempo_atendimento_min)} min` : '-';
+    const tipoPagamentoText = os.tipo_pagamento || '-';
+
+    // Lógica para renderizar Peças & Serviços Lançados pelo técnico
+    let itemsHtml = '';
+    const produtos = os.produtos_json || [];
+    const servicos = os.servicos_json || [];
+    
+    if (produtos.length > 0 || servicos.length > 0) {
+        let prodRows = '';
+        let servRows = '';
+        
+        if (produtos.length > 0) {
+            produtos.forEach(p => {
+                const prod = p.produto || p;
+                const qtd = Number(prod.quantidade) || 0;
+                const valorVenda = Number(prod.valor_venda) || 0;
+                const total = Number(prod.valor_total) || (qtd * valorVenda);
+                prodRows += `
+                    <div class="modal-item-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:10px 15px; border-radius:4px; margin-bottom:6px;">
+                        <div>
+                            <strong style="color:#fff; font-size:0.9rem; display:inline;">${prod.nome_produto || 'Produto sem nome'}</strong>
+                            <div style="color:var(--text-grey); font-size:0.75rem; margin-top:2px;">Qtd: ${qtd.toFixed(2)} | Unitário: R$ ${valorVenda.toFixed(2)}</div>
+                        </div>
+                        <strong style="color:var(--piccinin-green); font-size:0.9rem; font-family:'Space Grotesk', sans-serif;">R$ ${total.toFixed(2)}</strong>
+                    </div>
+                `;
+            });
+        }
+        
+        if (servicos.length > 0) {
+            servicos.forEach(s => {
+                const serv = s.servico || s;
+                const qtd = Number(serv.quantidade) || 0;
+                const valorVenda = Number(serv.valor_venda) || 0;
+                const total = Number(serv.valor_total) || (qtd * valorVenda);
+                servRows += `
+                    <div class="modal-item-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:10px 15px; border-radius:4px; margin-bottom:6px;">
+                        <div>
+                            <strong style="color:#fff; font-size:0.9rem; display:inline;">${serv.nome_servico || 'Serviço sem nome'}</strong>
+                            <div style="color:var(--text-grey); font-size:0.75rem; margin-top:2px;">Qtd: ${qtd.toFixed(2)} | Unitário: R$ ${valorVenda.toFixed(2)}</div>
+                        </div>
+                        <strong style="color:var(--piccinin-green); font-size:0.9rem; font-family:'Space Grotesk', sans-serif;">R$ ${total.toFixed(2)}</strong>
+                    </div>
+                `;
+            });
+        }
+        
+        itemsHtml = `
+            <div class="modal-section-card" style="margin-top: 1.5rem;">
+                <div class="modal-card-header" style="margin-bottom: 1rem;">
+                    <h3 class="modal-card-title"><i class="ri-tools-line" style="color:var(--piccinin-green); margin-right:8px;"></i> Insumos & Serviços Aplicados</h3>
+                </div>
+                ${prodRows ? `
+                    <div class="modal-products-list" style="margin-bottom: 1.2rem;">
+                        <h4 style="font-family:'Space Grotesk', sans-serif; font-size:0.8rem; text-transform:uppercase; color:var(--text-grey); letter-spacing:1px; margin-bottom:8px;">Peças / Materiais</h4>
+                        ${prodRows}
+                    </div>
+                ` : ''}
+                ${servRows ? `
+                    <div class="modal-services-list">
+                        <h4 style="font-family:'Space Grotesk', sans-serif; font-size:0.8rem; text-transform:uppercase; color:var(--text-grey); letter-spacing:1px; margin-bottom:8px;">Serviços Realizados</h4>
+                        ${servRows}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    } else {
+        itemsHtml = `
+            <div class="modal-section-card" style="margin-top: 1.5rem;">
+                <div class="modal-card-header" style="margin-bottom: 1rem;">
+                    <h3 class="modal-card-title"><i class="ri-tools-line" style="color:var(--text-grey); margin-right:8px;"></i> Insumos & Serviços Aplicados</h3>
+                </div>
+                <div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0; border:1px dashed rgba(255,255,255,0.08); border-radius:4px;">
+                    <i class="ri-inbox-line" style="font-size:1.5rem; display:block; margin-bottom:6px; opacity:0.5;"></i>
+                    Nenhuma peça ou serviço adicional lançado pelo técnico.
+                </div>
+            </div>
+        `;
+    }
+
+    body.innerHTML = `
+        <div class="modal-body-wrapper">
+            ${errorApiHtml}
+            <div class="modal-section-card">
+                <div class="modal-card-header">
+                    <h3 class="modal-card-title">Contexto Operacional</h3>
+                    <div style="display:flex; align-items:center;">${tagsHtml}</div>
+                </div>
+                <div class="modal-grid-2col">
+                    <div><span class="modal-grid-label">Local Protegido</span><strong class="modal-grid-value">${os.cliente_nome || '-'}</strong></div>
+                    <div><span class="modal-grid-label">Equipamento</span><strong class="modal-grid-value">${marcaModelo.trim() ? marcaModelo : '-'}</strong></div>
+                    <div><span class="modal-grid-label">Especialista</span><strong class="modal-grid-value">${os.tecnico_nome || '-'}</strong></div>
+                    <div><span class="modal-grid-label">Garantia</span><strong class="modal-grid-value ${os.em_garantia ? 'warranty-active' : ''}">${garantiaStr}</strong></div>
+                    <div><span class="modal-grid-label">Duração de Atendimento</span><strong class="modal-grid-value">${duracaoText}</strong></div>
+                    <div><span class="modal-grid-label">Forma de Faturamento</span><strong class="modal-grid-value">${tipoPagamentoText}</strong></div>
+                    <div class="modal-grid-cell-divider"><span class="modal-grid-label">Check-in</span><strong class="modal-grid-value">${entradaText}${checkinIcon}</strong></div>
+                    <div class="modal-grid-cell-divider"><span class="modal-grid-label">Check-out</span><strong class="modal-grid-value">${saidaText}${checkoutIcon}</strong></div>
                 </div>
             </div>
 
             <div class="report-box">
-                <div style="margin-bottom:15px;">
-                    <strong>Relato do Incidente (Defeito):</strong><br>
+                <div class="modal-report-paragraph">
+                    <strong>Relato do Incidente (Defeito):</strong>
                     ${defectTxt}
                 </div>
-                <div style="display:flex; gap:20px; margin-bottom:15px; padding-top:15px; border-top:1px dashed rgba(255,255,255,0.1);">
-                    <div style="flex:1"><strong>Causa Verificada:</strong><br> ${causeTxt}</div>
-                    <div style="flex:1"><strong>Solução:</strong><br> ${solveTxt}</div>
+                <div class="modal-report-grid">
+                    <div class="modal-report-col"><strong>Causa Verificada:</strong> ${causeTxt}</div>
+                    <div class="modal-report-col"><strong>Solução:</strong> ${solveTxt}</div>
                 </div>
-                <div style="padding-top:15px; border-top:1px dashed rgba(255,255,255,0.1);">
-                    <strong>Laudo Técnico Transcrito (Vanda):</strong><br>
-                    <span style="font-style:italic; color:var(--text-white);">${reportTxt}</span>
+                <div class="modal-report-divider-top">
+                    <strong>Laudo Técnico Transcrito (Vanda):</strong>
+                    <span class="modal-report-italic">${reportTxt}</span>
                 </div>
             </div>
 
+            ${itemsHtml}
+
             ${evidencesHtml}
 
-            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--piccinin-green-dim); border:1px solid rgba(0,255,136,0.3); padding:20px; border-radius:10px; box-shadow: var(--glow-green-sm);">
+            <div class="modal-billing-card">
                 <div>
-                     <span style="display:block; font-size:0.75rem; color:var(--piccinin-green); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; font-family:'Space Grotesk', sans-serif; font-weight:600;">Faturamento Audível</span>
-                     <span style="font-size: 1.8rem; font-family:'Space Grotesk', sans-serif; font-weight:700; color:#fff;">R$ ${os.valor_total !== null && os.valor_total !== undefined ? Number(os.valor_total).toFixed(2) : '0.00'}</span>
+                     <span class="modal-billing-label">Faturamento Audível</span>
+                     <span class="modal-billing-value">R$ ${os.valor_total !== null && os.valor_total !== undefined ? Number(os.valor_total).toFixed(2) : '0.00'}</span>
                 </div>
             </div>
         </div>
     `;
 
     modal.classList.add('active');
+}
+
+/**
+ * Renderiza um estado de erro amigável na listagem principal com botão de recarregar
+ */
+function renderErrorState(message) {
+    const container = document.getElementById('osContainer');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="error-container">
+            <i class="ri-error-warning-line error-icon"></i>
+            <h3 class="error-title">Falha de Sincronização</h3>
+            <p class="error-text">${message || 'Não foi possível conectar ao banco de dados Supabase.'}</p>
+            <button class="btn-retry" id="btnRetryOS"><i class="ri-refresh-line"></i> Tentar Novamente</button>
+        </div>
+    `;
+    
+    const btnRetry = document.getElementById('btnRetryOS');
+    if (btnRetry) {
+        btnRetry.addEventListener('click', async () => {
+            container.innerHTML = `
+                <div class="loader-container" aria-live="polite" role="status">
+                    <i class="ri-loader-4-line ri-spin loader-icon"></i>
+                    <p class="loader-text">Tentando reconectar à Vanda AI...</p>
+                </div>
+            `;
+            if (typeof fetchOrdensServico === 'function') {
+                await fetchOrdensServico();
+            }
+        });
+    }
 }

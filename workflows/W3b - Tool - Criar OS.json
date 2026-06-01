@@ -117,7 +117,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const triggerParams = $('Limpar Nome').first().json;\n\nlet clienteIdReal = null;\nlet clienteNomeReal = null;\n\n// PRIO 1: Se cliente_id foi passado diretamente (do W2), usar ele\nif (triggerParams.skip_api_search) {\n  clienteIdReal = String(triggerParams.cliente_id).trim();\n  clienteNomeReal = triggerParams.cliente_nome_original;\n} else {\n  // PRIO 2: Busca pelo nome (logica antiga)\n  const apiResp = $input.first().json;\n  const clientes = (apiResp.data || []);\n  \n  if (clientes.length > 0) {\n    const nomeOriginal = (triggerParams.cliente_nome_original || '').toLowerCase().trim();\n    const nomeBusca = (triggerParams.cliente_nome_busca || '').toLowerCase().trim();\n    \n    let match = clientes.find(c =>\n      (c.nome || '').toLowerCase().trim() === nomeBusca ||\n      (c.razao_social || '').toLowerCase().trim() === nomeBusca\n    );\n    \n    if (!match) {\n      match = clientes.find(c =>\n        (c.nome || '').toLowerCase().includes(nomeBusca) ||\n        nomeBusca.includes((c.nome || '').toLowerCase())\n      );\n    }\n    \n    if (!match) {\n      match = clientes.find(c =>\n        nomeOriginal.includes((c.nome || '').toLowerCase()) ||\n        (c.nome || '').toLowerCase().includes(nomeOriginal.replace(/\\s*\\(.*?\\)\\s*$/g, ''))\n      );\n    }\n    \n    if (!match) match = clientes[0];\n    \n    clienteIdReal = String(match.id);\n    clienteNomeReal = match.nome;\n  }\n}\n\nif (!clienteIdReal) {\n  return [{ json: { \n    error: \"Nao encontrei o cliente '\" + (triggerParams.cliente_nome_original || '???') + \"' no Bom Saldo. Pergunte o nome correto ao tecnico.\",\n    sucesso: false \n  } }];\n}\n\nreturn [{ json: {\n  cliente_id: clienteIdReal,\n  cliente_nome_validado: clienteNomeReal || triggerParams.cliente_nome_original,\n  tecnico_id: triggerParams.tecnico_id,\n  tecnico_nome: triggerParams.tecnico_nome,\n  tecnico_whatsapp: triggerParams.tecnico_whatsapp,\n  situacao_id: triggerParams.situacao_id,\n  observacoes: triggerParams.observacoes,\n  conversa_id: triggerParams.conversa_id\n} }];"
+        "jsCode": "const triggerParams = $('Limpar Nome').first().json;\n\nlet clienteIdReal = null;\nlet clienteNomeReal = null;\n\n// PRIO 1: Se cliente_id foi passado diretamente (do W2), usar ele\nif (triggerParams.skip_api_search) {\n  clienteIdReal = String(triggerParams.cliente_id).trim();\n  clienteNomeReal = triggerParams.cliente_nome_original;\n} else {\n  // PRIO 2: Busca pelo nome (logica antiga)\n  const apiResp = $('Resolver Cliente').first().json;\n  const clientes = (apiResp.data || []);\n  \n  if (clientes.length > 0) {\n    const nomeOriginal = (triggerParams.cliente_nome_original || '').toLowerCase().trim();\n    const nomeBusca = (triggerParams.cliente_nome_busca || '').toLowerCase().trim();\n    \n    let match = clientes.find(c =>\n      (c.nome || '').toLowerCase().trim() === nomeBusca ||\n      (c.razao_social || '').toLowerCase().trim() === nomeBusca\n    );\n    \n    if (!match) {\n      match = clientes.find(c =>\n        (c.nome || '').toLowerCase().includes(nomeBusca) ||\n        nomeBusca.includes((c.nome || '').toLowerCase())\n      );\n    }\n    \n    if (!match) {\n      match = clientes.find(c =>\n        nomeOriginal.includes((c.nome || '').toLowerCase()) ||\n        (c.nome || '').toLowerCase().includes(nomeOriginal.replace(/\\s*\\(.*?\\)\\s*$/g, ''))\n      );\n    }\n    \n    if (!match) match = clientes[0];\n    \n    clienteIdReal = String(match.id);\n    clienteNomeReal = match.nome;\n  }\n}\n\nif (!clienteIdReal) {\n  return [{ json: { \n    error: \"Nao encontrei o cliente '\" + (triggerParams.cliente_nome_original || '???') + \"' no Bom Saldo. Pergunte o nome correto ao tecnico.\",\n    sucesso: false \n  } }];\n}\n\nreturn [{ json: {\n  cliente_id: clienteIdReal,\n  cliente_nome_validado: clienteNomeReal || triggerParams.cliente_nome_original,\n  tecnico_id: triggerParams.tecnico_id,\n  tecnico_nome: triggerParams.tecnico_nome,\n  tecnico_whatsapp: triggerParams.tecnico_whatsapp,\n  situacao_id: triggerParams.situacao_id,\n  observacoes: triggerParams.observacoes,\n  conversa_id: triggerParams.conversa_id\n} }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -286,6 +286,106 @@
       ],
       "id": "b4014249-ea4e-436e-a3cf-3a0e57c8594f",
       "name": "Retornar Resultado"
+    },
+    {
+      "id": "w3b-prod-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        760,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-prod-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        760,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-prod-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        760,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-prod-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        760,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
+    },
+    {
+      "id": "w3b-prod-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        760,
+        240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ \"piccinin_os:vanda_estado:\" + String($json.tecnico_id || \"\") }}"
+      }
     },
     {
       "id": "w3b-prod-state-clear",

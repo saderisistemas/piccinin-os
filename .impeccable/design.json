@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-01T19:37:00Z",
+  "title": "Design System: Piccinin OS Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Cyber Neon Green", "canonical": "oklch(86.61% 0.2912 144.3)", "tonalRamp": ["oklch(15% 0.1 144)", "oklch(30% 0.15 144)", "oklch(45% 0.2 144)", "oklch(60% 0.25 144)", "oklch(75% 0.28 144)", "oklch(86.6% 0.29 144)", "oklch(92% 0.2 144)", "oklch(97% 0.08 144)"] },
+      "primary-dim": { "role": "primary", "displayName": "Ghost Green", "canonical": "rgba(0, 255, 136, 0.08)" },
+      "neutral-bg": { "role": "neutral", "displayName": "Absolute Darkness", "canonical": "oklch(10% 0 0)" },
+      "neutral-surface": { "role": "neutral", "displayName": "Surface Dark", "canonical": "oklch(14% 0.005 140)" },
+      "neutral-grey": { "role": "neutral", "displayName": "Component Grey", "canonical": "oklch(18% 0.008 140)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Space Grotesk Display", "purpose": "Industrial headers and major metrics." },
+      "body": { "displayName": "Inter Body", "purpose": "Standard operational table values and textual body." }
+    },
+    "shadows": [
+      { "name": "glow-green", "value": "0 0 25px rgba(0, 255, 136, 0.6)", "purpose": "Activation highlight for prominent features." },
+      { "name": "glow-green-sm", "value": "0 0 12px rgba(0, 255, 136, 0.3)", "purpose": "Subtle hover feedback on cards and active input borders." }
+    ],
+    "motion": [
+      { "name": "cyber-reveal", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Standard entrance for lists and interactive cards." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "1024px" },
+      { "name": "mobile", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão Primário",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Botão de ação principal com brilho no hover.",
+      "html": "<button class=\"ds-btn-primary\">Exportar Dados</button>",
+      "css": ".ds-btn-primary { background: #00ff88; border: 1px solid #00ff88; color: #050505; padding: 12px 25px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; } .ds-btn-primary:hover { background: #ffffff; border-color: #ffffff; box-shadow: 0 0 20px rgba(255,255,255,0.4); transform: translateY(-2px); }"
+    },
+    {
+      "name": "Barra de Busca",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Filtro de busca operacional translúcido.",
+      "html": "<div class=\"ds-search-pill\"><input type=\"text\" placeholder=\"Pesquisar OS...\"></div>",
+      "css": ".ds-search-pill { display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 255, 136, 0.15); border-radius: 8px; padding: 5px 15px; width: 100%; max-width: 450px; backdrop-filter: blur(10px); transition: border-color 0.3s, box-shadow 0.3s; } .ds-search-pill input { background: transparent; border: none; color: #ffffff; padding: 10px 12px; width: 100%; outline: none; font-family: 'Inter', sans-serif; font-size: 0.9rem; } .ds-search-pill:focus-within { border-color: #00ff88; box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Deck de Comando Cibernético-Industrial",
+    "overview": "O design do painel do Piccinin OS adota uma estética sombria e refinada de alta tecnologia (Dark Mode), inspirada em plataformas de infraestrutura e engenharia líderes de mercado como Linear e Stripe. O design foca na legibilidade operacional sob condições de monitoramento contínuo.",
+    "keyCharacteristics": [
+      "Fidelidade Operacional: Alta densidade de dados estruturada em grades simétricas para leitura rápida.",
+      "Micro-interações de Resposta: Transições rápidas e efeitos de brilho controlados que se manifestam exclusivamente em resposta às interações do usuário.",
+      "Clareza de Contraste: Garantia de legibilidade robusta no tema escuro profundo."
+    ],
+    "rules": [
+      { "name": "The 10% Accent Rule", "body": "O verde-neon primário (--piccinin-green) é reservado estritamente para ações críticas ou estados positivos de conclusão, ocupando menos de 10% da área visual da tela.", "section": "colors" },
+      { "name": "The -0.04em Floor Rule", "body": "O espaçamento de letras (letter-spacing) em títulos Space Grotesk ou qualquer título de exibição nunca deve ser menor que -0.04em.", "section": "typography" }
+    ],
+    "dos": [
+      "Do usar a fonte Space Grotesk para títulos estruturais e números de impacto, mantendo sempre o letter-spacing acima de -0.04em.",
+      "Do priorizar bordas finas e contrastes de tons escuros para delimitar áreas, mantendo o visual limpo de painel de controle.",
+      "Do garantir que botões e cards respondam de forma rápida (150-250ms) e coerente à interação do cursor."
+    ],
+    "donts": [
+      "Don't aplicar gradientes coloridos ou de neon no texto.",
+      "Don't usar arredondamento exagerado (como border-radius acima de 12px) em cards ou contêineres operacionais, violando o caráter industrial.",
+      "Don't acumular sombras suaves largas combinadas com bordas de 1px no mesmo elemento (evitar a inconsistência de 'ghost-cards').",
+      "Don't utilizar neons de preenchimento desnecessários em elementos inativos ou estáticos, mantendo a sobriedade executiva C-Level."
+    ]
+  }
+}

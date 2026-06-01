@@ -1,4 +1,4 @@
-$apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2Mzc3MTFiOS03YjU5LTRlZDctYWRlNi1kZDYzNjMxOTVlZTAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzc0NDg1NjkxfQ.LylKOiQ1uccqMiOL5A067Db7IeI2g5JffL6oWAWAuYY"
+$apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2Mzc3MTFiOS03YjU5LTRlZDctYWRlNi1kZDYzNjMxOTVlZTAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDk5ZTk3MGQtYjUxOC00NWRjLWFlZjQtZTZlMDIxNmJhN2M3IiwiaWF0IjoxNzc3NjQ1MTAwfQ.XHD48AMIioMUropIl_JEzzvClChKo5VP9YgL6l_PaxI"
 $baseUrl = "https://piccininsecurity-n8n.cloudfy.live/api/v1/workflows"
 $headers = @{
     "X-N8N-API-KEY" = $apiKey

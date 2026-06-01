@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piccinin OS | Dicionário de Apelidos</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00ff88">
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- Icons & Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        .tabs-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 10px 20px;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .tab-btn:hover {
+            color: #fff;
+        }
+        .tab-btn.active {
+            color: var(--piccinin-green);
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--piccinin-green);
+            box-shadow: 0 0 10px var(--piccinin-green);
+            border-radius: 3px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alias-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            margin-top: 15px;
+        }
+        .alias-table th {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .alias-table td {
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            font-family: 'Outfit', sans-serif;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #fff;
+        }
+        .alias-table tr td:first-child {
+            border-left: 1px solid rgba(255, 255, 255, 0.03);
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            font-weight: 600;
+            color: var(--piccinin-green);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.15);
+        }
+        .alias-table tr td:last-child {
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            text-align: right;
+        }
+        .alias-table tr:hover td {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(0, 255, 136, 0.1);
+        }
+        .btn-delete {
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            color: #ff6b6b;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+        }
+        .btn-delete:hover {
+            background: rgba(255, 77, 77, 0.25);
+            border-color: #ff4d4d;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+        }
+        .badge-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-type.produto {
+            background: rgba(0, 191, 255, 0.1);
+            color: #00bfff;
+            border: 1px solid rgba(0, 191, 255, 0.2);
+        }
+        .badge-type.servico {
+            background: rgba(240, 192, 64, 0.1);
+            color: #f0c040;
+            border: 1px solid rgba(240, 192, 64, 0.2);
+        }
+        /* Custom glassmorphism modal styles */
+        .modal-glass-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .form-group input, .form-group select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--piccinin-green);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.25);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Premium Navbar -->
+    <nav class="navbar">
+        <div class="brand-group">
+            <div class="logo-placeholder">
+                <img src="img/piccinin-semfundo.png" alt="Piccinin Security Logo" class="logo">
+            </div>
+            <div class="saderi-header-watermark">
+                <span>Powered by</span>
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo">
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Comando Ao Vivo</a>
+            <a href="relatorios.html" class="nav-link">Inteligência & Relatórios</a>
+            <a href="apelidos.html" class="nav-link active">Gerenciar Apelidos</a>
+            <a href="#" id="btn-help-trigger" class="nav-link" title="Abrir manual operacional"><i class="ri-question-line" style="vertical-align: middle; margin-right: 2px;"></i> Ajuda</a>
+            <a href="#" class="nav-link">Sair</a>
+        </div>
+    </nav>
+
+    <!-- Cinematic Hero Section -->
+    <section class="hero-dashboard cyber-hero" style="min-height: 220px; padding: 40px 20px;">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+            <h2 class="dashboard-title heading-font glow-text">Dicionário de Apelidos (Aliases)</h2>
+            <p class="dashboard-subtitle">Aprovador de correspondência inteligente da Vanda AI. Gerencie sinônimos para buscas instantâneas e zero-touch.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content" style="padding-top: 0; margin-top: -3rem; position: relative; z-index: 10;">
+        
+        <!-- Tabs Buttons -->
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('clientes')"><i class="ri-user-settings-line"></i> Apelidos de Clientes</button>
+            <button class="tab-btn" onclick="switchTab('itens')"><i class="ri-shopping-bag-2-line"></i> Sinônimos de Itens</button>
+        </div>
+
+        <!-- ================= ABE 1: CLIENTES ================= -->
+        <div id="tab-clientes" class="tab-content active">
+            <div class="action-bar" style="margin-bottom: 20px;">
+                <div class="search-pill">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="searchCliente" oninput="filterClientes()" placeholder="Pesquisar por alias ou nome do cliente...">
+                </div>
+                <button class="btn-solid" onclick="openModal('cliente')"><i class="ri-add-line"></i> Adicionar Mapeamento</button>
+            </div>
+
+            <div class="cyber-card" style="padding: 20px; overflow-x: auto;">
+                <table class="alias-table">
+                    <thead>
+                        <tr>
+                            <th data-tooltip="O termo abreviado ou sinônimo digitado pelo técnico que será mapeado.">Termo Pesquisado (Alias) <i class="ri-question-line info-icon"></i></th>
+                            <th data-tooltip="O nome correto e formal do cliente cadastrado no ERP Bom Saldo.">Cliente Vinculado (Bom Saldo) <i class="ri-question-line info-icon"></i></th>
+                            <th data-tooltip="Identificador numérico do cliente no ERP Bom Saldo.">Código do Cliente <i class="ri-question-line info-icon"></i></th>
+                            <th>Criado Em</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-clientes-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+                <div id="loading-clientes" style="text-align: center; padding: 2rem; color: var(--piccinin-green);">
+                    <i class="ri-loader-4-line ri-spin" style="font-size: 2rem;"></i>
+                    <p style="margin-top: 10px;">Carregando dicionário de clientes...</p>
+                </div>
+                <div id="empty-clientes" style="text-align: center; padding: 2rem; color: var(--text-muted); display: none;">
+                    <i class="ri-inbox-line" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
+                    Nenhum mapeamento de cliente encontrado.
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ABA 2: ITENS ================= -->
+        <div id="tab-itens" class="tab-content">
+            <div class="action-bar" style="margin-bottom: 20px;">
+                <div class="search-pill">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="searchItem" oninput="filterItens()" placeholder="Pesquisar por alias, tipo ou nome do item...">
+                </div>
+                <button class="btn-solid" onclick="openModal('item')"><i class="ri-add-line"></i> Adicionar Sinônimo</button>
+            </div>
+
+            <div class="cyber-card" style="padding: 20px; overflow-x: auto;">
+                <table class="alias-table">
+                    <thead>
+                        <tr>
+                            <th data-tooltip="A nomenclatura, gíria ou abreviação do insumo/serviço que o técnico digita.">Termo Pesquisado (Alias) <i class="ri-question-line info-icon"></i></th>
+                            <th>Tipo</th>
+                            <th data-tooltip="O nome do produto ou serviço correspondente no cadastro do Bom Saldo.">Item Vinculado <i class="ri-question-line info-icon"></i></th>
+                            <th data-tooltip="O identificador oficial de faturamento do item.">Código/ID <i class="ri-question-line info-icon"></i></th>
+                            <th>Criado Em</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-itens-body">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+                <div id="loading-itens" style="text-align: center; padding: 2rem; color: var(--piccinin-green);">
+                    <i class="ri-loader-4-line ri-spin" style="font-size: 2rem;"></i>
+                    <p style="margin-top: 10px;">Carregando dicionário de itens...</p>
+                </div>
+                <div id="empty-itens" style="text-align: center; padding: 2rem; color: var(--text-muted); display: none;">
+                    <i class="ri-inbox-line" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
+                    Nenhum sinônimo de produto ou serviço encontrado.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Side Panel Modal / Cadastrar Alias -->
+    <div class="modal-overlay" id="aliasModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-head">
+                <div>
+                    <h2 id="modal-title">Novo Mapeamento</h2>
+                    <span style="color:var(--text-muted); font-size:0.85rem;" id="modal-subtitle">Associe um alias personalizado a um cadastro do Bom Saldo</span>
+                </div>
+                <button class="close-btn" onclick="closeModal()"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <form id="aliasForm" onsubmit="saveAlias(event)" class="modal-glass-form">
+                <input type="hidden" id="form-entity-type" value="cliente">
+                
+                <div class="form-group" data-tooltip="Digite em minúsculo, sem acentos ou pontuação. Ex: 'againdustria' para AGA Indústria.">
+                    <label for="form-alias">Termo de Busca (Alias) <i class="ri-question-line info-icon"></i></label>
+                    <input type="text" id="form-alias" required placeholder="Ex: againdustria, cam bullet, vt" autocomplete="off">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Escreva em letras minúsculas, sem acentos ou caracteres especiais.</span>
+                </div>
+ 
+                <!-- Apenas para Itens -->
+                <div class="form-group" id="form-item-type-group" style="display: none;">
+                    <label for="form-item-tipo">Tipo do Item</label>
+                    <select id="form-item-tipo">
+                        <option value="produto">Produto</option>
+                        <option value="servico">Serviço</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" data-tooltip="O ID numérico único do cliente ou item conforme registrado no Bom Saldo ERP.">
+                    <label for="form-target-id" id="label-target-id">ID do Cliente (Bom Saldo) <i class="ri-question-line info-icon"></i></label>
+                    <input type="text" id="form-target-id" required placeholder="Ex: 34472768" autocomplete="off">
+                </div>
+ 
+                <div class="form-group" data-tooltip="O nome oficial exatamente como consta no cadastro do Bom Saldo ERP.">
+                    <label for="form-target-nome" id="label-target-nome">Nome do Cliente Oficial <i class="ri-question-line info-icon"></i></label>
+                    <input type="text" id="form-target-nome" required placeholder="Ex: A G A Industria Ltda" autocomplete="off">
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn-solid" style="padding: 12px 24px;"><i class="ri-save-line"></i> Gravar Associação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer" style="padding: 40px 20px; text-align: center; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(0,255,136,0.1); background: rgba(0,0,0,0.6); margin-top: 60px;">
+        <div class="footer-content" style="display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 400px;">
+            <span class="developer-text" style="font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 500;">Arquitetura & Engenharia</span>
+            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link">
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo" style="height: 65px; opacity: 0.9; filter: drop-shadow(0 0 15px rgba(0,255,136,0.3)); transition: all 0.4s ease;" onmouseover="this.style.opacity='1'; this.style.filter='drop-shadow(0 0 20px rgba(0,255,136,0.6))'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.9'; this.style.filter='drop-shadow(0 0 15px rgba(0,255,136,0.3))'; this.style.transform='scale(1)'">
+            </a>
+        </div>
+    </footer>
+
+    <!-- Help Panel Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-content help-modal-content">
+            <div class="modal-head">
+                <div>
+                    <h2 class="heading-font">Manual Operacional</h2>
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Instruções e conceitos do Piccinin OS</span>
+                </div>
+                <button class="close-btn" id="closeHelpModal"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <div id="helpModalBody">
+                <!-- Conteúdo contextual injetado via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase & API Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/api.js"></script>
+    <script src="js/apelidos.js"></script>
+    <script src="js/help.js"></script>
+</body>
+</html>

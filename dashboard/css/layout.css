@@ -99,10 +99,12 @@
     position: absolute;
     bottom: -6px;
     left: 0;
-    width: 0%;
+    width: 100%;
     height: 2px;
     background: var(--piccinin-green, #00ff88);
-    transition: width 0.3s ease;
+    transform: scaleX(0);
+    transform-origin: bottom left;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
 }
 .nav-link.active {
@@ -111,7 +113,7 @@
 }
 .nav-link.active::after,
 .nav-link:hover::after {
-    width: 100%;
+    transform: scaleX(1);
 }
 .nav-link:hover {
     color: #fff;
@@ -191,7 +193,7 @@
     padding: 28px;
     position: relative;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .cyber-card:hover {
     transform: translateY(-4px) scale(1.01);
@@ -237,9 +239,20 @@
 }
 .charts-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
     gap: 28px;
     padding: 0 5%;
+}
+.charts-grid.grid-2-1 {
+    grid-template-columns: 2fr 1fr;
+}
+.charts-grid.grid-1-1 {
+    grid-template-columns: 1fr 1fr;
+}
+.main-relatorios {
+    padding-top: 0;
+    margin-top: -3rem;
+    position: relative;
+    z-index: 10;
 }
 .chart-box {
     background: var(--glass-bg, rgba(10,15,10,0.6));
@@ -279,6 +292,51 @@
     border-radius: 50%;
 }
 
+/* ── APP FOOTER ─────────────────────────── */
+.app-footer {
+    padding: 40px 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid rgba(0, 255, 136, 0.1);
+    background: rgba(0, 0, 0, 0.6);
+    margin-top: 60px;
+}
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+.developer-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 500;
+}
+.developer-link {
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.developer-link:hover {
+    transform: scale(1.05);
+}
+.developer-link .saderi-logo {
+    height: 65px;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.3));
+    transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease;
+}
+.developer-link:hover .saderi-logo {
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.6));
+}
+
 /* =========================================
    RESPONSIVE BREAKPOINTS
    ========================================= */
@@ -286,7 +344,9 @@
 /* ── TABLET (≤1024px) ───────────────────── */
 @media (max-width: 1024px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
-    .charts-grid { grid-template-columns: 1fr; }
+    .charts-grid,
+    .charts-grid.grid-2-1,
+    .charts-grid.grid-1-1 { grid-template-columns: 1fr; }
     .dashboard-title { font-size: 2.8rem; }
 }
 
@@ -342,11 +402,18 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         width: 100%;
         gap: 6px;
-        padding-top: 10px;
+        padding: 10px 0 6px 0;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-links::-webkit-scrollbar {
+        display: none;
     }
     .nav-link {
         font-size: 0.62rem;
@@ -449,5 +516,24 @@
     .nav-link {
         font-size: 0.55rem;
         padding: 6px 10px;
+    }
+}
+
+/* ── AJUSTES DE AJUDA PARA MOBILE (≤768px) ── */
+@media (max-width: 768px) {
+    .help-modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        padding: 2.5rem 1.5rem !important;
+        border-left: none !important;
+        border-top: 2px solid var(--piccinin-green) !important;
+    }
+    /* Estilos das tooltips em mobile: aumentamos um pouco a fonte e o padding para legibilidade de toque */
+    #global-tooltip {
+        font-size: 0.85rem;
+        padding: 10px 14px;
+        max-width: 250px;
     }
 }

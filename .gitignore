@@ -23,3 +23,72 @@ n8n-skills/
 
 # Arquivos fantasmas do Windows e Backups locais
 nul
+
+# Arquivos Temporários e Backups de Agentes AI / Scripts Auxiliares na raiz
+backup_*
+backups/
+baselines/
+scratch/
+_*
+*.log
+*report.json
+run_*
+patch_*
+fix_*
+inspect_*
+monitor_*
+sync_*
+w1_*
+w2_*
+w3b_*
+w6_*
+w7_*
+w8_*
+w9_*
+analyze_*
+dump_*
+extract_*
+get_*
+validate_*
+check_*
+test_*
+vanda_*
+build_*
+cancel_*
+gen-patch.mjs
+header-part.mjs
+hotfix_*
+organize_*
+pack_*
+update_descriptions.js
+upload_*
+verificar_*
+view_sub_node.js
+
+# Agentes de IA e pastas do sistema do agente
+.agents/
+.playwright-mcp/
+.tmp/
+directives/
+
+# Arquivos temporários W4, W5, W11 adicionais
+W4_*
+W5_*
+debug_*
+deep_inspect.py
+*.tmp
+*.tmp1
+find_execute_endpoint.py
+monitor.py
+patch-workflow.mjs
+update_w1_prompt.js
+user_request_full.md
+w11_prod_notificar_grupo.json
+
+# Backups e rascunhos na pasta de workflows
+workflows/**/*.backup_*
+workflows/**/*.broken_*
+workflows/**/*.fixed.json
+workflows/**/*.backup_clean_*
+workflows/**/*.backup_resolver_*
+scripts/

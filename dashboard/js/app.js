@@ -48,12 +48,8 @@ function handleRealtimeUpdate(payload) {
     // Check if there is an active search filter
     const searchInput = document.getElementById('searchInput');
     if (searchInput && searchInput.value) {
-        const val = searchInput.value.toLowerCase();
-        const filtered = dbData.filter(d => 
-            (d.os_codigo && d.os_codigo.toLowerCase().includes(val)) || 
-            (d.os_id_bomsaldo && d.os_id_bomsaldo.toLowerCase().includes(val)) ||
-            (d.cliente_nome && d.cliente_nome.toLowerCase().includes(val))
-        );
+        const val = searchInput.value;
+        const filtered = dbData.filter(d => matchOS(d, val));
         renderOSList(filtered);
     } else {
         renderOSList(dbData);
@@ -61,21 +57,23 @@ function handleRealtimeUpdate(payload) {
 }
 
 async function fetchOrdensServico() {
+    const loadingBox = document.getElementById('loadingIndicator');
     try {
-        const loadingBox = document.getElementById('loadingIndicator');
-        loadingBox.style.display = 'block';
+        if (loadingBox) loadingBox.style.display = 'block';
 
         const { data, error } = await fetchOrdensServicoAPI();
 
         if (error) {
             console.error('Erro ao buscar dados:', error);
-            alert('Falha ao conectar no Supabase: ' + error.message);
-            loadingBox.style.display = 'none';
+            if (loadingBox) loadingBox.style.display = 'none';
+            if (typeof renderErrorState === 'function') {
+                renderErrorState('Falha ao conectar no Supabase: ' + error.message);
+            }
             return;
         }
 
         dbData = data || [];
-        loadingBox.style.display = 'none';
+        if (loadingBox) loadingBox.style.display = 'none';
         
         renderKPIs(dbData);
         renderAIPerformance(dbData);
@@ -83,9 +81,11 @@ async function fetchOrdensServico() {
         if(typeof renderCharts === 'function') renderCharts(dbData);
 
     } catch (err) {
-
         console.error('Erro de requisição', err);
-        alert('Falha na requisição de rede com o Supabase.');
+        if (loadingBox) loadingBox.style.display = 'none';
+        if (typeof renderErrorState === 'function') {
+            renderErrorState('Falha na requisição de rede com o Supabase. Verifique sua conexão de rede.');
+        }
     }
 }
 
@@ -100,13 +100,62 @@ function setupEventListeners() {
         }
     });
 
+    // Tecla Esc para fechar modal (acessibilidade e controle)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('osModal');
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            }
+        }
+    });
+
     document.getElementById('searchInput').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        const filtered = dbData.filter(d => 
-            (d.os_codigo && d.os_codigo.toLowerCase().includes(val)) || 
-            (d.os_id_bomsaldo && d.os_id_bomsaldo.toLowerCase().includes(val)) ||
-            (d.cliente_nome && d.cliente_nome.toLowerCase().includes(val))
-        );
+        const val = e.target.value;
+        const filtered = dbData.filter(d => matchOS(d, val));
         renderOSList(filtered);
     });
+}
+
+/**
+ * Função de busca avançada multi-parâmetro para as OSs.
+ * Mapeia código, cliente, técnico, equipamento (marca/modelo), sintomas/laudos e itens aplicados.
+ */
+function matchOS(os, val) {
+    if (!val) return true;
+    const term = val.toLowerCase().trim();
+    if (term === '') return true;
+    
+    // Mapeamento textual direto
+    if (os.os_codigo && os.os_codigo.toLowerCase().includes(term)) return true;
+    if (os.os_id_bomsaldo && os.os_id_bomsaldo.toLowerCase().includes(term)) return true;
+    if (os.cliente_nome && os.cliente_nome.toLowerCase().includes(term)) return true;
+    if (os.tecnico_nome && os.tecnico_nome.toLowerCase().includes(term)) return true;
+    if (os.equipamento && os.equipamento.toLowerCase().includes(term)) return true;
+    if (os.marca && os.marca.toLowerCase().includes(term)) return true;
+    if (os.modelo && os.modelo.toLowerCase().includes(term)) return true;
+    if (os.defeito && os.defeito.toLowerCase().includes(term)) return true;
+    if (os.causa && os.causa.toLowerCase().includes(term)) return true;
+    if (os.solucao && os.solucao.toLowerCase().includes(term)) return true;
+    if (os.relatorio_tecnico && os.relatorio_tecnico.toLowerCase().includes(term)) return true;
+    
+    // Busca dentro dos produtos JSON
+    if (os.produtos_json && Array.isArray(os.produtos_json)) {
+        for (let item of os.produtos_json) {
+            const prod = item.produto || item;
+            if (prod.nome_produto && prod.nome_produto.toLowerCase().includes(term)) return true;
+            if (prod.produto_id && String(prod.produto_id).toLowerCase().includes(term)) return true;
+        }
+    }
+    
+    // Busca dentro dos serviços JSON
+    if (os.servicos_json && Array.isArray(os.servicos_json)) {
+        for (let item of os.servicos_json) {
+            const serv = item.servico || item;
+            if (serv.nome_servico && serv.nome_servico.toLowerCase().includes(term)) return true;
+            if (serv.servico_id && String(serv.servico_id).toLowerCase().includes(term)) return true;
+        }
+    }
+    
+    return false;
 }

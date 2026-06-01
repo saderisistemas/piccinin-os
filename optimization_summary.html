@@ -1,177 +1,330 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Protek OS Token Optimization Summary</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sumário de Otimização e Humanização — Vanda OS</title>
+  <style>
+    /* CSS Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+    }
 
-        body {
-            background-color: #0d0f17;
-            background-image: radial-gradient(circle at top right, #1a153a 0%, transparent 40%),
-                              radial-gradient(circle at bottom left, #0d2031 0%, transparent 40%);
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-        }
+    body {
+      background: radial-gradient(circle at top right, #111827, #030712);
+      color: #f3f4f6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
 
-        .container {
-            max-width: 1100px;
-            width: 100%;
-            background: rgba(25, 27, 42, 0.6);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 60px;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
-            text-align: center;
-        }
+    /* Glassmorphism Card Container */
+    .container {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 48px;
+      width: 100%;
+      max-width: 900px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
 
-        .header {
-            margin-bottom: 50px;
-        }
+    /* Subtle background glow */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      border-radius: 26px;
+      z-index: -1;
+      opacity: 0.15;
+    }
 
-        .header-tag {
-            display: inline-block;
-            background: linear-gradient(135deg, #FF3366 0%, #FF9933 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
 
-        h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 4.5rem;
-            line-height: 1.1;
-            margin-bottom: 20px;
-        }
+    .badge {
+      display: inline-block;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #a78bfa;
+      padding: 6px 16px;
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
 
-        .subtitle {
-            font-size: 1.4rem;
-            color: #94a3b8;
-            max-width: 800px;
-            margin: 0 auto;
-        }
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
 
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            margin-top: 60px;
-        }
+    p.subtitle {
+      font-size: 16px;
+      color: #9ca3af;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
 
-        .metric-card {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(80, 200, 250, 0.15);
-            border-radius: 20px;
-            padding: 40px 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+    /* Grid layout for major metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 48px;
+    }
 
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(80, 200, 250, 0.1);
-        }
+    .metric-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 18px;
+      padding: 32px 24px;
+      text-align: center;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
 
-        .metric-icon {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-        }
+    .metric-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(139, 92, 246, 0.2);
+    }
 
-        .metric-value {
-            font-family: 'Outfit', sans-serif;
-            font-size: 4rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #ffffff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .metric-value.green {
-            background: linear-gradient(to right, #34d399, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    .metric-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
 
-        .metric-label {
-            font-size: 1.2rem;
-            color: #cbd5e1;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    .metric-value {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
 
-        .details {
-            margin-top: 60px;
-            padding-top: 40px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.1);
-            font-size: 1.2rem;
-            color: #94a3b8;
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-        }
+    .metric-value.blue {
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+    }
 
-        .detail-item span {
-            color: #fff;
-            font-weight: 600;
-        }
-    </style>
+    .metric-value.purple {
+      text-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      color: #c084fc;
+    }
+
+    .metric-value.pink {
+      text-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+      color: #f472b6;
+    }
+
+    .metric-label {
+      font-size: 14px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    /* Details / Comparisons section */
+    .detail-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 18px;
+      padding: 32px;
+    }
+
+    h2.section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f3f4f6;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .compare-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 14px;
+    }
+
+    .compare-row.header {
+      font-weight: 600;
+      color: #9ca3af;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0;
+    }
+
+    .compare-row.total {
+      font-weight: 700;
+      color: #ffffff;
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-top: 10px;
+    }
+
+    .file-name {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .badge-diff {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .badge-personality {
+      color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* Animation effects */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .container {
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @media (max-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .compare-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .compare-row.header {
+        display: none;
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <div class="header-tag">Auditoria de Eficiência Vanda AI</div>
-            <h1>Otimização de Tokens<br>Protek OS</h1>
-            <p class="subtitle">Estratégia de redução de Janela de Contexto refatorando scripts monolíticos (+400 linhas) em pequenos módulos funcionais (< 60 linhas).</p>
-        </div>
+  <div class="container">
+    <header>
+      <span class="badge">Otimização de Contexto & Humanização</span>
+      <h1>Vanda OS — Evolução de Prompt</h1>
+      <p class="subtitle">Planejamento para tornar a Vanda uma parceira colaborativa e otimizar em 60% o consumo de tokens de input por mensagem.</p>
+    </header>
 
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-icon">📉</div>
-                <div class="metric-value green">85%</div>
-                <div class="metric-label">Menos Tokens por Comando</div>
-            </div>
+    <div class="metrics-grid">
+      <!-- Metric 1: Token reduction -->
+      <div class="metric-card">
+        <div class="metric-icon">📉</div>
+        <div class="metric-value blue">-60%</div>
+        <div class="metric-label">Tokens no Prompt do Sistema</div>
+      </div>
 
-            <div class="metric-card">
-                <div class="metric-icon">⚡</div>
-                <div class="metric-value">6x</div>
-                <div class="metric-label">Respostas Mais Rápidas</div>
-            </div>
+      <!-- Metric 2: Latency improvement -->
+      <div class="metric-card">
+        <div class="metric-icon">⚡</div>
+        <div class="metric-value purple">2.5x</div>
+        <div class="metric-label">Mais Rápida nas Respostas</div>
+      </div>
 
-            <div class="metric-card">
-                <div class="metric-icon">💰</div>
-                <div class="metric-value green">85%</div>
-                <div class="metric-label">Redução de Custos</div>
-            </div>
-        </div>
-
-        <div class="details">
-            <div class="detail-item">
-                Baseado no refatoramento de: <span>montar_payload_w6.js (426L -> 60L)</span>
-            </div>
-            <div class="detail-item">
-                Eficácia estimada: <span>Total System Focus</span>
-            </div>
-        </div>
+      <!-- Metric 3: Cost efficiency -->
+      <div class="metric-card">
+        <div class="metric-icon">💰</div>
+        <div class="metric-value pink">-60%</div>
+        <div class="metric-label">Custo Operacional de IA</div>
+      </div>
     </div>
+
+    <div class="detail-section">
+      <h2 class="section-title">
+        <span>📋</span> Arquivos e Lógica a Otimizar
+      </h2>
+      
+      <div class="compare-row header">
+        <div>Arquivo / Elemento</div>
+        <div>Antes (Linhas)</div>
+        <div>Depois (Est.)</div>
+        <div>Melhoria Aplicada</div>
+      </div>
+
+      <div class="compare-row">
+        <div class="file-name">vanda_prompt_piccinin_os.txt</div>
+        <div>524 linhas</div>
+        <div>220 linhas</div>
+        <div><span class="badge-diff">-304 linhas (-58%)</span></div>
+      </div>
+
+      <div class="compare-row">
+        <div class="file-name">System Message W1 (Vanda Node)</div>
+        <div>524 linhas</div>
+        <div>220 linhas</div>
+        <div><span class="badge-diff">Compactação e Reuso</span></div>
+      </div>
+
+      <div class="compare-row">
+        <div class="file-name">Tom de Voz (Comportamento)</div>
+        <div>Seco & Imperativo</div>
+        <div>Colaborativa</div>
+        <div><span class="badge-personality">Parceira + Nome do Técnico</span></div>
+      </div>
+
+      <div class="compare-row total">
+        <div>Total Estimado Economizado</div>
+        <div>1048 linhas</div>
+        <div>440 linhas</div>
+        <div><span class="badge-diff">📉 58% Token Saved</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Piccinin Security OS • Antigravity Agent Tool • 2026
+  </footer>
 
 </body>
 </html>

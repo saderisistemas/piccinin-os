@@ -1,0 +1,363 @@
+{
+  "name": "W6 DEV - Tool - Atualizar OS Bom Saldo",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "os_id"
+            },
+            {
+              "name": "os_codigo"
+            },
+            {
+              "name": "conversa_id"
+            },
+            {
+              "name": "tecnico_id"
+            },
+            {
+              "name": "situacao_id"
+            },
+            {
+              "name": "relatorio_tecnico"
+            },
+            {
+              "name": "laudo"
+            },
+            {
+              "name": "observacoes_orientacao"
+            },
+            {
+              "name": "equipamento"
+            },
+            {
+              "name": "marca"
+            },
+            {
+              "name": "modelo"
+            },
+            {
+              "name": "defeito"
+            },
+            {
+              "name": "solucao"
+            },
+            {
+              "name": "tipo_servico"
+            },
+            {
+              "name": "em_garantia"
+            },
+            {
+              "name": "hora_entrada"
+            },
+            {
+              "name": "hora_saida"
+            },
+            {
+              "name": "tipo_pagamento"
+            },
+            {
+              "name": "forma_pagamento_id"
+            },
+            {
+              "name": "produtos_json"
+            },
+            {
+              "name": "servicos_json"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        400
+      ],
+      "id": "b7869f15-a853-45df-b9ea-8f74d8661c8c",
+      "name": "Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "ordens_servico",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "os_codigo",
+              "keyValue": "={{ $json.os_codigo || '' }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        400
+      ],
+      "id": "3ceed841-a0ee-4584-b1d1-f7920f1e516c",
+      "name": "Buscar OS Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "3TZFb8LBSmrd137a",
+          "name": "Supabase Vanda OS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resolver o os_id real (interno Bom Saldo = 7+ dígitos)\nconst trigger = $('Trigger').first().json;\nconst supabase = $input.first().json;\n\n// Prioridade: os_id_bomsaldo do Supabase > os_id do trigger\nconst osIdSupa = String(supabase.os_id_bomsaldo || '').replace(/[^0-9]/g, '');\nconst osIdTrigger = String(trigger.os_id || '').replace(/[^0-9]/g, '');\n\nlet osIdReal;\nif (osIdSupa.length >= 7) {\n  osIdReal = osIdSupa;\n} else if (osIdTrigger.length >= 7) {\n  osIdReal = osIdTrigger;\n} else {\n  return [{ json: { error: `VANDA: os_id '${trigger.os_id}' parece ser o código visível da OS, não o ID interno. O ID interno tem 7+ dígitos. Chame 'buscarContexto' para recuperar o os_id correto.` } }];\n}\n\n// Pegar hora_entrada/saida do Supabase se não vieram no trigger\nconst horaEntrada = trigger.hora_entrada || supabase.hora_entrada || null;\nconst horaSaida = trigger.hora_saida || supabase.hora_saida || null;\n\nreturn [{ json: {\n  ...trigger,\n  os_id: osIdReal,\n  os_codigo: trigger.os_codigo || supabase.os_codigo,\n  hora_entrada: horaEntrada,\n  hora_saida: horaSaida,\n  produtos_json_supabase: supabase.produtos_json,\n  servicos_json_supabase: supabase.servicos_json\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        400
+      ],
+      "id": "35f2910f-f99a-45a0-932b-14a4f61b0093",
+      "name": "Resolver OS ID"
+    },
+    {
+      "parameters": {
+        "url": "=https://bomsaldo.com/api/ordens_servicos/{{ $json.os_id }}/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        400
+      ],
+      "id": "3bac52a0-d2a8-4aa2-b79e-7a2d86e5d75b",
+      "name": "GET OS Atual"
+    },
+    {
+      "parameters": {
+        "jsCode": "const triggerParams = $('Resolver OS ID').first().json;\nconst osResp = $input.first().json;\n\nif (triggerParams.error) {\n  return [{ json: { error: triggerParams.error } }];\n}\nif (!osResp || osResp.status === 'error' || !osResp.data) {\n  const dt = osResp ? (osResp.message || JSON.stringify(osResp)) : 'erro desconhecido';\n  return [{ json: { error: 'FALHA GRAVE AO BUSCAR OS. Erro API: ' + dt } }];\n}\n\nconst osAtual = osResp.data;\nconst isBlank = (v) => v === undefined || v === null || String(v).trim() === '';\nconst today = new Date().toISOString().slice(0, 10);\nconst nowIso = new Date().toISOString();\nconst toBool = (v) => v === true || String(v || '').trim().toLowerCase() === 'true' || String(v || '').trim() === '1';\nconst toNumber = (v, fallback = 0) => { const n = Number(v); return Number.isFinite(n) ? n : fallback; };\nconst parseArray = (value) => {\n  if (Array.isArray(value)) return value;\n  if (typeof value === 'string' && value.trim()) {\n    try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; } catch {}\n  }\n  return [];\n};\nconst normalizeHora = (raw) => {\n  if (isBlank(raw)) return null;\n  const s = String(raw).trim();\n  let m = s.match(/(?:^|\\b)(\\d{1,2}):(\\d{2})(?::\\d{2})?(?:\\b|$)/);\n  if (m) {\n    const h = Number(m[1]); const min = Number(m[2]);\n    if (h >= 0 && h <= 23 && min >= 0 && min <= 59) return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;\n  }\n  m = s.match(/(?:^|\\b)(\\d{1,2})h\\s*(\\d{2})?(?:\\b|$)/i);\n  if (m) {\n    const h = Number(m[1]); const min = Number(m[2] || '0');\n    if (h >= 0 && h <= 23 && min >= 0 && min <= 59) return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;\n  }\n  try {\n    const d = new Date(s);\n    if (!isNaN(d.getTime())) {\n      return d.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hour12: false });\n    }\n  } catch {}\n  return null;\n};\nconst minutesFromHHMM = (hhmm) => {\n  const m = String(hhmm || '').match(/^(\\d{2}):(\\d{2})$/);\n  if (!m) return null;\n  return Number(m[1]) * 60 + Number(m[2]);\n};\nconst calcTempo = (entrada, saida) => {\n  const a = minutesFromHHMM(entrada);\n  const b = minutesFromHHMM(saida);\n  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;\n  const diff = b - a;\n  return diff >= 0 ? diff : null;\n};\nconst uniqueBy = (items, getKey) => {\n  const map = new Map();\n  for (const item of items) { const key = getKey(item); if (key) map.set(key, item); }\n  return [...map.values()];\n};\n\nlet produtos = parseArray(triggerParams.produtos_json);\nif (produtos.length === 0) produtos = parseArray(triggerParams.produtos_json_supabase);\nlet servicos = parseArray(triggerParams.servicos_json);\nif (servicos.length === 0) servicos = parseArray(triggerParams.servicos_json_supabase);\n\nconst emGarantia = toBool(triggerParams.em_garantia);\nconst horaEntrada = normalizeHora(triggerParams.hora_entrada);\nconst horaSaida = normalizeHora(triggerParams.hora_saida);\nconst explicitSituacao = !isBlank(triggerParams.situacao_id) ? String(triggerParams.situacao_id) : null;\nconst closeRequested = emGarantia || explicitSituacao === '6237499' || String(triggerParams.status_os || '').toLowerCase() === 'concluida' || String(triggerParams.fase_ia || '').toLowerCase() === 'fechado' || toBool(triggerParams.fechar);\nconst statusAtual = String(osAtual.situacao_id || '');\nconst targetSituacao = explicitSituacao || (closeRequested ? '6237499' : (horaEntrada && !['6237499', '6237500'].includes(statusAtual) ? '6237498' : (statusAtual || '6237497')));\nconst isClosing = targetSituacao === '6237499' || closeRequested;\nconst dataEntrada = osAtual.data_entrada || osAtual.data || today;\nconst dataSaida = isClosing ? today : (osAtual.data_saida || '');\nconst tempoMin = calcTempo(horaEntrada, horaSaida);\n\nlet obsInterna = triggerParams.relatorio_tecnico || triggerParams.laudo || osAtual.observacoes_interna || '';\nconst linhas = [];\nif (horaEntrada && !obsInterna.includes('[CHEGADA:')) linhas.push(`[CHEGADA: ${horaEntrada}]`);\nif (horaSaida && !obsInterna.includes('[SAIDA:') && !obsInterna.includes('[SAÍDA:')) linhas.push(`[SAIDA: ${horaSaida}]`);\nif (isClosing && !obsInterna.includes('[TEMPO:')) {\n  if (Number.isFinite(tempoMin)) linhas.push(`[TEMPO: ${tempoMin} min]`);\n  else linhas.push('[TEMPO: não calculado - horário incompleto]');\n}\nif (!isBlank(triggerParams.tecnico_nome) && !obsInterna.includes('[TECNICO:')) {\n  linhas.push(`[TECNICO: ${String(triggerParams.tecnico_nome).trim()}]`);\n}\nif (linhas.length) obsInterna = (obsInterna ? obsInterna + '\\n' : '') + linhas.join('\\n');\n\nconst payload = {\n  codigo: osAtual.codigo,\n  cliente_id: osAtual.cliente_id,\n  data: dataEntrada,\n  data_entrada: dataEntrada,\n  observacoes: triggerParams.observacoes_orientacao || osAtual.observacoes || '',\n  observacoes_interna: obsInterna.trim(),\n  situacao_id: targetSituacao\n};\nif (dataSaida) { payload.data_saida = dataSaida; payload.saida = dataSaida; }\nlet tecnicoBomSaldoId = String(triggerParams.tecnico_bomsaldo_id || triggerParams.tecnico_id || '').replace(/\\D/g, '');\nif (tecnicoBomSaldoId.length > 8) tecnicoBomSaldoId = null;\nif (tecnicoBomSaldoId) payload.tecnico_id = tecnicoBomSaldoId;\nif (!isBlank(triggerParams.tecnico_nome)) payload.nome_tecnico = String(triggerParams.tecnico_nome).trim();\n\nlet equipamentosArray = osAtual.equipamentos || [];\nif (triggerParams.equipamento) {\n  equipamentosArray = [{ equipamento: {\n    equipamento: triggerParams.equipamento || '',\n    marca: triggerParams.marca || '',\n    modelo: triggerParams.modelo || '',\n    defeitos: triggerParams.defeito || '',\n    solucao: triggerParams.solucao || '',\n    laudo: triggerParams.relatorio_tecnico || triggerParams.laudo || ''\n  }}];\n}\nif (equipamentosArray.length > 0) payload.equipamentos = equipamentosArray;\n\nconst produtosArray = [];\nfor (const p of osAtual.produtos || []) {\n  const x = p.produto || p;\n  if (!x.produto_id) continue;\n  produtosArray.push({ produto: {\n    produto_id: String(x.produto_id), variacao_id: String(x.variacao_id || ''),\n    quantidade: String(x.quantidade || '1'), valor_venda: emGarantia ? '0' : String(x.valor_venda || '0'),\n    tipo_desconto: x.tipo_desconto || 'R$', desconto_valor: String(x.desconto_valor || '0'), desconto_porcentagem: String(x.desconto_porcentagem || '0')\n  }});\n}\nfor (const p of produtos) {\n  const x = p.produto || p;\n  const pid = x.produto_id || x.id;\n  if (!pid) continue;\n  produtosArray.push({ produto: {\n    produto_id: String(pid), variacao_id: String(x.variacao_id || ''),\n    quantidade: String(x.quantidade || '1'), valor_venda: emGarantia ? '0' : String(x.valor_venda ?? '0'),\n    tipo_desconto: x.tipo_desconto || 'R$', desconto_valor: String(x.desconto_valor || '0'), desconto_porcentagem: String(x.desconto_porcentagem || '0')\n  }});\n}\nconst produtosUnicos = uniqueBy(produtosArray, (p) => `${p.produto.produto_id}:${p.produto.variacao_id}`);\nif (produtosUnicos.length) payload.produtos = produtosUnicos;\n\nconst servicosArray = [];\nfor (const s of osAtual.servicos || []) {\n  const x = s.servico || s;\n  if (!x.servico_id) continue;\n  servicosArray.push({ servico: {\n    servico_id: String(x.servico_id), quantidade: String(x.quantidade || '1'), valor_venda: emGarantia ? '0' : String(x.valor_venda || '0'),\n    tipo_desconto: x.tipo_desconto || 'R$', desconto_valor: String(x.desconto_valor || '0'), desconto_porcentagem: String(x.desconto_porcentagem || '0')\n  }});\n}\nfor (const s of servicos) {\n  const x = s.servico || s;\n  const sid = x.servico_id || x.id;\n  if (!sid) continue;\n  servicosArray.push({ servico: {\n    servico_id: String(sid), quantidade: String(x.quantidade || '1'), valor_venda: emGarantia ? '0' : String(x.valor_venda ?? '0'),\n    tipo_desconto: x.tipo_desconto || 'R$', desconto_valor: String(x.desconto_valor || '0'), desconto_porcentagem: String(x.desconto_porcentagem || '0')\n  }});\n}\nconst servicosUnicos = uniqueBy(servicosArray, (s) => `${s.servico.servico_id}`);\nif (servicosUnicos.length) payload.servicos = servicosUnicos;\n\nconst camposExtras = [];\nif (triggerParams.observacoes_orientacao) camposExtras.push({ atributo_os: { atributo_id: '58530', valor: triggerParams.observacoes_orientacao } });\nif (triggerParams.relatorio_tecnico || triggerParams.laudo) camposExtras.push({ atributo_os: { atributo_id: '58528', valor: triggerParams.relatorio_tecnico || triggerParams.laudo } });\nconst tipoServico = emGarantia ? 'Garantia' : (triggerParams.tipo_servico || '');\nif (tipoServico) camposExtras.push({ atributo_os: { atributo_id: '58529', valor: tipoServico } });\nif (camposExtras.length) payload.atributos_os = camposExtras;\n\nlet total = 0;\nfor (const p of produtosUnicos) total += toNumber(p.produto.quantidade) * toNumber(p.produto.valor_venda);\nfor (const s of servicosUnicos) total += toNumber(s.servico.quantidade) * toNumber(s.servico.valor_venda);\nif (emGarantia) total = 0;\nconst formaPagamento = (() => {\n  const tp = String(triggerParams.tipo_pagamento || '').toLowerCase();\n  if (tp.includes('pix') && tp.includes('inter')) return '4377571';\n  if (tp.includes('pix') && tp.includes('cora')) return '5108978';\n  if (tp.includes('pix')) return '4354384';\n  if (tp.includes('boleto') && tp.includes('cora')) return '4384233';\n  if (tp.includes('boleto') && tp.includes('inter')) return '4365900';\n  if (tp.includes('dinheiro') || tp.includes('especie') || tp.includes('espécie')) return '4354377';\n  if (tp.includes('credito') || tp.includes('crédito')) return '4364858';\n  if (tp.includes('debito') || tp.includes('débito')) return '4364859';\n  if (tp.includes('boleto') || tp.includes('faturad') || tp.includes('escritorio')) return '4366641';\n  return osAtual.pagamentos?.[0]?.pagamento?.forma_pagamento_id || triggerParams.forma_pagamento_id || '4366641';\n})();\npayload.pagamentos = [{ pagamento: { data_vencimento: today, valor: total.toFixed(2), forma_pagamento_id: formaPagamento } }];\n\nconst supabasePatch = { atualizado_em: nowIso };\nif (horaEntrada) { supabasePatch.hora_entrada = horaEntrada; supabasePatch.checkin_registrado = true; }\nif (horaSaida) { supabasePatch.hora_saida = horaSaida; supabasePatch.checkout_registrado = true; }\nif (Number.isFinite(tempoMin)) supabasePatch.tempo_atendimento_min = tempoMin;\nif (!isBlank(triggerParams.tecnico_id)) supabasePatch.tecnico_id = String(triggerParams.tecnico_id);\nif (!isBlank(triggerParams.tecnico_nome)) supabasePatch.tecnico_nome = String(triggerParams.tecnico_nome);\nif (!isBlank(triggerParams.tecnico_whatsapp)) supabasePatch.tecnico_whatsapp = String(triggerParams.tecnico_whatsapp);\nfor (const f of ['equipamento','marca','modelo','defeito','causa','solucao','relatorio_tecnico','tipo_servico','observacoes_orientacao','tipo_pagamento','forma_pagamento_id']) {\n  if (!isBlank(triggerParams[f])) supabasePatch[f] = triggerParams[f];\n}\nsupabasePatch.em_garantia = emGarantia;\nsupabasePatch.valor_total = total;\nif (produtosUnicos.length) supabasePatch.produtos_json = produtosUnicos;\nif (servicosUnicos.length) supabasePatch.servicos_json = servicosUnicos;\nif (isClosing) {\n  supabasePatch.status_os = 'concluida';\n  supabasePatch.fase_ia = 'fechado';\n  supabasePatch.fechado_em = nowIso;\n} else if (targetSituacao === '6237498') {\n  supabasePatch.status_os = 'em_andamento';\n  supabasePatch.fase_ia = 'coleta_tecnica';\n}\n\nreturn [{ json: {\n  os_id: triggerParams.os_id, os_codigo: triggerParams.os_codigo, payload, supabase_patch: supabasePatch,\n  tempo_atendimento_min: Number.isFinite(tempoMin) ? tempoMin : null,\n  hora_entrada_normalizada: horaEntrada, hora_saida_normalizada: horaSaida,\n  contrato_bomsaldo: { horas_nativas_suportadas: false, datas_nativas_suportadas: true, tecnico_nativo_suportado: true }\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        400
+      ],
+      "id": "e3a18490-1d40-4b73-a8a4-c213cbe2d512",
+      "name": "Montar Payload"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://bomsaldo.com/api/ordens_servicos/{{ $json.os_id }}/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "ignoreResponseCode": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        400
+      ],
+      "id": "9afb00f5-a4a3-4e58-9ad0-e54cbf6b250e",
+      "name": "PUT Atualizar OS"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://bnghvmromtukmflzeojd.supabase.co/rest/v1/ordens_servico?os_codigo=eq.{{ $('Montar Payload').first().json.os_codigo }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuZ2h2bXJvbXR1a21mbHplb2pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0ODIwODIsImV4cCI6MjA5MDA1ODA4Mn0.wzB2T9lMzWI-4ilu7MXREbf9w-loCoZxPLrE1WAzHTo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Montar Payload').first().json.supabase_patch }}",
+        "options": {
+          "response": {
+            "response": {
+              "ignoreResponseCode": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        540
+      ],
+      "id": "4250e389-ebb6-4fca-9d12-28638bb8efa2",
+      "name": "Atualizar OS Supabase HTTP",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const payloadJson = $('Montar Payload').first().json;\nif (payloadJson.error) {\n  return [{ json: { sucesso: false, resultado: payloadJson.error } }];\n}\nconst data = $('PUT Atualizar OS').first().json;\nif (data.status === 'error' || data.error || data.message || (data.statusCode && data.statusCode >= 400)) {\n  const detalheErro = data.message || data.error || JSON.stringify(data);\n  return [{ json: { sucesso: false, resultado: 'Erro fatal ao SALVAR a OS no Bom Saldo. Detalhes: ' + detalheErro, bom_saldo: data } }];\n}\nconst supabase = $('Atualizar OS Supabase HTTP').first().json;\nreturn [{ json: {\n  sucesso: true,\n  resultado: 'OS #' + (payloadJson.os_codigo || '') + ' atualizada no Bom Saldo e sincronizada no Supabase.',\n  os_codigo: payloadJson.os_codigo,\n  os_id_bomsaldo: payloadJson.os_id,\n  hora_entrada: payloadJson.hora_entrada_normalizada,\n  hora_saida: payloadJson.hora_saida_normalizada,\n  tempo_atendimento_min: payloadJson.tempo_atendimento_min,\n  contrato_bomsaldo: payloadJson.contrato_bomsaldo,\n  bom_saldo: data.data || data,\n  supabase\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        260
+      ],
+      "id": "54f5a84e-9ada-4966-ace5-b8349aab47a9",
+      "name": "Formatar Resposta"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Buscar OS Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar OS Supabase": {
+      "main": [
+        [
+          {
+            "node": "Resolver OS ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver OS ID": {
+      "main": [
+        [
+          {
+            "node": "GET OS Atual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET OS Atual": {
+      "main": [
+        [
+          {
+            "node": "Montar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Payload": {
+      "main": [
+        [
+          {
+            "node": "PUT Atualizar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUT Atualizar OS": {
+      "main": [
+        [
+          {
+            "node": "Atualizar OS Supabase HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar OS Supabase HTTP": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Sao_Paulo",
+    "availableInMCP": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

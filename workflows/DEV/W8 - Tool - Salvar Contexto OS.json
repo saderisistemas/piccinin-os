@@ -1,0 +1,1525 @@
+﻿{
+    "updatedAt":  "2026-05-01T14:37:49.340Z",
+    "createdAt":  "2026-04-04T19:33:01.454Z",
+    "id":  "cYIrVtfY8qfkwj38",
+    "name":  "W8 DEV - Tool - Salvar Contexto OS",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "workflowInputs":  {
+                                                                "values":  [
+                                                                               {
+                                                                                   "name":  "os_codigo"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "os_id_bomsaldo"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "conversa_id"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "tecnico_id"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "tecnico_nome"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "tecnico_whatsapp"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "cliente_nome"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "cliente_codigo"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "cliente_endereco"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "equipamento"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "equipamento_codigo"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "marca"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "modelo"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "defeito"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "causa"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "solucao"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "relatorio_tecnico"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "tipo_servico"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "servico_nome"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "servico_codigo"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "observacoes_orientacao"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "em_garantia"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "tipo_pagamento"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "forma_pagamento_id"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "valor_total"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "hora_entrada"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "hora_saida"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "checkin_registrado"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "checkout_registrado"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "link_pasta_drive"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "qtd_evidencias"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "status_os"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "fase_ia"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "motivo_cancelamento"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "qtd_interacoes_ia"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "ia_acertou_primeira"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "houve_revisao_manual"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "erro_integracao_api"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "mensagem_erro_api"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "tempo_atendimento_min"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "criado_em"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "atualizado_em"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "fechado_em"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "produtos_json"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "servicos_json"
+                                                                               }
+                                                                           ]
+                                                            }
+                                     },
+                      "id":  "t-w8-trigger",
+                      "name":  "Trigger",
+                      "type":  "n8n-nodes-base.executeWorkflowTrigger",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       -608,
+                                       304
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const p = $input.first().json || {};\nconst isBlank = (v) =\u003e v === undefined || v === null || String(v).trim() === \u0027\u0027;\nconst toText = (v) =\u003e isBlank(v) ? null : String(v).trim();\nconst toBool = (v) =\u003e {\n  if (isBlank(v)) return null;\n  if (typeof v === \u0027boolean\u0027) return v;\n  const s = String(v).trim().toLowerCase();\n  if ([\u0027true\u0027,\u00271\u0027,\u0027yes\u0027,\u0027sim\u0027].includes(s)) return true;\n  if ([\u0027false\u0027,\u00270\u0027,\u0027no\u0027,\u0027nao\u0027,\u0027não\u0027].includes(s)) return false;\n  return null;\n};\nconst toNumber = (v) =\u003e {\n  if (isBlank(v)) return null;\n  const n = Number(v);\n  return Number.isFinite(n) ? n : null;\n};\nconst normalizeHora = (raw) =\u003e {\n  if (isBlank(raw)) return null;\n  const s = String(raw).trim();\n  let m = s.match(/^(\\d{1,2}):(\\d{2})/);\n  if (m) return `${m[1].padStart(2, \u00270\u0027)}:${m[2]}`;\n  m = s.match(/^(\\d{1,2})h(\\d{2})?$/i);\n  if (m) return `${m[1].padStart(2, \u00270\u0027)}:${(m[2] || \u002700\u0027).padStart(2, \u00270\u0027)}`;\n  try {\n    const d = new Date(s);\n    if (!isNaN(d.getTime())) {\n      return d.toLocaleString(\u0027pt-BR\u0027, { timeZone: \u0027America/Sao_Paulo\u0027, hour: \u00272-digit\u0027, minute: \u00272-digit\u0027, hour12: false });\n    }\n  } catch {}\n  return s;\n};\nconst parseJson = (val) =\u003e {\n  if (isBlank(val)) return null;\n  if (Array.isArray(val)) return val.length ? JSON.stringify(val) : null;\n  if (typeof val === \u0027string\u0027) {\n    try {\n      const parsed = JSON.parse(val);\n      if (Array.isArray(parsed) \u0026\u0026 parsed.length) return JSON.stringify(parsed);\n    } catch {}\n  }\n  return null;\n};\nconst out = {};\nconst textFields = [\u0027os_codigo\u0027,\u0027os_id_bomsaldo\u0027,\u0027conversa_id\u0027,\u0027tecnico_id\u0027,\u0027tecnico_nome\u0027,\u0027tecnico_whatsapp\u0027,\u0027cliente_nome\u0027,\u0027cliente_codigo\u0027,\u0027cliente_endereco\u0027,\u0027equipamento\u0027,\u0027equipamento_codigo\u0027,\u0027marca\u0027,\u0027modelo\u0027,\u0027defeito\u0027,\u0027causa\u0027,\u0027solucao\u0027,\u0027relatorio_tecnico\u0027,\u0027tipo_servico\u0027,\u0027servico_nome\u0027,\u0027servico_codigo\u0027,\u0027observacoes_orientacao\u0027,\u0027tipo_pagamento\u0027,\u0027forma_pagamento_id\u0027,\u0027link_pasta_drive\u0027,\u0027status_os\u0027,\u0027fase_ia\u0027,\u0027motivo_cancelamento\u0027,\u0027criado_em\u0027,\u0027atualizado_em\u0027,\u0027fechado_em\u0027];\nconst numberFields = [\u0027valor_total\u0027,\u0027qtd_evidencias\u0027,\u0027qtd_interacoes_ia\u0027,\u0027tempo_atendimento_min\u0027];\nconst boolFields = [\u0027em_garantia\u0027,\u0027checkin_registrado\u0027,\u0027checkout_registrado\u0027,\u0027ia_acertou_primeira\u0027,\u0027houve_revisao_manual\u0027,\u0027erro_integracao_api\u0027];\nfor (const f of textFields) { if (!isBlank(p[f])) out[f] = toText(p[f]); }\nfor (const f of numberFields) { const n = toNumber(p[f]); if (n !== null) out[f] = n; }\nfor (const f of boolFields) { const b = toBool(p[f]); if (b !== null) out[f] = b; }\nif (!isBlank(p.hora_entrada)) out.hora_entrada = normalizeHora(p.hora_entrada);\nif (!isBlank(p.hora_saida)) out.hora_saida = normalizeHora(p.hora_saida);\nif (!isBlank(p.status_os)) out.status_os = toText(p.status_os).toLowerCase();\nif (!isBlank(p.fase_ia)) out.fase_ia = toText(p.fase_ia).toLowerCase();\nconst pj = parseJson(p.produtos_json); if (pj) out.produtos_json = pj;\nconst sj = parseJson(p.servicos_json); if (sj) out.servicos_json = sj;\nout.os_codigo = toText(p.os_codigo);\nif (!out.os_codigo) { throw new Error(\u0027os_codigo e obrigatorio para salvar contexto.\u0027); }\nout._tem_os_id = !isBlank(out.os_id_bomsaldo);\nreturn [{ json: out }];"
+                                     },
+                      "id":  "t-w8-validar",
+                      "name":  "Validar Params",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -384,
+                                       304
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "get",
+                                         "tableId":  "ordens_servico",
+                                         "filters":  {
+                                                         "conditions":  [
+                                                                            {
+                                                                                "keyName":  "os_codigo",
+                                                                                "keyValue":  "={{ $json.os_codigo }}"
+                                                                            }
+                                                                        ]
+                                                     }
+                                     },
+                      "id":  "t-w8-get",
+                      "name":  "GET OS por Codigo",
+                      "type":  "n8n-nodes-base.supabase",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -160,
+                                       304
+                                   ],
+                      "credentials":  {
+                                          "supabaseApi":  {
+                                                              "id":  "3TZFb8LBSmrd137a",
+                                                              "name":  "Supabase Vanda OS"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict"
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "c-exists",
+                                                                                   "leftValue":  "={{ $json.id }}",
+                                                                                   "rightValue":  "",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "exists",
+                                                                                                    "singleValue":  true
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "t-w8-exists",
+                      "name":  "OS Existe?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2,
+                      "position":  [
+                                       64,
+                                       304
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const novos = $(\u0027Validar Params\u0027).first().json;\nconst existente = $input.first().json;\nconst merged = { ...existente };\nfor (const key in novos) {\n  if (novos[key] !== null \u0026\u0026 novos[key] !== undefined \u0026\u0026 novos[key] !== \u0027\u0027) {\n    merged[key] = novos[key];\n  }\n}\nmerged.atualizado_em = new Date().toISOString();\ndelete merged.id;\ndelete merged.criado_em;\nif (merged.hora_entrada) merged.hora_entrada = String(merged.hora_entrada).trim();\nif (merged.hora_saida) merged.hora_saida = String(merged.hora_saida).trim();\nreturn [{ json: merged }];"
+                                     },
+                      "id":  "t-w8-merge",
+                      "name":  "Merge para Update",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       304,
+                                       208
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const novos = $(\u0027Validar Params\u0027).first().json;\nconst out = { ...novos };\nout.fase_ia = out.fase_ia || \u0027identificacao\u0027;\nout.status_os = out.status_os || \u0027aberta\u0027;\nout.atualizado_em = new Date().toISOString();\ndelete out.id;\ndelete out.criado_em;\nif (out.hora_entrada) out.hora_entrada = String(out.hora_entrada).trim();\nif (out.hora_saida) out.hora_saida = String(out.hora_saida).trim();\nreturn [{ json: out }];"
+                                     },
+                      "id":  "t-w8-prep",
+                      "name":  "Prep para Insert",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       304,
+                                       432
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "update",
+                                         "tableId":  "ordens_servico",
+                                         "filters":  {
+                                                         "conditions":  [
+                                                                            {
+                                                                                "keyName":  "os_codigo",
+                                                                                "condition":  "eq",
+                                                                                "keyValue":  "={{ $json.os_codigo }}"
+                                                                            }
+                                                                        ]
+                                                     },
+                                         "fieldsUi":  {
+                                                          "fieldValues":  [
+                                                                              {
+                                                                                  "fieldId":  "os_id_bomsaldo",
+                                                                                  "fieldValue":  "={{ $json.os_id_bomsaldo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "conversa_id",
+                                                                                  "fieldValue":  "={{ $json.conversa_id || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tecnico_id",
+                                                                                  "fieldValue":  "={{ $json.tecnico_id || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tecnico_nome",
+                                                                                  "fieldValue":  "={{ $json.tecnico_nome || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tecnico_whatsapp",
+                                                                                  "fieldValue":  "={{ $json.tecnico_whatsapp || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "cliente_nome",
+                                                                                  "fieldValue":  "={{ $json.cliente_nome || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "cliente_codigo",
+                                                                                  "fieldValue":  "={{ $json.cliente_codigo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "cliente_endereco",
+                                                                                  "fieldValue":  "={{ $json.cliente_endereco || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "equipamento",
+                                                                                  "fieldValue":  "={{ $json.equipamento || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "equipamento_codigo",
+                                                                                  "fieldValue":  "={{ $json.equipamento_codigo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "marca",
+                                                                                  "fieldValue":  "={{ $json.marca || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "modelo",
+                                                                                  "fieldValue":  "={{ $json.modelo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "defeito",
+                                                                                  "fieldValue":  "={{ $json.defeito || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "causa",
+                                                                                  "fieldValue":  "={{ $json.causa || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "solucao",
+                                                                                  "fieldValue":  "={{ $json.solucao || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "relatorio_tecnico",
+                                                                                  "fieldValue":  "={{ $json.relatorio_tecnico || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tipo_servico",
+                                                                                  "fieldValue":  "={{ $json.tipo_servico || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "servico_nome",
+                                                                                  "fieldValue":  "={{ $json.servico_nome || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "servico_codigo",
+                                                                                  "fieldValue":  "={{ $json.servico_codigo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "observacoes_orientacao",
+                                                                                  "fieldValue":  "={{ $json.observacoes_orientacao || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "em_garantia",
+                                                                                  "fieldValue":  "={{ $json.em_garantia !== undefined ? $json.em_garantia : false }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tipo_pagamento",
+                                                                                  "fieldValue":  "={{ $json.tipo_pagamento || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "forma_pagamento_id",
+                                                                                  "fieldValue":  "={{ $json.forma_pagamento_id || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "valor_total",
+                                                                                  "fieldValue":  "={{ $json.valor_total || 0 }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "hora_entrada",
+                                                                                  "fieldValue":  "={{ $json.hora_entrada || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "hora_saida",
+                                                                                  "fieldValue":  "={{ $json.hora_saida || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "link_pasta_drive",
+                                                                                  "fieldValue":  "={{ $json.link_pasta_drive || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "status_os",
+                                                                                  "fieldValue":  "={{ $json.status_os || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "fase_ia",
+                                                                                  "fieldValue":  "={{ $json.fase_ia || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "motivo_cancelamento",
+                                                                                  "fieldValue":  "={{ $json.motivo_cancelamento || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "checkin_registrado",
+                                                                                  "fieldValue":  "={{ $json.checkin_registrado !== undefined ? $json.checkin_registrado : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "checkout_registrado",
+                                                                                  "fieldValue":  "={{ $json.checkout_registrado !== undefined ? $json.checkout_registrado : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "qtd_interacoes_ia",
+                                                                                  "fieldValue":  "={{ $json.qtd_interacoes_ia !== undefined ? $json.qtd_interacoes_ia : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "ia_acertou_primeira",
+                                                                                  "fieldValue":  "={{ $json.ia_acertou_primeira !== undefined ? $json.ia_acertou_primeira : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "houve_revisao_manual",
+                                                                                  "fieldValue":  "={{ $json.houve_revisao_manual !== undefined ? $json.houve_revisao_manual : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "erro_integracao_api",
+                                                                                  "fieldValue":  "={{ $json.erro_integracao_api !== undefined ? $json.erro_integracao_api : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "mensagem_erro_api",
+                                                                                  "fieldValue":  "={{ $json.mensagem_erro_api !== undefined ? $json.mensagem_erro_api : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tempo_atendimento_min",
+                                                                                  "fieldValue":  "={{ $json.tempo_atendimento_min !== undefined ? $json.tempo_atendimento_min : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "fechado_em",
+                                                                                  "fieldValue":  "={{ $json.fechado_em !== undefined ? $json.fechado_em : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "atualizado_em",
+                                                                                  "fieldValue":  "={{ $json.atualizado_em }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "produtos_json",
+                                                                                  "fieldValue":  "={{ $json.produtos_json !== undefined ? (typeof $json.produtos_json === \u0027string\u0027 ? $json.produtos_json : JSON.stringify($json.produtos_json)) : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "servicos_json",
+                                                                                  "fieldValue":  "={{ $json.servicos_json !== undefined ? (typeof $json.servicos_json === \u0027string\u0027 ? $json.servicos_json : JSON.stringify($json.servicos_json)) : null }}"
+                                                                              }
+                                                                          ]
+                                                      }
+                                     },
+                      "id":  "t-w8-update",
+                      "name":  "UPDATE OS",
+                      "type":  "n8n-nodes-base.supabase",
+                      "typeVersion":  1,
+                      "position":  [
+                                       560,
+                                       208
+                                   ],
+                      "credentials":  {
+                                          "supabaseApi":  {
+                                                              "id":  "3TZFb8LBSmrd137a",
+                                                              "name":  "Supabase Vanda OS"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "tableId":  "ordens_servico",
+                                         "fieldsUi":  {
+                                                          "fieldValues":  [
+                                                                              {
+                                                                                  "fieldId":  "os_codigo",
+                                                                                  "fieldValue":  "={{ $json.os_codigo }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "os_id_bomsaldo",
+                                                                                  "fieldValue":  "={{ $json.os_id_bomsaldo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "conversa_id",
+                                                                                  "fieldValue":  "={{ $json.conversa_id || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tecnico_id",
+                                                                                  "fieldValue":  "={{ $json.tecnico_id || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tecnico_nome",
+                                                                                  "fieldValue":  "={{ $json.tecnico_nome || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tecnico_whatsapp",
+                                                                                  "fieldValue":  "={{ $json.tecnico_whatsapp || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "cliente_nome",
+                                                                                  "fieldValue":  "={{ $json.cliente_nome || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "cliente_codigo",
+                                                                                  "fieldValue":  "={{ $json.cliente_codigo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "cliente_endereco",
+                                                                                  "fieldValue":  "={{ $json.cliente_endereco || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "equipamento",
+                                                                                  "fieldValue":  "={{ $json.equipamento || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "equipamento_codigo",
+                                                                                  "fieldValue":  "={{ $json.equipamento_codigo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "marca",
+                                                                                  "fieldValue":  "={{ $json.marca || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "modelo",
+                                                                                  "fieldValue":  "={{ $json.modelo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "defeito",
+                                                                                  "fieldValue":  "={{ $json.defeito || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "causa",
+                                                                                  "fieldValue":  "={{ $json.causa || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "solucao",
+                                                                                  "fieldValue":  "={{ $json.solucao || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "relatorio_tecnico",
+                                                                                  "fieldValue":  "={{ $json.relatorio_tecnico || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tipo_servico",
+                                                                                  "fieldValue":  "={{ $json.tipo_servico || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "servico_nome",
+                                                                                  "fieldValue":  "={{ $json.servico_nome || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "servico_codigo",
+                                                                                  "fieldValue":  "={{ $json.servico_codigo || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "observacoes_orientacao",
+                                                                                  "fieldValue":  "={{ $json.observacoes_orientacao || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "em_garantia",
+                                                                                  "fieldValue":  "={{ $json.em_garantia !== undefined ? $json.em_garantia : false }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tipo_pagamento",
+                                                                                  "fieldValue":  "={{ $json.tipo_pagamento || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "forma_pagamento_id",
+                                                                                  "fieldValue":  "={{ $json.forma_pagamento_id || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "valor_total",
+                                                                                  "fieldValue":  "={{ $json.valor_total || 0 }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "hora_entrada",
+                                                                                  "fieldValue":  "={{ $json.hora_entrada || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "hora_saida",
+                                                                                  "fieldValue":  "={{ $json.hora_saida || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "link_pasta_drive",
+                                                                                  "fieldValue":  "={{ $json.link_pasta_drive || null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "status_os",
+                                                                                  "fieldValue":  "={{ $json.status_os || \u0027aberta\u0027 }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "fase_ia",
+                                                                                  "fieldValue":  "={{ $json.fase_ia || \u0027identificacao\u0027 }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "checkin_registrado",
+                                                                                  "fieldValue":  "={{ $json.checkin_registrado !== undefined ? $json.checkin_registrado : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "checkout_registrado",
+                                                                                  "fieldValue":  "={{ $json.checkout_registrado !== undefined ? $json.checkout_registrado : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "qtd_interacoes_ia",
+                                                                                  "fieldValue":  "={{ $json.qtd_interacoes_ia !== undefined ? $json.qtd_interacoes_ia : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "ia_acertou_primeira",
+                                                                                  "fieldValue":  "={{ $json.ia_acertou_primeira !== undefined ? $json.ia_acertou_primeira : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "houve_revisao_manual",
+                                                                                  "fieldValue":  "={{ $json.houve_revisao_manual !== undefined ? $json.houve_revisao_manual : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "erro_integracao_api",
+                                                                                  "fieldValue":  "={{ $json.erro_integracao_api !== undefined ? $json.erro_integracao_api : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "mensagem_erro_api",
+                                                                                  "fieldValue":  "={{ $json.mensagem_erro_api !== undefined ? $json.mensagem_erro_api : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "tempo_atendimento_min",
+                                                                                  "fieldValue":  "={{ $json.tempo_atendimento_min !== undefined ? $json.tempo_atendimento_min : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "fechado_em",
+                                                                                  "fieldValue":  "={{ $json.fechado_em !== undefined ? $json.fechado_em : null }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "atualizado_em",
+                                                                                  "fieldValue":  "={{ $json.atualizado_em !== undefined ? $json.atualizado_em : new Date().toISOString() }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "produtos_json",
+                                                                                  "fieldValue":  "={{ $json.produtos_json !== undefined ? (typeof $json.produtos_json === \u0027string\u0027 ? $json.produtos_json : JSON.stringify($json.produtos_json)) : undefined }}"
+                                                                              },
+                                                                              {
+                                                                                  "fieldId":  "servicos_json",
+                                                                                  "fieldValue":  "={{ $json.servicos_json !== undefined ? (typeof $json.servicos_json === \u0027string\u0027 ? $json.servicos_json : JSON.stringify($json.servicos_json)) : undefined }}"
+                                                                              }
+                                                                          ]
+                                                      }
+                                     },
+                      "id":  "t-w8-insert",
+                      "name":  "INSERT OS",
+                      "type":  "n8n-nodes-base.supabase",
+                      "typeVersion":  1,
+                      "position":  [
+                                       560,
+                                       432
+                                   ],
+                      "credentials":  {
+                                          "supabaseApi":  {
+                                                              "id":  "3TZFb8LBSmrd137a",
+                                                              "name":  "Supabase Vanda OS"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+
+                                     },
+                      "id":  "t-w8-join",
+                      "name":  "Join Flows",
+                      "type":  "n8n-nodes-base.merge",
+                      "typeVersion":  3,
+                      "position":  [
+                                       784,
+                                       304
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "let r = {};\ntry { r = $input.first().json || {}; } catch {}\nconst p = $(\u0027Validar Params\u0027).first().json;\n\nif (r.sucesso === false || r.error) {\n  return [{ json: {\n    sucesso: false,\n    os_codigo: r.os_codigo || p.os_codigo,\n    os_id_bomsaldo: r.os_id_bomsaldo || p.os_id_bomsaldo || null,\n    mensagem: r.erro || r.error || \u0027Falha ao salvar contexto.\u0027\n  }}];\n}\n\nconst foiInsert = r.id !== undefined \u0026\u0026 r.os_id_bomsaldo !== undefined;\n\nif (foiInsert \u0026\u0026 !r.os_id_bomsaldo \u0026\u0026 !p._tem_os_id) {\n  return [{ json: {\n    sucesso: false,\n    erro: \u0027OS registrada localmente sem os_id_bomsaldo. A OS ainda nao foi criada no Bom Saldo.\u0027,\n    os_codigo: r.os_codigo || p.os_codigo,\n    os_id_bomsaldo: null,\n    acao: \u0027INSERT_SEM_OS_ID\u0027,\n    mensagem: \u0027Chame criarOS antes de salvarContexto.\u0027\n  }}];\n}\n\nreturn [{ json: {\n  sucesso: true,\n  acao: foiInsert ? \u0027INSERT\u0027 : \u0027UPDATE\u0027,\n  os_codigo: r.os_codigo || p.os_codigo,\n  os_id_bomsaldo: r.os_id_bomsaldo || p.os_id_bomsaldo || null,\n  fase_ia: r.fase_ia || p.fase_ia || \u0027identificacao\u0027,\n  status_os: r.status_os || p.status_os || \u0027aberta\u0027,\n  tecnico_id: r.tecnico_id || p.tecnico_id || null,\n  cliente_codigo: r.cliente_codigo || p.cliente_codigo || null,\n  atualizado_em: r.atualizado_em || new Date().toISOString(),\n  mensagem: \u0027Contexto OS #\u0027 + (r.os_codigo || p.os_codigo) + \u0027 salvo com sucesso.\u0027\n}}];"
+                                     },
+                      "id":  "t-w8-resp",
+                      "name":  "Formatar Resposta",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1008,
+                                       304
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Trigger":  {
+                                        "main":  [
+                                                     [
+                                                         {
+                                                             "node":  "Validar Params",
+                                                             "type":  "main",
+                                                             "index":  0
+                                                         }
+                                                     ]
+                                                 ]
+                                    },
+                        "Validar Params":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "GET OS por Codigo",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "GET OS por Codigo":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "OS Existe?",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "OS Existe?":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Merge para Update",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ],
+                                                        [
+                                                            {
+                                                                "node":  "Prep para Insert",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       },
+                        "Merge para Update":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "UPDATE OS",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Prep para Insert":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "INSERT OS",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "UPDATE OS":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Join Flows",
+                                                               "type":  "main",
+                                                               "index":  0
+                                                           }
+                                                       ]
+                                                   ]
+                                      },
+                        "INSERT OS":  {
+                                          "main":  [
+                                                       [
+                                                           {
+                                                               "node":  "Join Flows",
+                                                               "type":  "main",
+                                                               "index":  1
+                                                           }
+                                                       ]
+                                                   ]
+                                      },
+                        "Join Flows":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Formatar Resposta",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "callerPolicy":  "workflowsFromSameOwner",
+                     "availableInMCP":  true
+                 },
+    "staticData":  null,
+    "meta":  null,
+    "pinData":  {
+
+                },
+    "versionId":  "4c34b12d-b20a-4b61-b558-7b0d960392b8",
+    "activeVersionId":  "4c34b12d-b20a-4b61-b558-7b0d960392b8",
+    "versionCounter":  112,
+    "triggerCount":  0,
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-04-04T19:33:01.454Z",
+                       "createdAt":  "2026-04-04T19:33:01.454Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "cYIrVtfY8qfkwj38",
+                       "projectId":  "vRAwgLyMbLY73byN",
+                       "project":  {
+                                       "updatedAt":  "2026-01-13T22:24:05.896Z",
+                                       "createdAt":  "2026-01-13T22:22:37.019Z",
+                                       "id":  "vRAwgLyMbLY73byN",
+                                       "name":  "Danilo Saderi \u003cpiccininportoes@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "creatorId":  "637711b9-7b59-4ed7-ade6-dd6363195ee0"
+                                   }
+                   }
+               ],
+    "tags":  [
+
+             ],
+    "activeVersion":  {
+                          "updatedAt":  "2026-04-11T13:18:02.158Z",
+                          "createdAt":  "2026-04-11T13:17:59.794Z",
+                          "versionId":  "4c34b12d-b20a-4b61-b558-7b0d960392b8",
+                          "workflowId":  "cYIrVtfY8qfkwj38",
+                          "nodes":  [
+                                        {
+                                            "parameters":  {
+                                                               "workflowInputs":  {
+                                                                                      "values":  [
+                                                                                                     {
+                                                                                                         "name":  "os_codigo"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "os_id_bomsaldo"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "conversa_id"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "tecnico_id"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "tecnico_nome"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "tecnico_whatsapp"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "cliente_nome"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "cliente_codigo"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "cliente_endereco"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "equipamento"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "equipamento_codigo"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "marca"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "modelo"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "defeito"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "causa"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "solucao"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "relatorio_tecnico"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "tipo_servico"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "servico_nome"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "servico_codigo"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "observacoes_orientacao"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "em_garantia"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "tipo_pagamento"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "forma_pagamento_id"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "valor_total"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "hora_entrada"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "hora_saida"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "link_pasta_drive"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "status_os"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "fase_ia"
+                                                                                                     },
+                                                                                                     {
+                                                                                                         "name":  "motivo_cancelamento"
+                                                                                                     }
+                                                                                                 ]
+                                                                                  }
+                                                           },
+                                            "id":  "t-w8-trigger",
+                                            "name":  "Trigger",
+                                            "type":  "n8n-nodes-base.executeWorkflowTrigger",
+                                            "typeVersion":  1.1,
+                                            "position":  [
+                                                             -608,
+                                                             304
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "// Valida e filtra apenas campos com valor\nconst p = $input.first().json;\n\nif (!p.os_codigo) {\n  throw new Error(\u0027ERRO: os_codigo e OBRIGATORIO para salvar contexto.\u0027);\n}\n\nconst out = { os_codigo: String(p.os_codigo) };\n\nconst camposStr = [\n  \u0027os_id_bomsaldo\u0027, \u0027conversa_id\u0027,\n  \u0027tecnico_id\u0027, \u0027tecnico_nome\u0027, \u0027tecnico_whatsapp\u0027,\n  \u0027cliente_nome\u0027, \u0027cliente_codigo\u0027, \u0027cliente_endereco\u0027,\n  \u0027equipamento\u0027, \u0027equipamento_codigo\u0027, \u0027marca\u0027, \u0027modelo\u0027,\n  \u0027defeito\u0027, \u0027causa\u0027, \u0027solucao\u0027, \u0027relatorio_tecnico\u0027,\n  \u0027tipo_servico\u0027, \u0027servico_nome\u0027, \u0027servico_codigo\u0027, \u0027observacoes_orientacao\u0027,\n  \u0027tipo_pagamento\u0027, \u0027forma_pagamento_id\u0027,\n  \u0027hora_entrada\u0027, \u0027hora_saida\u0027,\n  \u0027link_pasta_drive\u0027,\n  \u0027status_os\u0027, \u0027fase_ia\u0027, \u0027motivo_cancelamento\u0027,\n  \u0027produtos_json\u0027, \u0027servicos_json\u0027\n];\n\nfor (const campo of camposStr) {\n  if (p[campo] !== undefined \u0026\u0026 p[campo] !== null \u0026\u0026 p[campo] !== \u0027\u0027) {\n    out[campo] = String(p[campo]);\n  }\n}\n\n// Campos numericos\nif (p.valor_total !== undefined \u0026\u0026 p.valor_total !== null \u0026\u0026 p.valor_total !== \u0027\u0027) {\n  out.valor_total = Number(p.valor_total) || 0;\n}\n\n// Campo boolean\nif (p.em_garantia !== undefined \u0026\u0026 p.em_garantia !== null \u0026\u0026 p.em_garantia !== \u0027\u0027) {\n  out.em_garantia = (p.em_garantia === \u0027true\u0027 || p.em_garantia === true);\n}\n\n// Campos JSON - produtos_json e servicos_json\n// Aceita string JSON ou array diretamente\nconst parseJSON = (val) =\u003e {\n  if (!val || val === \u0027\u0027) return null;\n  if (Array.isArray(val)) return val.length \u003e 0 ? JSON.stringify(val) : null;\n  if (typeof val === \u0027string\u0027) {\n    try { const arr = JSON.parse(val); return Array.isArray(arr) \u0026\u0026 arr.length \u003e 0 ? val : null; } catch { return null; }\n  }\n  return null;\n};\n\nconst pj = parseJSON(p.produtos_json);\nif (pj) out.produtos_json = pj;\n\nconst sj = parseJSON(p.servicos_json);\nif (sj) out.servicos_json = sj;\n\n// Flag interna\nout._tem_os_id = !!(out.os_id_bomsaldo \u0026\u0026 out.os_id_bomsaldo !== \u0027\u0027);\n\nreturn [{ json: out }];"
+                                                           },
+                                            "id":  "t-w8-validar",
+                                            "name":  "Validar Params",
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             -384,
+                                                             304
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "operation":  "get",
+                                                               "tableId":  "ordens_servico",
+                                                               "filters":  {
+                                                                               "conditions":  [
+                                                                                                  {
+                                                                                                      "keyName":  "os_codigo",
+                                                                                                      "keyValue":  "={{ $json.os_codigo }}"
+                                                                                                  }
+                                                                                              ]
+                                                                           }
+                                                           },
+                                            "id":  "t-w8-get",
+                                            "name":  "GET OS por Codigo",
+                                            "type":  "n8n-nodes-base.supabase",
+                                            "typeVersion":  1,
+                                            "position":  [
+                                                             -160,
+                                                             304
+                                                         ],
+                                            "credentials":  {
+                                                                "supabaseApi":  {
+                                                                                    "id":  "3TZFb8LBSmrd137a",
+                                                                                    "name":  "Supabase Vanda OS"
+                                                                                }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "conditions":  {
+                                                                                  "options":  {
+                                                                                                  "caseSensitive":  true,
+                                                                                                  "leftValue":  "",
+                                                                                                  "typeValidation":  "strict"
+                                                                                              },
+                                                                                  "conditions":  [
+                                                                                                     {
+                                                                                                         "id":  "c-exists",
+                                                                                                         "leftValue":  "={{ $json.id }}",
+                                                                                                         "rightValue":  "",
+                                                                                                         "operator":  {
+                                                                                                                          "type":  "string",
+                                                                                                                          "operation":  "exists",
+                                                                                                                          "singleValue":  true
+                                                                                                                      }
+                                                                                                     }
+                                                                                                 ],
+                                                                                  "combinator":  "and"
+                                                                              },
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "id":  "t-w8-exists",
+                                            "name":  "OS Existe?",
+                                            "type":  "n8n-nodes-base.if",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             64,
+                                                             304
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "// Merge: manter existente, sobrescrever com novos valores não-nulos\nconst novos = $(\u0027Validar Params\u0027).first().json;\nconst existente = $input.first().json;\nconst merged = { ...existente };\n\nfor (const key in novos) {\n  if (novos[key] !== null \u0026\u0026 novos[key] !== undefined \u0026\u0026 novos[key] !== \u0027\u0027) {\n    merged[key] = novos[key];\n  }\n}\n\nmerged.atualizado_em = new Date().toISOString();\ndelete merged.id;\ndelete merged.criado_em;\n\n// Normalizar hora_entrada e hora_saida para texto simples HH:MM\n// Coluna agora é text - aceita qualquer formato legivel\nconst normalizeHora = (raw) =\u003e {\n  if (!raw || raw === \u0027\u0027) return null;\n  const s = String(raw).trim();\n  // Já é HH:MM ou HH:MM:SS\n  const mColon = s.match(/^(\\d{1,2}):(\\d{2})/);\n  if (mColon) return `${mColon[1].padStart(2,\u00270\u0027)}:${mColon[2]}`;\n  // HHhMM ou HHh\n  const mH = s.match(/^(\\d{1,2})h(\\d{2})?$/i);\n  if (mH) return `${mH[1].padStart(2,\u00270\u0027)}:${(mH[2]||\u002700\u0027).padStart(2,\u00270\u0027)}`;\n  // ISO timestamp - extrair hora no fuso SP\n  try {\n    const d = new Date(s);\n    if (!isNaN(d.getTime())) {\n      return d.toLocaleString(\u0027pt-BR\u0027,{timeZone:\u0027America/Sao_Paulo\u0027,hour:\u00272-digit\u0027,minute:\u00272-digit\u0027,hour12:false});\n    }\n  } catch {}\n  return s;\n};\n\nif (merged.hora_entrada) merged.hora_entrada = normalizeHora(merged.hora_entrada) || merged.hora_entrada;\nif (merged.hora_saida) merged.hora_saida = normalizeHora(merged.hora_saida) || merged.hora_saida;\n\nreturn [{ json: merged }];"
+                                                           },
+                                            "id":  "t-w8-merge",
+                                            "name":  "Merge para Update",
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             304,
+                                                             208
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "// Preparar INSERT de nova OS\nconst novos = $(\u0027Validar Params\u0027).first().json;\nconst out = { ...novos };\nout.fase_ia = out.fase_ia || \u0027identificacao\u0027;\nout.status_os = out.status_os || \u0027aberta\u0027;\n\n// Normalizar hora para texto simples HH:MM (coluna é text)\nconst normalizeHora = (raw) =\u003e {\n  if (!raw || raw === \u0027\u0027) return null;\n  const s = String(raw).trim();\n  const mColon = s.match(/^(\\d{1,2}):(\\d{2})/);\n  if (mColon) return `${mColon[1].padStart(2,\u00270\u0027)}:${mColon[2]}`;\n  const mH = s.match(/^(\\d{1,2})h(\\d{2})?$/i);\n  if (mH) return `${mH[1].padStart(2,\u00270\u0027)}:${(mH[2]||\u002700\u0027).padStart(2,\u00270\u0027)}`;\n  try {\n    const d = new Date(s);\n    if (!isNaN(d.getTime())) {\n      return d.toLocaleString(\u0027pt-BR\u0027,{timeZone:\u0027America/Sao_Paulo\u0027,hour:\u00272-digit\u0027,minute:\u00272-digit\u0027,hour12:false});\n    }\n  } catch {}\n  return s;\n};\n\nif (out.hora_entrada) out.hora_entrada = normalizeHora(out.hora_entrada) || out.hora_entrada;\nif (out.hora_saida) out.hora_saida = normalizeHora(out.hora_saida) || out.hora_saida;\n\nreturn [{ json: out }];"
+                                                           },
+                                            "id":  "t-w8-prep",
+                                            "name":  "Prep para Insert",
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             304,
+                                                             432
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "operation":  "update",
+                                                               "tableId":  "ordens_servico",
+                                                               "filters":  {
+                                                                               "conditions":  [
+                                                                                                  {
+                                                                                                      "keyName":  "os_codigo",
+                                                                                                      "condition":  "eq",
+                                                                                                      "keyValue":  "={{ $json.os_codigo }}"
+                                                                                                  }
+                                                                                              ]
+                                                                           },
+                                                               "fieldsUi":  {
+                                                                                "fieldValues":  [
+                                                                                                    {
+                                                                                                        "fieldId":  "os_id_bomsaldo",
+                                                                                                        "fieldValue":  "={{ $json.os_id_bomsaldo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "conversa_id",
+                                                                                                        "fieldValue":  "={{ $json.conversa_id || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tecnico_id",
+                                                                                                        "fieldValue":  "={{ $json.tecnico_id || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tecnico_nome",
+                                                                                                        "fieldValue":  "={{ $json.tecnico_nome || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tecnico_whatsapp",
+                                                                                                        "fieldValue":  "={{ $json.tecnico_whatsapp || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "cliente_nome",
+                                                                                                        "fieldValue":  "={{ $json.cliente_nome || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "cliente_codigo",
+                                                                                                        "fieldValue":  "={{ $json.cliente_codigo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "cliente_endereco",
+                                                                                                        "fieldValue":  "={{ $json.cliente_endereco || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "equipamento",
+                                                                                                        "fieldValue":  "={{ $json.equipamento || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "equipamento_codigo",
+                                                                                                        "fieldValue":  "={{ $json.equipamento_codigo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "marca",
+                                                                                                        "fieldValue":  "={{ $json.marca || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "modelo",
+                                                                                                        "fieldValue":  "={{ $json.modelo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "defeito",
+                                                                                                        "fieldValue":  "={{ $json.defeito || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "causa",
+                                                                                                        "fieldValue":  "={{ $json.causa || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "solucao",
+                                                                                                        "fieldValue":  "={{ $json.solucao || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "relatorio_tecnico",
+                                                                                                        "fieldValue":  "={{ $json.relatorio_tecnico || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tipo_servico",
+                                                                                                        "fieldValue":  "={{ $json.tipo_servico || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "servico_nome",
+                                                                                                        "fieldValue":  "={{ $json.servico_nome || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "servico_codigo",
+                                                                                                        "fieldValue":  "={{ $json.servico_codigo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "observacoes_orientacao",
+                                                                                                        "fieldValue":  "={{ $json.observacoes_orientacao || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "em_garantia",
+                                                                                                        "fieldValue":  "={{ $json.em_garantia !== undefined ? $json.em_garantia : false }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tipo_pagamento",
+                                                                                                        "fieldValue":  "={{ $json.tipo_pagamento || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "forma_pagamento_id",
+                                                                                                        "fieldValue":  "={{ $json.forma_pagamento_id || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "valor_total",
+                                                                                                        "fieldValue":  "={{ $json.valor_total || 0 }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "hora_entrada",
+                                                                                                        "fieldValue":  "={{ $json.hora_entrada || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "hora_saida",
+                                                                                                        "fieldValue":  "={{ $json.hora_saida || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "link_pasta_drive",
+                                                                                                        "fieldValue":  "={{ $json.link_pasta_drive || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "status_os",
+                                                                                                        "fieldValue":  "={{ $json.status_os || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "fase_ia",
+                                                                                                        "fieldValue":  "={{ $json.fase_ia || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "motivo_cancelamento",
+                                                                                                        "fieldValue":  "={{ $json.motivo_cancelamento || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "atualizado_em",
+                                                                                                        "fieldValue":  "={{ $json.atualizado_em }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "produtos_json",
+                                                                                                        "fieldValue":  "={{ $json.produtos_json !== undefined ? (typeof $json.produtos_json === \u0027string\u0027 ? $json.produtos_json : JSON.stringify($json.produtos_json)) : null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "servicos_json",
+                                                                                                        "fieldValue":  "={{ $json.servicos_json !== undefined ? (typeof $json.servicos_json === \u0027string\u0027 ? $json.servicos_json : JSON.stringify($json.servicos_json)) : null }}"
+                                                                                                    }
+                                                                                                ]
+                                                                            }
+                                                           },
+                                            "id":  "t-w8-update",
+                                            "name":  "UPDATE OS",
+                                            "type":  "n8n-nodes-base.supabase",
+                                            "typeVersion":  1,
+                                            "position":  [
+                                                             560,
+                                                             208
+                                                         ],
+                                            "credentials":  {
+                                                                "supabaseApi":  {
+                                                                                    "id":  "3TZFb8LBSmrd137a",
+                                                                                    "name":  "Supabase Vanda OS"
+                                                                                }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "tableId":  "ordens_servico",
+                                                               "fieldsUi":  {
+                                                                                "fieldValues":  [
+                                                                                                    {
+                                                                                                        "fieldId":  "os_codigo",
+                                                                                                        "fieldValue":  "={{ $json.os_codigo }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "os_id_bomsaldo",
+                                                                                                        "fieldValue":  "={{ $json.os_id_bomsaldo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "conversa_id",
+                                                                                                        "fieldValue":  "={{ $json.conversa_id || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tecnico_id",
+                                                                                                        "fieldValue":  "={{ $json.tecnico_id || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tecnico_nome",
+                                                                                                        "fieldValue":  "={{ $json.tecnico_nome || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tecnico_whatsapp",
+                                                                                                        "fieldValue":  "={{ $json.tecnico_whatsapp || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "cliente_nome",
+                                                                                                        "fieldValue":  "={{ $json.cliente_nome || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "cliente_codigo",
+                                                                                                        "fieldValue":  "={{ $json.cliente_codigo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "cliente_endereco",
+                                                                                                        "fieldValue":  "={{ $json.cliente_endereco || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "equipamento",
+                                                                                                        "fieldValue":  "={{ $json.equipamento || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "equipamento_codigo",
+                                                                                                        "fieldValue":  "={{ $json.equipamento_codigo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "marca",
+                                                                                                        "fieldValue":  "={{ $json.marca || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "modelo",
+                                                                                                        "fieldValue":  "={{ $json.modelo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "defeito",
+                                                                                                        "fieldValue":  "={{ $json.defeito || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "causa",
+                                                                                                        "fieldValue":  "={{ $json.causa || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "solucao",
+                                                                                                        "fieldValue":  "={{ $json.solucao || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "relatorio_tecnico",
+                                                                                                        "fieldValue":  "={{ $json.relatorio_tecnico || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tipo_servico",
+                                                                                                        "fieldValue":  "={{ $json.tipo_servico || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "servico_nome",
+                                                                                                        "fieldValue":  "={{ $json.servico_nome || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "servico_codigo",
+                                                                                                        "fieldValue":  "={{ $json.servico_codigo || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "observacoes_orientacao",
+                                                                                                        "fieldValue":  "={{ $json.observacoes_orientacao || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "em_garantia",
+                                                                                                        "fieldValue":  "={{ $json.em_garantia !== undefined ? $json.em_garantia : false }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "tipo_pagamento",
+                                                                                                        "fieldValue":  "={{ $json.tipo_pagamento || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "forma_pagamento_id",
+                                                                                                        "fieldValue":  "={{ $json.forma_pagamento_id || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "valor_total",
+                                                                                                        "fieldValue":  "={{ $json.valor_total || 0 }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "hora_entrada",
+                                                                                                        "fieldValue":  "={{ $json.hora_entrada || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "hora_saida",
+                                                                                                        "fieldValue":  "={{ $json.hora_saida || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "link_pasta_drive",
+                                                                                                        "fieldValue":  "={{ $json.link_pasta_drive || null }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "status_os",
+                                                                                                        "fieldValue":  "={{ $json.status_os || \u0027aberta\u0027 }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "fase_ia",
+                                                                                                        "fieldValue":  "={{ $json.fase_ia || \u0027identificacao\u0027 }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "produtos_json",
+                                                                                                        "fieldValue":  "={{ $json.produtos_json !== undefined ? (typeof $json.produtos_json === \u0027string\u0027 ? $json.produtos_json : JSON.stringify($json.produtos_json)) : undefined }}"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "fieldId":  "servicos_json",
+                                                                                                        "fieldValue":  "={{ $json.servicos_json !== undefined ? (typeof $json.servicos_json === \u0027string\u0027 ? $json.servicos_json : JSON.stringify($json.servicos_json)) : undefined }}"
+                                                                                                    }
+                                                                                                ]
+                                                                            }
+                                                           },
+                                            "id":  "t-w8-insert",
+                                            "name":  "INSERT OS",
+                                            "type":  "n8n-nodes-base.supabase",
+                                            "typeVersion":  1,
+                                            "position":  [
+                                                             560,
+                                                             432
+                                                         ],
+                                            "credentials":  {
+                                                                "supabaseApi":  {
+                                                                                    "id":  "3TZFb8LBSmrd137a",
+                                                                                    "name":  "Supabase Vanda OS"
+                                                                                }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+
+                                                           },
+                                            "id":  "t-w8-join",
+                                            "name":  "Join Flows",
+                                            "type":  "n8n-nodes-base.merge",
+                                            "typeVersion":  3,
+                                            "position":  [
+                                                             784,
+                                                             304
+                                                         ]
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "let r = {};\ntry { r = $input.first().json || {}; } catch {}\nconst p = $(\u0027Validar Params\u0027).first().json;\n\n// Detectar se foi INSERT (OS nao existia no banco)\n// Se o Supabase INSERT retornou o registro, ele tera \u0027id\u0027 (pk do Supabase)\nconst foiInsert = r.id !== undefined \u0026\u0026 r.os_id_bomsaldo !== undefined;\n\n// ALERTA: INSERT sem os_id_bomsaldo = OS nao criada no Bom Saldo ainda\n// Isso significa que a Vanda chamou salvarContexto antes de criarOS\nif (foiInsert \u0026\u0026 !r.os_id_bomsaldo \u0026\u0026 !p._tem_os_id) {\n  return [{ json: {\n    sucesso: false,\n    erro: \u0027OS registrada localmente sem os_id_bomsaldo. A OS ainda NAO foi criada no Bom Saldo. Use a tool criarOS primeiro, depois salvarContexto.\u0027,\n    os_codigo: r.os_codigo || p.os_codigo,\n    os_id_bomsaldo: null,\n    acao: \u0027INSERT_SEM_OS_ID\u0027,\n    mensagem: \u0027ERRO: Chame criarOS antes de salvarContexto. Sem os_id_bomsaldo a OS nao existe no sistema ERP.\u0027\n  }}];\n}\n\nreturn [{ json: {\n  sucesso: true,\n  os_codigo: r.os_codigo || p.os_codigo,\n  os_id_bomsaldo: r.os_id_bomsaldo || p.os_id_bomsaldo || null,\n  fase_ia: r.fase_ia || p.fase_ia || \u0027identificacao\u0027,\n  status_os: r.status_os || p.status_os || \u0027aberta\u0027,\n  tecnico_id: r.tecnico_id || p.tecnico_id || null,\n  cliente_codigo: r.cliente_codigo || p.cliente_codigo || null,\n  mensagem: \u0027Contexto OS #\u0027 + (r.os_codigo || p.os_codigo) + \u0027 salvo com sucesso.\u0027\n}}];"
+                                                           },
+                                            "id":  "t-w8-resp",
+                                            "name":  "Formatar Resposta",
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             1008,
+                                                             304
+                                                         ]
+                                        }
+                                    ],
+                          "connections":  {
+                                              "Trigger":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Validar Params",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                                              "Validar Params":  {
+                                                                     "main":  [
+                                                                                  [
+                                                                                      {
+                                                                                          "node":  "GET OS por Codigo",
+                                                                                          "type":  "main",
+                                                                                          "index":  0
+                                                                                      }
+                                                                                  ]
+                                                                              ]
+                                                                 },
+                                              "GET OS por Codigo":  {
+                                                                        "main":  [
+                                                                                     [
+                                                                                         {
+                                                                                             "node":  "OS Existe?",
+                                                                                             "type":  "main",
+                                                                                             "index":  0
+                                                                                         }
+                                                                                     ]
+                                                                                 ]
+                                                                    },
+                                              "OS Existe?":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Merge para Update",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ],
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Prep para Insert",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             },
+                                              "Merge para Update":  {
+                                                                        "main":  [
+                                                                                     [
+                                                                                         {
+                                                                                             "node":  "UPDATE OS",
+                                                                                             "type":  "main",
+                                                                                             "index":  0
+                                                                                         }
+                                                                                     ]
+                                                                                 ]
+                                                                    },
+                                              "Prep para Insert":  {
+                                                                       "main":  [
+                                                                                    [
+                                                                                        {
+                                                                                            "node":  "INSERT OS",
+                                                                                            "type":  "main",
+                                                                                            "index":  0
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                   },
+                                              "UPDATE OS":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Join Flows",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            },
+                                              "INSERT OS":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Join Flows",
+                                                                                     "type":  "main",
+                                                                                     "index":  1
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            },
+                                              "Join Flows":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Formatar Resposta",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             }
+                                          },
+                          "authors":  "Danilo Saderi",
+                          "name":  "Version 4c34b12d",
+                          "description":  "",
+                          "autosaved":  true,
+                          "workflowPublishHistory":  [
+                                                         {
+                                                             "createdAt":  "2026-05-01T14:37:49.399Z",
+                                                             "id":  1322,
+                                                             "workflowId":  "cYIrVtfY8qfkwj38",
+                                                             "versionId":  "4c34b12d-b20a-4b61-b558-7b0d960392b8",
+                                                             "event":  "deactivated",
+                                                             "userId":  "637711b9-7b59-4ed7-ade6-dd6363195ee0"
+                                                         },
+                                                         {
+                                                             "createdAt":  "2026-05-01T14:37:49.425Z",
+                                                             "id":  1323,
+                                                             "workflowId":  "cYIrVtfY8qfkwj38",
+                                                             "versionId":  "4c34b12d-b20a-4b61-b558-7b0d960392b8",
+                                                             "event":  "activated",
+                                                             "userId":  "637711b9-7b59-4ed7-ade6-dd6363195ee0"
+                                                         },
+                                                         {
+                                                             "createdAt":  "2026-04-11T13:18:02.156Z",
+                                                             "id":  1277,
+                                                             "workflowId":  "cYIrVtfY8qfkwj38",
+                                                             "versionId":  "4c34b12d-b20a-4b61-b558-7b0d960392b8",
+                                                             "event":  "activated",
+                                                             "userId":  "637711b9-7b59-4ed7-ade6-dd6363195ee0"
+                                                         }
+                                                     ]
+                      }
+}

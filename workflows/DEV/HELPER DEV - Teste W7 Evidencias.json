@@ -1,0 +1,131 @@
+{
+  "name": "HELPER DEV - Teste W7 Evidencias",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "helper-manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "urlImagem",
+              "name": "urlImagem",
+              "type": "string",
+              "value": "https://upload.wikimedia.org/wikipedia/commons/3/3f/JPEG_example_flower.jpg"
+            },
+            {
+              "id": "os_codigo",
+              "name": "os_codigo",
+              "type": "string",
+              "value": "1705"
+            },
+            {
+              "id": "cliente_nome",
+              "name": "cliente_nome",
+              "type": "string",
+              "value": "A G A INDUSTRIA E COMERCIO DE MAQUINA"
+            },
+            {
+              "id": "descricao",
+              "name": "descricao",
+              "type": "string",
+              "value": "TESTE CONTROLADO FASE 2E - W7 DEV - FAVOR DESCONSIDERAR"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "helper-set-payload",
+      "name": "Set Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "k0hNVrN0ZOFApo5i",
+          "mode": "id",
+          "cachedResultName": "W7 DEV - Tool - Salvar Evidencias Drive"
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "id": "helper-call-w7",
+      "name": "Execute W7 DEV",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $('Execute W7 DEV').first().json || {};\nreturn [{\n  json: {\n    sucesso: result.sucesso ?? false,\n    resultado: result.resultado || result.erro || 'Resultado indisponivel.',\n    os_codigo: result.os_codigo || null,\n    evidencia_id: result.evidencia_id || null,\n    link_drive: result.link_drive || null,\n    link_arquivo: result.link_arquivo || null,\n    arquivo_id: result.arquivo_id || null,\n    qtd_evidencias: result.qtd_evidencias ?? null,\n    raw: result,\n  }\n}];"
+      },
+      "id": "helper-show-result",
+      "name": "Mostrar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        304
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Payload": {
+      "main": [
+        [
+          {
+            "node": "Execute W7 DEV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute W7 DEV": {
+      "main": [
+        [
+          {
+            "node": "Mostrar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Sao_Paulo"
+  },
+  "pinData": {}
+}

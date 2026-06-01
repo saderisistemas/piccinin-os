@@ -1,0 +1,653 @@
+{
+  "name": "W2 DEV - Tool - Buscar Cliente Bom Saldo",
+  "active": false,
+  "nodes": [
+    {
+      "id": "w2-dev-trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -520,
+        400
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "nome"
+            },
+            {
+              "name": "tecnico_id"
+            },
+            {
+              "name": "id_conversa"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "w2-dev-normalize",
+      "name": "Normalizar Nome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        400
+      ],
+      "parameters": {
+        "jsCode": "function normalize(str) {\n  if (!str) return '';\n  return String(str)\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9 ]/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nconst STOP_WORDS = [\n  'ltda', 'eireli', 'epp', 'me', 'sa', 'ss', 'sociedade', 'empresa',\n  'comercio', 'comercial', 'industria', 'industrial', 'servico', 'servicos',\n  'solucao', 'solucoes', 'grupo', 'brasil', 'do', 'da', 'de', 'dos', 'das', 'e'\n];\n\nfunction tokenize(str) {\n  return normalize(str).split(' ').filter(t => t.length > 2 && !STOP_WORDS.includes(t));\n}\n\nconst input = $input.first().json || {};\nconst rawNome = String(input.nome || '').trim();\nconst nomeNorm = normalize(rawNome);\nconst tokens = tokenize(rawNome);\n\nreturn [{\n  json: {\n    nome_original: rawNome,\n    nome_normalizado: nomeNorm,\n    tokens,\n    token_principal: tokens[0] || nomeNorm.split(' ')[0] || nomeNorm || rawNome\n  }\n}];"
+      }
+    },
+    {
+      "id": "w2-dev-fetch-direct",
+      "name": "Busca Direta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        280
+      ],
+      "parameters": {
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($json.nome_original) }}&ativo=1&limit=20",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-dev-fetch-token",
+      "name": "Busca por Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        520
+      ],
+      "parameters": {
+        "url": "=https://bomsaldo.com/api/clientes/?nome={{ encodeURIComponent($('Normalizar Nome').item.json.token_principal) }}&ativo=1&limit=20",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "698a9f9846f8ea6d2b3a59d5cb99f4a9e32c17e8"
+            },
+            {
+              "name": "secret-access-token",
+              "value": "874ac39b56dcf8a7b87e9bdafe88f833d0155c7a"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "w2-dev-rank",
+      "name": "Merge e Ranking",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        400
+      ],
+      "parameters": {
+        "jsCode": "function normalize(str) {\n  if (!str) return '';\n  return String(str)\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9 ]/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction tokenize(str) {\n  const stop = ['ltda','eireli','epp','me','sa','ss','sociedade','empresa','comercio','comercial','industria','industrial','servico','servicos','solucao','solucoes','grupo','brasil','do','da','de','dos','das','e'];\n  return normalize(str).split(' ').filter(t => t.length > 2 && !stop.includes(t));\n}\n\nfunction digits(v) {\n  return String(v || '').replace(/\\D/g, '');\n}\n\nfunction endereco(cliente) {\n  const e = cliente?.enderecos?.[0]?.endereco;\n  if (!e) return '';\n  return [e.logradouro, e.numero, e.bairro, String(e.nome_cidade || '') + '/' + String(e.estado || '')]\n    .filter(Boolean)\n    .join(' - ');\n}\n\nconst ctx = $('Normalizar Nome').first().json || {};\nconst nomeNorm = ctx.nome_normalizado || '';\nconst nomeOriginal = ctx.nome_original || '';\nconst tokensInput = Array.isArray(ctx.tokens) ? ctx.tokens : [];\nconst queryDigits = digits(nomeOriginal);\n\nconst allItems = $input.all();\nconst seen = new Set();\nconst clientes = [];\n\nfor (const item of allItems) {\n  const rows = item.json?.data || [];\n  for (const c of rows) {\n    if (!c || seen.has(c.id)) continue;\n    seen.add(c.id);\n    clientes.push(c);\n  }\n}\n\nfunction score(cliente) {\n  const nome = normalize(cliente.nome || '');\n  const razao = normalize(cliente.razao_social || '');\n  const fantasia = normalize(cliente.nome_fantasia || '');\n  const cpf = digits(cliente.cpf_cnpj || cliente.cnpj || cliente.documento || '');\n  const tel = digits(cliente.telefone || cliente.celular || '');\n\n  if ([nome, razao, fantasia].some(v => v && v === nomeNorm)) return 100;\n\n  let s = 0;\n  if (nome && nomeNorm && nome.includes(nomeNorm)) s += 45;\n  if (nome && nomeNorm && nomeNorm.includes(nome)) s += 45;\n  if (razao && nomeNorm && razao.includes(nomeNorm)) s += 40;\n  if (razao && nomeNorm && nomeNorm.includes(razao)) s += 40;\n  if (fantasia && nomeNorm && fantasia.includes(nomeNorm)) s += 40;\n  if (fantasia && nomeNorm && nomeNorm.includes(fantasia)) s += 40;\n\n  const tokensCliente = [...new Set([\n    ...tokenize(cliente.nome || ''),\n    ...tokenize(cliente.razao_social || ''),\n    ...tokenize(cliente.nome_fantasia || '')\n  ])];\n\n  for (const token of tokensInput) {\n    if (tokensCliente.some(tc => tc === token)) s += 12;\n    else if (tokensCliente.some(tc => tc.includes(token) || token.includes(tc))) s += 8;\n  }\n\n  if (tokensInput[0] && tokensCliente.some(tc => tc.includes(tokensInput[0]) || tokensInput[0].includes(tc))) s += 10;\n  if (queryDigits && cpf && cpf.includes(queryDigits)) s += 20;\n  if (queryDigits && tel && tel.includes(queryDigits)) s += 6;\n\n  return Math.min(s, 100);\n}\n\nconst ranked = clientes\n  .map(c => ({ ...c, _score: score(c) }))\n  .filter(c => c._score > 0)\n  .sort((a, b) => b._score - a._score);\n\nconst option_map = {};\nranked.forEach((c, idx) => {\n  option_map[String(idx + 1)] = { id: String(c.id), nome: c.nome || '', score: c._score };\n});\n\nconst toCliente = (c) => ({\n  cliente_id: String(c.id),\n  cliente_nome: c.nome || '',\n  razao_social: c.razao_social || '',\n  nome_fantasia: c.nome_fantasia || '',\n  cpf_cnpj: c.cpf_cnpj || c.cnpj || c.documento || '',\n  telefone: c.telefone || c.celular || '',\n  endereco: endereco(c),\n  score: c._score\n});\n\nif (ranked.length === 0 || ranked[0]._score < 70) {\n  return [{\n    json: {\n      status: 'not_found',\n      resultado: 'Nenhum cliente encontrado para \"' + nomeOriginal + '\".',\n      clientes: [],\n      total_encontrado: 0,\n      option_map\n    }\n  }];\n}\n\nconst top = ranked[0];\nconst second = ranked[1] || null;\nconst exactMatch = [normalize(top.nome || ''), normalize(top.razao_social || ''), normalize(top.nome_fantasia || '')].some(v => v === nomeNorm);\nconst clearSingle = exactMatch || (tokensInput.length >= 2 && top._score >= 90 && (!second || (top._score - second._score) >= 15));\n\nif (clearSingle) {\n  return [{\n    json: {\n      status: 'single_match',\n      resultado: 'Cliente confirmado: ' + (top.nome || top.razao_social || top.nome_fantasia || 'registro selecionado') + '.',\n      cliente_id: String(top.id),\n      cliente_nome: top.nome || '',\n      clientes: [toCliente(top)],\n      total_encontrado: 1,\n      option_map,\n      score: top._score\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    status: 'multiple_matches',\n    resultado: 'Encontrei ' + ranked.length + ' clientes parecidos para \"' + nomeOriginal + '\".',\n    clientes: ranked.slice(0, 10).map(toCliente),\n    total_encontrado: ranked.length,\n    option_map\n  }\n}];"
+      }
+    },
+    {
+      "id": "w2-dev-prepare-state",
+      "name": "Preparar Estado Vanda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst trigger = $('Trigger').first().json || {};\nconst clientes = Array.isArray(input.clientes) ? input.clientes : [];\nconst isMultiple = String(input.status || '') === 'multiple_matches';\n\nconst listaTexto = isMultiple\n  ? [\n      'Encontrei clientes parecidos:',\n      ...clientes.slice(0, 10).map((c, idx) => (idx + 1) + '. ' + String(c.cliente_nome || c.nome || c.razao_social || 'Cliente') + (c.endereco ? ' - ' + c.endereco : '')),\n      '',\n      'Informe o numero da opcao correta.'\n    ].join('\\n')\n  : '';\n\nconst state = isMultiple ? {\n  estado: 'aguardando_escolha_cliente_nova_os',\n  cliente_nome_pesquisado: String(input.resultado || '').replace(/^.*?\"(.*)\".*$/, '$1'),\n  option_map: input.option_map || {},\n  lista_texto: listaTexto,\n  id_conversa: String(trigger.id_conversa || ''),\n  tecnico_id: String(trigger.tecnico_id || ''),\n  criado_em: new Date().toISOString()\n} : null;\n\nreturn [{ json: {\n  ...input,\n  lista_texto: listaTexto,\n  state_key: 'piccinin_os:vanda_estado:' + String(trigger.tecnico_id || ''),\n  should_persist_state: isMultiple,\n  state_json: state ? JSON.stringify(state) : '',\n  technical_context: {\n    tecnico_id: String(trigger.tecnico_id || ''),\n    id_conversa: String(trigger.id_conversa || '')\n  }\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-save-if",
+      "name": "Salvar Estado Nova OS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        740,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "w2-save-state",
+              "leftValue": "={{ $json.should_persist_state }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "w2-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        980,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $json.state_key }}"
+      }
+    },
+    {
+      "id": "w2-dev-state-save",
+      "name": "Salvar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.state_key }}",
+        "messageData": "={{ $json.state_json }}",
+        "tail": true
+      }
+    },
+    {
+      "id": "w2-dev-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-prepare-state",
+      "name": "Preparar Estado Vanda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst trigger = $('Trigger').first().json || {};\nconst clientes = Array.isArray(input.clientes) ? input.clientes : [];\nconst isMultiple = String(input.status || '') === 'multiple_matches';\n\nconst listaTexto = isMultiple\n  ? [\n      'Encontrei clientes parecidos:',\n      ...clientes.slice(0, 10).map((c, idx) => (idx + 1) + '. ' + String(c.cliente_nome || c.nome || c.razao_social || 'Cliente') + (c.endereco ? ' - ' + c.endereco : '')),\n      '',\n      'Informe o numero da opcao correta.'\n    ].join('\\n')\n  : '';\n\nconst state = isMultiple ? {\n  estado: 'aguardando_escolha_cliente_nova_os',\n  cliente_nome_pesquisado: String(input.resultado || '').replace(/^.*?\"(.*)\".*$/, '$1'),\n  option_map: input.option_map || {},\n  lista_texto: listaTexto,\n  id_conversa: String(trigger.id_conversa || ''),\n  tecnico_id: String(trigger.tecnico_id || ''),\n  criado_em: new Date().toISOString()\n} : null;\n\nreturn [{ json: {\n  ...input,\n  lista_texto: listaTexto,\n  state_key: 'piccinin_os:vanda_estado:' + String(trigger.tecnico_id || ''),\n  should_persist_state: isMultiple,\n  state_json: state ? JSON.stringify(state) : '',\n  technical_context: {\n    tecnico_id: String(trigger.tecnico_id || ''),\n    id_conversa: String(trigger.id_conversa || '')\n  }\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-save-if",
+      "name": "Salvar Estado Nova OS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        740,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "w2-save-state",
+              "leftValue": "={{ $json.should_persist_state }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "w2-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        980,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $json.state_key }}"
+      }
+    },
+    {
+      "id": "w2-dev-state-save",
+      "name": "Salvar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.state_key }}",
+        "messageData": "={{ $json.state_json }}",
+        "tail": true
+      }
+    },
+    {
+      "id": "w2-dev-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-prepare-state",
+      "name": "Preparar Estado Vanda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst trigger = $('Trigger').first().json || {};\nconst clientes = Array.isArray(input.clientes) ? input.clientes : [];\nconst optionMap = input.option_map && typeof input.option_map === 'object' ? input.option_map : {};\nconst hasOptions = Object.keys(optionMap).length > 0;\nconst isMultiple = String(input.status || '') === 'multiple_matches' || hasOptions;\nconst fromClientes = clientes.length > 0;\nconst listaTexto = isMultiple\n  ? [\n      'Encontrei clientes parecidos:',\n      ...(fromClientes\n        ? clientes.slice(0, 10).map((c, idx) => (idx + 1) + '. ' + String(c.cliente_nome || c.nome || c.razao_social || 'Cliente') + (c.endereco ? ' - ' + c.endereco : ''))\n        : Object.keys(optionMap).sort((a, b) => Number(a) - Number(b)).slice(0, 10).map((k) => String(k) + '. ' + String(optionMap[k]?.nome || optionMap[k]?.cliente_nome || optionMap[k]?.nome_fantasia || 'Cliente'))\n      ),\n      '',\n      'Informe o numero da opcao correta.'\n    ].join('\\n')\n  : '';\n\nconst state = isMultiple ? {\n  estado: 'aguardando_escolha_cliente_nova_os',\n  cliente_nome_pesquisado: String(input.resultado || '').replace(/^.*?\"(.*)\".*$/, '$1'),\n  option_map: optionMap,\n  lista_texto: listaTexto,\n  id_conversa: String(trigger.id_conversa || ''),\n  tecnico_id: String(trigger.tecnico_id || ''),\n  criado_em: new Date().toISOString()\n} : null;\n\nreturn [{ json: {\n  ...input,\n  lista_texto: listaTexto,\n  state_key: 'piccinin_os:vanda_estado:' + String(trigger.tecnico_id || ''),\n  should_persist_state: isMultiple,\n  state_json: state ? JSON.stringify(state) : '',\n  technical_context: {\n    tecnico_id: String(trigger.tecnico_id || ''),\n    id_conversa: String(trigger.id_conversa || '')\n  }\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-save-if",
+      "name": "Salvar Estado Nova OS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        740,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "w2-save-state",
+              "leftValue": "={{ $json.should_persist_state }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "w2-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        980,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $json.state_key }}"
+      }
+    },
+    {
+      "id": "w2-dev-state-save",
+      "name": "Salvar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.state_key }}",
+        "messageData": "={{ $json.state_json }}",
+        "tail": true
+      }
+    },
+    {
+      "id": "w2-dev-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-prepare-state",
+      "name": "Preparar Estado Vanda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst trigger = $('Trigger').first().json || {};\nconst clientes = Array.isArray(input.clientes) ? input.clientes : [];\nconst optionMap = input.option_map && typeof input.option_map === 'object' ? input.option_map : {};\nconst hasOptions = Object.keys(optionMap).length > 0;\nconst isMultiple = String(input.status || '') === 'multiple_matches' || hasOptions;\nconst fromClientes = clientes.length > 0;\nconst listaTexto = isMultiple\n  ? [\n      'Encontrei clientes parecidos:',\n      ...(fromClientes\n        ? clientes.slice(0, 10).map((c, idx) => (idx + 1) + '. ' + String(c.cliente_nome || c.nome || c.razao_social || 'Cliente') + (c.endereco ? ' - ' + c.endereco : ''))\n        : Object.keys(optionMap).sort((a, b) => Number(a) - Number(b)).slice(0, 10).map((k) => String(k) + '. ' + String(optionMap[k]?.nome || optionMap[k]?.cliente_nome || optionMap[k]?.nome_fantasia || 'Cliente'))\n      ),\n      '',\n      'Informe o numero da opcao correta.'\n    ].join('\\n')\n  : '';\n\nconst state = isMultiple ? {\n  estado: 'aguardando_escolha_cliente_nova_os',\n  cliente_nome_pesquisado: String(input.resultado || '').replace(/^.*?\"(.*)\".*$/, '$1'),\n  option_map: optionMap,\n  lista_texto: listaTexto,\n  id_conversa: String(trigger.id_conversa || ''),\n  tecnico_id: String(trigger.tecnico_id || ''),\n  criado_em: new Date().toISOString()\n} : null;\n\nreturn [{ json: {\n  ...input,\n  lista_texto: listaTexto,\n  state_key: 'piccinin_os:vanda_estado:' + String(trigger.tecnico_id || ''),\n  should_persist_state: isMultiple,\n  state_json: state ? JSON.stringify(state) : '',\n  technical_context: {\n    tecnico_id: String(trigger.tecnico_id || ''),\n    id_conversa: String(trigger.id_conversa || '')\n  }\n}}];"
+      }
+    },
+    {
+      "id": "w2-dev-save-if",
+      "name": "Salvar Estado Nova OS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        740,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "w2-save-state",
+              "leftValue": "={{ $json.should_persist_state }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "w2-dev-state-clear",
+      "name": "Limpar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        980,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $json.state_key }}"
+      }
+    },
+    {
+      "id": "w2-dev-state-save",
+      "name": "Salvar Estado Nova OS",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "98R4aY8TyXokRqi4",
+          "name": "redis_cloudfy"
+        }
+      },
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.state_key }}",
+        "messageData": "={{ $json.state_json }}",
+        "tail": true
+      }
+    },
+    {
+      "id": "w2-dev-return",
+      "name": "Retornar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const p = $('Preparar Estado Vanda').first().json || {};\nreturn [{ json: {\n  status: p.status || 'not_found',\n  resultado: p.resultado || '',\n  clientes: p.clientes || [],\n  total_encontrado: p.total_encontrado || 0,\n  option_map: p.option_map || {},\n  lista_texto: p.lista_texto || '',\n  should_persist_state: !!p.should_persist_state,\n  state_key: p.state_key || '',\n  state_json: p.state_json || '',\n  cliente_id: p.cliente_id || null,\n  cliente_nome: p.cliente_nome || null\n}}];"
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Nome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Nome": {
+      "main": [
+        [
+          {
+            "node": "Busca Direta",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Busca por Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Direta": {
+      "main": [
+        [
+          {
+            "node": "Merge e Ranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca por Token": {
+      "main": [
+        [
+          {
+            "node": "Merge e Ranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge e Ranking": {
+      "main": [
+        [
+          {
+            "node": "Preparar Estado Vanda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Estado Vanda": {
+      "main": [
+        [
+          {
+            "node": "Salvar Estado Nova OS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Estado Nova OS?": {
+      "main": [
+        [
+          {
+            "node": "Limpar Estado Nova OS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpar Estado Nova OS": {
+      "main": [
+        [
+          {
+            "node": "Salvar Estado Nova OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Estado Nova OS": {
+      "main": [
+        [
+          {
+            "node": "Retornar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retornar Resultado": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timezone": "America/Sao_Paulo"
+  },
+  "staticData": null,
+  "pinData": {}
+}

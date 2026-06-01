@@ -23,14 +23,12 @@
             <div class="logo-placeholder">
                 <img src="img/piccinin-semfundo.png" alt="Piccinin Security Logo" class="logo">
             </div>
-            <div class="saderi-header-watermark">
-                <span>Powered by</span>
-                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo">
-            </div>
         </div>
         <div class="nav-links">
             <a href="index.html" class="nav-link active">Comando Ao Vivo</a>
             <a href="relatorios.html" class="nav-link">Inteligência & Relatórios</a>
+            <a href="apelidos.html" class="nav-link">Gerenciar Apelidos</a>
+            <a href="#" id="btn-help-trigger" class="nav-link" title="Abrir manual operacional"><i class="ri-question-line" style="vertical-align: middle; margin-right: 2px;"></i> Ajuda</a>
             <a href="#" class="nav-link">Sair</a>
         </div>
     </nav>
@@ -42,23 +40,23 @@
             <p class="dashboard-subtitle">Monitoramento em tempo real das Ordens de Serviço validadas pela agente Vanda AI para controle total de rastreabilidade.</p>
             
             <div class="kpi-grid">
-                <div class="kpi-box">
-                    <span class="kpi-label">Volume Processado</span>
+                <div class="kpi-box" data-tooltip="Total de chamados capturados e validados pela Vanda AI no período.">
+                    <span class="kpi-label">Volume Processado <i class="ri-question-line info-icon"></i></span>
                     <span class="kpi-value" id="kpi-total">0</span>
                     <span class="kpi-trend"><i class="ri-arrow-up-circle-line"></i> Total de Registros</span>
                 </div>
-                <div class="kpi-box">
-                    <span class="kpi-label">Taxa de Conclusão</span>
+                <div class="kpi-box" data-tooltip="Percentual de ordens de serviço resolvidas e faturadas com sucesso.">
+                    <span class="kpi-label">Taxa de Conclusão <i class="ri-question-line info-icon"></i></span>
                     <span class="kpi-value" id="kpi-fechadas">0</span>
                     <span class="kpi-trend"><i class="ri-check-double-line"></i> OS Finalizadas</span>
                 </div>
-                <div class="kpi-box">
-                    <span class="kpi-label">Tempo Médio (TMA)</span>
+                <div class="kpi-box" data-tooltip="Tempo Médio de Atendimento por chamado. Metas operacionais controladas pelo SLA.">
+                    <span class="kpi-label">Tempo Médio (TMA) <i class="ri-question-line info-icon"></i></span>
                     <span class="kpi-value" id="kpi-tma">0</span>
                     <span class="kpi-trend" style="color:var(--text-muted)"><i class="ri-time-line"></i> Minutos por Chamado</span>
                 </div>
-                <div class="kpi-box">
-                    <span class="kpi-label">Evidências Coletadas</span>
+                <div class="kpi-box" data-tooltip="Evidências de imagens e laudos técnicos armazenados no dossiê de auditoria.">
+                    <span class="kpi-label">Evidências Coletadas <i class="ri-question-line info-icon"></i></span>
                     <span class="kpi-value" id="kpi-evidencias">0</span>
                     <span class="kpi-trend" style="color:var(--piccinin-green)"><i class="ri-image-2-line"></i> Anexos Drive</span>
                 </div>
@@ -117,9 +115,9 @@
         
         <div class="os-list" id="osContainer">
             <!-- Loading Indicator -->
-            <div id="loadingIndicator" style="text-align: center; padding: 3rem; color: var(--piccinin-green);">
-                <i class="ri-loader-4-line ri-spin" style="font-size: 2rem;"></i>
-                <p style="margin-top: 10px; font-family: 'Poppins', sans-serif;">Sincronizando com Base de Dados Vanda AI...</p>
+            <div id="loadingIndicator" class="loader-container" aria-live="polite" role="status">
+                <i class="ri-loader-4-line ri-spin loader-icon"></i>
+                <p class="loader-text">Sincronizando com Base de Dados Vanda AI...</p>
             </div>
             <!-- Data Rows injected via JS -->
         </div>
@@ -145,20 +143,38 @@
     </div>
 
     <!-- Footer Commercial / Developer -->
-    <footer class="app-footer" style="padding: 40px 20px; text-align: center; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(0,255,136,0.1); background: rgba(0,0,0,0.6); margin-top: 60px;">
-        <div class="footer-content" style="display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 400px;">
-            <span class="developer-text" style="font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-weight: 500;">Arquitetura & Engenharia</span>
-            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link" style="transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: inline-block;">
-                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo" style="height: 65px; opacity: 0.9; filter: drop-shadow(0 0 15px rgba(0,255,136,0.3)); transition: all 0.4s ease;" onmouseover="this.style.opacity='1'; this.style.filter='drop-shadow(0 0 20px rgba(0,255,136,0.6))'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.9'; this.style.filter='drop-shadow(0 0 15px rgba(0,255,136,0.3))'; this.style.transform='scale(1)'">
+    <footer class="app-footer">
+        <div class="footer-content">
+            <span class="developer-text">Arquitetura & Engenharia</span>
+            <a href="https://wa.me/5544984089133" target="_blank" rel="noopener noreferrer" class="developer-link">
+                <img src="img/logo-dark.png" alt="Saderi Sistemas" class="saderi-logo">
             </a>
         </div>
     </footer>
+
+    <!-- Help Panel Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-content help-modal-content">
+            <div class="modal-head">
+                <div>
+                    <h2 class="heading-font">Manual Operacional</h2>
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Instruções e conceitos do Piccinin OS</span>
+                </div>
+                <button class="close-btn" id="closeHelpModal"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <div id="helpModalBody">
+                <!-- Conteúdo contextual injetado via JS -->
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts (No charts.js anymore for index) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/api.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/help.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
